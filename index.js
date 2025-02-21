@@ -20,6 +20,7 @@ const agendamentoSchema = new mongoose.Schema({
   data: String,
   horario: String,
   cliente: String,
+  telefone: String,
 });
 
 const Agendamento = mongoose.model('Agendamento', agendamentoSchema);
