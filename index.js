@@ -16,7 +16,7 @@ mongoose.connect('mongodb+srv://iagofonseca:Toldo+10@cluster0.oo8my.mongodb.net/
 .catch(err => console.log('Erro ao conectar:', err));
 
 // Configurar SendGrid
-sgMail.setApiKey('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'); // Substitua pela chave do SendGrid
+sgMail.setApiKey('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'); // Substitua pela chave do SendGrid
 
 // Schema do agendamento
 const agendamentoSchema = new mongoose.Schema({
