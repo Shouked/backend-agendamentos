@@ -43,6 +43,7 @@ app.post('/agendamentos', async (req, res) => {
     subject: 'Novo Agendamento Criado',
     text: `Um novo agendamento foi feito!\n\nProcedimento: ${procedimento}\nData: ${data}\nHorário: ${horario}\nCliente: ${cliente}\nTelefone: ${telefone}\nCriado em: ${novoAgendamento.dataCriacao}`
   };
+  console.log('Tentando enviar e-mail');
   await sgMail.send(msg);
 
   res.status(201).send('Agendamento criado com sucesso!');
