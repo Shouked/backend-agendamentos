@@ -33,7 +33,7 @@ app.post('/agendamentos', async (req, res) => {
   await novoAgendamento.save();
 
   const msg = {
-    to: 'kingshowk@23gmail.com', // Substitua pelo seu e-mail
+    to: 'kingshowk23@gmail.com', // Substitua pelo seu e-mail
     from: 'iagofonseca1992@hotmail.com', // Substitua pelo e-mail verificado
     subject: 'Novo Agendamento Criado',
     text: `Um novo agendamento foi feito!\n\nProcedimento: ${procedimento}\nData: ${data}\nHorário: ${horario}\nCliente: ${cliente}\nTelefone: ${telefone}\nCriado em: ${novoAgendamento.dataCriacao}`
