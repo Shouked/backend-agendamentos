@@ -6,16 +6,18 @@ const app = express();
 
 // Configuração avançada de CORS
 const corsOptions = {
-  origin: 'https://biancadomingues.netlify.app', // Frontend específico
-  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Métodos permitidos
-  allowedHeaders: ['Content-Type'], // Cabeçalhos permitidos
+  origin: 'https://biancadomingues.netlify.app', // Apenas o frontend específico
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Inclui OPTIONS explicitamente
+  allowedHeaders: ['Content-Type', 'Authorization'], // Cabeçalhos permitidos
   credentials: false, // Não usamos credenciais por agora
-  optionsSuccessStatus: 200 // Para compatibilidade com alguns navegadores
+  optionsSuccessStatus: 200 // Para compatibilidade
 };
+
+// Aplicar CORS a todas as rotas
 app.use(cors(corsOptions));
 
-// Middleware para verificar CORS manualmente (garantia extra)
-app.options('*', cors(corsOptions)); // Permite preflight para todas as rotas
+// Garantir que requisições preflight (OPTIONS) sejam tratadas
+app.options('*', cors(corsOptions));
 
 app.use(express.json());
 
@@ -73,8 +75,8 @@ app.post('/agendamentos', async (req, res) => {
   await novoAgendamento.save();
 
   const msgProprietario = {
-    to: 'kingshowkl23@gmail.com',
-    from: 'iagofonseca1992@hotmail.com',
+    to: 'kingshowk23@gmail.com', // E-mail do proprietário
+    from: 'iagofonseca1992@hotmail.com', // E-mail verificado no SendGrid
     subject: 'Novo Agendamento Criado',
     text: `Um novo agendamento foi feito!\n\nProcedimento: ${procedimento}\nData: ${data}\nHorário: ${horario}\nCliente: ${cliente}\nTelefone: ${telefone}\nE-mail: ${email}\nCriado em: ${novoAgendamento.dataCriacao}`
   };
