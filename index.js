@@ -143,7 +143,7 @@ app.post('/clientes/esqueci-senha', async (req, res) => {
   res.json({ success: true, message: 'E-mail de recuperação enviado com sua senha!' });
 });
 
-app.post('/agendamentos', async (req, res) => {
+app.post('/agendamentos', autenticarTokenCliente, async (req, res) => {
   const { procedimento, data, horario, cliente, telefone, email } = req.body;
   const procedimentosValidos = ['Extensão de Cílios', 'Lábios', 'Sobrancelha'];
   if (!procedimentosValidos.includes(procedimento)) {
@@ -155,7 +155,15 @@ app.post('/agendamentos', async (req, res) => {
     return res.status(400).json({ success: false, message: 'Este horário já está ocupado neste dia!' });
   }
 
-  const novoAgendamento = new Agendamento({ procedimento, data, horario, cliente, telefone, email });
+  const novoAgendamento = new Agendamento({ 
+    procedimento, 
+    data, 
+    horario, 
+    cliente, 
+    telefone, 
+    email, 
+    clienteId: req.cliente._id || (await Cliente.findOne({ email: req.cliente.email }))._id 
+  });
   await novoAgendamento.save();
 
   const msgProprietario = {
@@ -200,6 +208,19 @@ app.get('/horarios-disponiveis', async (req, res) => {
   const horariosOcupados = agendamentos.map(ag => ag.horario);
   const horariosDisponiveis = todosHorarios.filter(h => !horariosOcupados.includes(h));
   res.json(horariosDisponiveis);
+});
+
+app.get('/relatorios/agendamentos-por-dia', autenticarTokenProprietario, async (req, res) => {
+  const agendamentos = await Agendamento.aggregate([
+    {
+      $group: {
+        _id: "$data",
+        total: { $sum: 1 }
+      }
+    },
+    { $sort: { "_id": 1 } }
+  ]);
+  res.json(agendamentos);
 });
 
 app.put('/agendamentos/:id', autenticarTokenProprietario, async (req, res) => {
