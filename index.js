@@ -48,7 +48,7 @@ const clienteSchema = new mongoose.Schema({
   email: { type: String, unique: true },
   senha: String,
   telefone: { type: String, unique: true },
-  senhaOriginal: String // Novo campo para armazenar a senha em texto puro
+  senhaOriginal: String
 });
 
 const Agendamento = mongoose.model('Agendamento', agendamentoSchema);
@@ -107,7 +107,7 @@ app.post('/clientes/registro', async (req, res) => {
     email, 
     senha: senhaCriptografada, 
     telefone, 
-    senhaOriginal: senha // Armazenar senha em texto puro
+    senhaOriginal: senha 
   });
   await novoCliente.save();
 
@@ -145,6 +145,11 @@ app.post('/clientes/esqueci-senha', async (req, res) => {
 
 app.post('/agendamentos', async (req, res) => {
   const { procedimento, data, horario, cliente, telefone, email } = req.body;
+  const procedimentosValidos = ['Extensão de Cílios', 'Lábios', 'Sobrancelha'];
+  if (!procedimentosValidos.includes(procedimento)) {
+    return res.status(400).json({ success: false, message: 'Procedimento inválido!' });
+  }
+
   const existente = await Agendamento.findOne({ data, horario });
   if (existente) {
     return res.status(400).json({ success: false, message: 'Este horário já está ocupado neste dia!' });
@@ -200,6 +205,11 @@ app.get('/horarios-disponiveis', async (req, res) => {
 app.put('/agendamentos/:id', autenticarTokenProprietario, async (req, res) => {
   const { id } = req.params;
   const { procedimento, data, horario, cliente, telefone, email } = req.body;
+  const procedimentosValidos = ['Extensão de Cílios', 'Lábios', 'Sobrancelha'];
+  if (!procedimentosValidos.includes(procedimento)) {
+    return res.status(400).json({ success: false, message: 'Procedimento inválido!' });
+  }
+
   const existente = await Agendamento.findOne({ data, horario, _id: { $ne: id } });
   if (existente) {
     return res.status(400).json({ success: false, message: 'Este horário já está ocupado neste dia!' });
@@ -221,9 +231,16 @@ app.put('/clientes/agendamentos/:id', autenticarTokenCliente, async (req, res) =
     return res.status(403).json({ success: false, message: 'Você não tem permissão para editar este agendamento!' });
   }
 
-  const existente = await Agendamento.findOne({ data, horario, _id: { $ne: id } });
-  if (existente) {
-    return res.status(400).json({ success: false, message: 'Este horário já está ocupado neste dia!' });
+  const procedimentosValidos = ['Extensão de Cílios', 'Lábios', 'Sobrancelha'];
+  if (procedimento && !procedimentosValidos.includes(procedimento)) {
+    return res.status(400).json({ success: false, message: 'Procedimento inválido!' });
+  }
+
+  if (data && horario) {
+    const existente = await Agendamento.findOne({ data, horario, _id: { $ne: id } });
+    if (existente) {
+      return res.status(400).json({ success: false, message: 'Este horário já está ocupado neste dia!' });
+    }
   }
 
   const updated = await Agendamento.findByIdAndUpdate(id, { procedimento, data, horario }, { new: true });
