@@ -2,7 +2,8 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const sgMail = require('@sendgrid/mail');
-const bcrypt = require('bcrypt'); // Adicionar bcrypt
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken'); // Adicionar JWT
 const app = express();
 
 const corsOptions = {
@@ -38,18 +39,34 @@ const agendamentoSchema = new mongoose.Schema({
 
 const usuarioSchema = new mongoose.Schema({
   email: String,
-  senha: String // Será criptografada com bcrypt
+  senha: String
 });
 
 const Agendamento = mongoose.model('Agendamento', agendamentoSchema);
 const Usuario = mongoose.model('Usuario', usuarioSchema);
 
-// Rota de login com bcrypt
+// Chave secreta para JWT (em produção, use uma variável de ambiente)
+const JWT_SECRET = 'sua-chave-secreta-super-segura';
+
+// Middleware para verificar token
+const autenticarToken = (req, res, next) => {
+  const token = req.headers['authorization'];
+  if (!token) return res.status(401).json({ success: false, message: 'Token não fornecido' });
+
+  jwt.verify(token, JWT_SECRET, (err, usuario) => {
+    if (err) return res.status(403).json({ success: false, message: 'Token inválido' });
+    req.usuario = usuario;
+    next();
+  });
+};
+
+// Rota de login com JWT
 app.post('/login', async (req, res) => {
   const { email, senha } = req.body;
   const usuario = await Usuario.findOne({ email });
   if (usuario && await bcrypt.compare(senha, usuario.senha)) {
-    res.json({ success: true, message: 'Login bem-sucedido' });
+    const token = jwt.sign({ email: usuario.email }, JWT_SECRET, { expiresIn: '1h' });
+    res.json({ success: true, message: 'Login bem-sucedido', token });
   } else {
     res.status(401).json({ success: false, message: 'E-mail ou senha inválidos' });
   }
@@ -88,7 +105,7 @@ app.post('/agendamentos', async (req, res) => {
   res.status(201).json({ success: true, message: 'Agendamento criado com sucesso!' });
 });
 
-app.get('/agendamentos', async (req, res) => {
+app.get('/agendamentos', autenticarToken, async (req, res) => {
   const agendamentos = await Agendamento.find();
   res.json(agendamentos);
 });
@@ -104,7 +121,7 @@ app.get('/horarios-disponiveis', async (req, res) => {
   res.json(horariosDisponiveis);
 });
 
-app.put('/agendamentos/:id', async (req, res) => {
+app.put('/agendamentos/:id', autenticarToken, async (req, res) => {
   const { id } = req.params;
   const { procedimento, data, horario, cliente, telefone, email } = req.body;
   const existente = await Agendamento.findOne({ data, horario, _id: { $ne: id } });
@@ -120,7 +137,7 @@ app.put('/agendamentos/:id', async (req, res) => {
   }
 });
 
-app.delete('/agendamentos/muitos', async (req, res) => {
+app.delete('/agendamentos/muitos', autenticarToken, async (req, res) => {
   const { ids } = req.body;
   if (!ids || !Array.isArray(ids) || ids.length === 0) {
     return res.status(400).json({ success: false, message: 'Nenhum agendamento selecionado para exclusão!' });
@@ -134,7 +151,7 @@ app.delete('/agendamentos/muitos', async (req, res) => {
   }
 });
 
-app.delete('/agendamentos/:id', async (req, res) => {
+app.delete('/agendamentos/:id', autenticarToken, async (req, res) => {
   const { id } = req.params;
   const deleted = await Agendamento.findByIdAndDelete(id);
   if (deleted) {
