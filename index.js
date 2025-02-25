@@ -2,26 +2,21 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const sgMail = require('@sendgrid/mail');
+const bcrypt = require('bcrypt'); // Adicionar bcrypt
 const app = express();
 
-// Configuração avançada de CORS
 const corsOptions = {
-  origin: 'https://biancadomingues.netlify.app', // Apenas o frontend específico
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Métodos permitidos
-  allowedHeaders: ['Content-Type', 'Authorization'], // Cabeçalhos permitidos
-  credentials: false, // Não usamos credenciais por agora
-  optionsSuccessStatus: 200 // Para compatibilidade
+  origin: 'https://biancadomingues.netlify.app',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: false,
+  optionsSuccessStatus: 200
 };
 
-// Aplicar CORS a todas as rotas
 app.use(cors(corsOptions));
-
-// Garantir que requisições preflight (OPTIONS) sejam tratadas
 app.options('*', cors(corsOptions));
-
 app.use(express.json());
 
-// Conexão com MongoDB Atlas
 mongoose.connect('mongodb+srv://iagofonseca:Toldo+10@cluster0.oo8my.mongodb.net/agendamentos?retryWrites=true&w=majority&appName=Cluster0', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -29,10 +24,8 @@ mongoose.connect('mongodb+srv://iagofonseca:Toldo+10@cluster0.oo8my.mongodb.net/
 .then(() => console.log('Conectado ao MongoDB!'))
 .catch(err => console.log('Erro ao conectar:', err));
 
-// Configurar SendGrid
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-// Schema do agendamento
 const agendamentoSchema = new mongoose.Schema({
   procedimento: String,
   data: String,
@@ -43,27 +36,25 @@ const agendamentoSchema = new mongoose.Schema({
   dataCriacao: { type: Date, default: Date.now }
 });
 
-// Schema do usuário
 const usuarioSchema = new mongoose.Schema({
   email: String,
-  senha: String
+  senha: String // Será criptografada com bcrypt
 });
 
 const Agendamento = mongoose.model('Agendamento', agendamentoSchema);
 const Usuario = mongoose.model('Usuario', usuarioSchema);
 
-// Rota de login
+// Rota de login com bcrypt
 app.post('/login', async (req, res) => {
   const { email, senha } = req.body;
-  const usuario = await Usuario.findOne({ email, senha });
-  if (usuario) {
+  const usuario = await Usuario.findOne({ email });
+  if (usuario && await bcrypt.compare(senha, usuario.senha)) {
     res.json({ success: true, message: 'Login bem-sucedido' });
   } else {
     res.status(401).json({ success: false, message: 'E-mail ou senha inválidos' });
   }
 });
 
-// Rota para criar agendamento
 app.post('/agendamentos', async (req, res) => {
   const { procedimento, data, horario, cliente, telefone, email } = req.body;
   const existente = await Agendamento.findOne({ data, horario });
@@ -75,8 +66,8 @@ app.post('/agendamentos', async (req, res) => {
   await novoAgendamento.save();
 
   const msgProprietario = {
-    to: 'kingshowk23@gmail.com', // E-mail do proprietário
-    from: 'iagofonseca1992@hotmail.com', // E-mail verificado no SendGrid
+    to: 'kingshowk23@gmail.com',
+    from: 'iagofonseca1992@hotmail.com',
     subject: 'Novo Agendamento Criado',
     text: `Um novo agendamento foi feito!\n\nProcedimento: ${procedimento}\nData: ${data}\nHorário: ${horario}\nCliente: ${cliente}\nTelefone: ${telefone}\nE-mail: ${email}\nCriado em: ${novoAgendamento.dataCriacao}`
   };
@@ -97,13 +88,11 @@ app.post('/agendamentos', async (req, res) => {
   res.status(201).json({ success: true, message: 'Agendamento criado com sucesso!' });
 });
 
-// Rota para listar agendamentos
 app.get('/agendamentos', async (req, res) => {
   const agendamentos = await Agendamento.find();
   res.json(agendamentos);
 });
 
-// Rota para horários disponíveis
 app.get('/horarios-disponiveis', async (req, res) => {
   const { data } = req.query;
   const agendamentos = await Agendamento.find({ data });
@@ -115,7 +104,6 @@ app.get('/horarios-disponiveis', async (req, res) => {
   res.json(horariosDisponiveis);
 });
 
-// Rota para editar agendamento
 app.put('/agendamentos/:id', async (req, res) => {
   const { id } = req.params;
   const { procedimento, data, horario, cliente, telefone, email } = req.body;
@@ -132,7 +120,6 @@ app.put('/agendamentos/:id', async (req, res) => {
   }
 });
 
-// Rota para excluir múltiplos agendamentos (deve vir antes de /:id)
 app.delete('/agendamentos/muitos', async (req, res) => {
   const { ids } = req.body;
   if (!ids || !Array.isArray(ids) || ids.length === 0) {
@@ -147,7 +134,6 @@ app.delete('/agendamentos/muitos', async (req, res) => {
   }
 });
 
-// Rota para excluir um agendamento (deve vir depois de /muitos)
 app.delete('/agendamentos/:id', async (req, res) => {
   const { id } = req.params;
   const deleted = await Agendamento.findByIdAndDelete(id);
