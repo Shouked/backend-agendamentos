@@ -5,11 +5,17 @@ const sgMail = require('@sendgrid/mail');
 const app = express();
 
 // Configuração avançada de CORS
-app.use(cors({
-  origin: 'https://biancadomingues.netlify.app', // Permitir apenas o frontend específico
+const corsOptions = {
+  origin: 'https://biancadomingues.netlify.app', // Frontend específico
   methods: ['GET', 'POST', 'PUT', 'DELETE'], // Métodos permitidos
-  allowedHeaders: ['Content-Type'] // Cabeçalhos permitidos
-}));
+  allowedHeaders: ['Content-Type'], // Cabeçalhos permitidos
+  credentials: false, // Não usamos credenciais por agora
+  optionsSuccessStatus: 200 // Para compatibilidade com alguns navegadores
+};
+app.use(cors(corsOptions));
+
+// Middleware para verificar CORS manualmente (garantia extra)
+app.options('*', cors(corsOptions)); // Permite preflight para todas as rotas
 
 app.use(express.json());
 
@@ -67,7 +73,7 @@ app.post('/agendamentos', async (req, res) => {
   await novoAgendamento.save();
 
   const msgProprietario = {
-    to: 'kingshowk23@gmail.com',
+    to: 'kingshowkl23@gmail.com',
     from: 'iagofonseca1992@hotmail.com',
     subject: 'Novo Agendamento Criado',
     text: `Um novo agendamento foi feito!\n\nProcedimento: ${procedimento}\nData: ${data}\nHorário: ${horario}\nCliente: ${cliente}\nTelefone: ${telefone}\nE-mail: ${email}\nCriado em: ${novoAgendamento.dataCriacao}`
