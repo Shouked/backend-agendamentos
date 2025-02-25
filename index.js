@@ -55,8 +55,8 @@ app.post('/agendamentos', async (req, res) => {
   await novoAgendamento.save();
 
   const msg = {
-    to: 'SEU_EMAIL_AQUI', // Substitua pelo seu e-mail pessoal
-    from: 'SEU_EMAIL_VERIFICADO_AQUI', // Substitua pelo e-mail verificado no SendGrid
+    to: 'kingshowk23@gmail.com', // Substitua pelo seu e-mail pessoal
+    from: 'iagofonseca1992@hotmail.com', // Substitua pelo e-mail verificado no SendGrid
     subject: 'Novo Agendamento Criado',
     text: `Um novo agendamento foi feito!\n\nProcedimento: ${procedimento}\nData: ${data}\nHorário: ${horario}\nCliente: ${cliente}\nTelefone: ${telefone}\nCriado em: ${novoAgendamento.dataCriacao}`
   };
