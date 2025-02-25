@@ -34,7 +34,7 @@ const agendamentoSchema = new mongoose.Schema({
   cliente: String,
   telefone: String,
   email: String,
-  clienteId: { type: mongoose.Schema.Types.ObjectId, ref: 'Cliente' }, // Vincular ao cliente
+  clienteId: { type: mongoose.Schema.Types.ObjectId, ref: 'Cliente' },
   dataCriacao: { type: Date, default: Date.now }
 });
 
@@ -47,7 +47,7 @@ const clienteSchema = new mongoose.Schema({
   nome: String,
   email: { type: String, unique: true },
   senha: String,
-  telefone: String
+  telefone: { type: String, unique: true }
 });
 
 const Agendamento = mongoose.model('Agendamento', agendamentoSchema);
@@ -78,7 +78,6 @@ const autenticarTokenCliente = (req, res, next) => {
   });
 };
 
-// Rota de login do proprietário
 app.post('/login', async (req, res) => {
   const { email, senha } = req.body;
   const usuario = await Usuario.findOne({ email });
@@ -90,12 +89,15 @@ app.post('/login', async (req, res) => {
   }
 });
 
-// Rota de registro de cliente
 app.post('/clientes/registro', async (req, res) => {
   const { nome, email, senha, telefone } = req.body;
-  const existente = await Cliente.findOne({ email });
-  if (existente) {
+  const emailExistente = await Cliente.findOne({ email });
+  const telefoneExistente = await Cliente.findOne({ telefone });
+  if (emailExistente) {
     return res.status(400).json({ success: false, message: 'E-mail já registrado!' });
+  }
+  if (telefoneExistente) {
+    return res.status(400).json({ success: false, message: 'Telefone já registrado!' });
   }
 
   const senhaCriptografada = await bcrypt.hash(senha, 10);
@@ -106,7 +108,6 @@ app.post('/clientes/registro', async (req, res) => {
   res.status(201).json({ success: true, message: 'Cliente registrado com sucesso!', token });
 });
 
-// Rota de login do cliente
 app.post('/clientes/login', async (req, res) => {
   const { email, senha } = req.body;
   const cliente = await Cliente.findOne({ email });
@@ -116,6 +117,23 @@ app.post('/clientes/login', async (req, res) => {
   } else {
     res.status(401).json({ success: false, message: 'E-mail ou senha inválidos' });
   }
+});
+
+app.post('/clientes/esqueci-senha', async (req, res) => {
+  const { email } = req.body;
+  const cliente = await Cliente.findOne({ email });
+  if (!cliente) {
+    return res.status(404).json({ success: false, message: 'E-mail não encontrado!' });
+  }
+
+  const mensagem = {
+    to: email,
+    from: 'iagofonseca1992@hotmail.com',
+    subject: 'Recuperação de Senha',
+    text: `Olá ${cliente.nome},\n\nVocê solicitou recuperação de senha. Por favor, entre em contato com o suporte para redefinir sua senha.\n\nAtenciosamente,\nEquipe de Agendamento`
+  };
+  await sgMail.send(mensagem).catch(err => console.error('Erro ao enviar e-mail:', err));
+  res.json({ success: true, message: 'E-mail de recuperação enviado!' });
 });
 
 app.post('/agendamentos', async (req, res) => {
@@ -188,6 +206,27 @@ app.put('/agendamentos/:id', autenticarTokenProprietario, async (req, res) => {
   }
 });
 
+app.put('/clientes/agendamentos/:id', autenticarTokenCliente, async (req, res) => {
+  const { id } = req.params;
+  const { procedimento, data, horario } = req.body;
+  const agendamento = await Agendamento.findById(id);
+  if (!agendamento || agendamento.email !== req.cliente.email) {
+    return res.status(403).json({ success: false, message: 'Você não tem permissão para editar este agendamento!' });
+  }
+
+  const existente = await Agendamento.findOne({ data, horario, _id: { $ne: id } });
+  if (existente) {
+    return res.status(400).json({ success: false, message: 'Este horário já está ocupado neste dia!' });
+  }
+
+  const updated = await Agendamento.findByIdAndUpdate(id, { procedimento, data, horario }, { new: true });
+  if (updated) {
+    res.json({ success: true, message: 'Agendamento atualizado com sucesso!', agendamento: updated });
+  } else {
+    res.status(404).json({ success: false, message: 'Agendamento não encontrado' });
+  }
+});
+
 app.delete('/agendamentos/muitos', autenticarTokenProprietario, async (req, res) => {
   const { ids } = req.body;
   if (!ids || !Array.isArray(ids) || ids.length === 0) {
@@ -202,14 +241,26 @@ app.delete('/agendamentos/muitos', autenticarTokenProprietario, async (req, res)
   }
 });
 
-app.delete('/agendamentos/:id', autenticarTokenProprietario, async (req, res) => {
+app.delete('/agendamentos/:id', async (req, res) => {
   const { id } = req.params;
-  const deleted = await Agendamento.findByIdAndDelete(id);
-  if (deleted) {
-    res.json({ success: true, message: 'Agendamento excluído com sucesso!' });
-  } else {
-    res.status(404).json({ success: false, message: 'Agendamento não encontrado' });
-  }
+  const token = req.headers['authorization'];
+  if (!token) return res.status(401).json({ success: false, message: 'Token não fornecido' });
+
+  jwt.verify(token, JWT_SECRET, async (err, decoded) => {
+    if (err) return res.status(403).json({ success: false, message: 'Token inválido' });
+
+    const agendamento = await Agendamento.findById(id);
+    if (!agendamento) {
+      return res.status(404).json({ success: false, message: 'Agendamento não encontrado' });
+    }
+
+    if (decoded.tipo === 'proprietario' || (decoded.tipo === 'cliente' && agendamento.email === decoded.email)) {
+      await Agendamento.findByIdAndDelete(id);
+      res.json({ success: true, message: 'Agendamento excluído com sucesso!' });
+    } else {
+      res.status(403).json({ success: false, message: 'Você não tem permissão para excluir este agendamento!' });
+    }
+  });
 });
 
 const PORT = process.env.PORT || 10000;
