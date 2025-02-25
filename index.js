@@ -47,7 +47,8 @@ const clienteSchema = new mongoose.Schema({
   nome: String,
   email: { type: String, unique: true },
   senha: String,
-  telefone: { type: String, unique: true }
+  telefone: { type: String, unique: true },
+  senhaOriginal: String // Novo campo para armazenar a senha em texto puro
 });
 
 const Agendamento = mongoose.model('Agendamento', agendamentoSchema);
@@ -101,7 +102,13 @@ app.post('/clientes/registro', async (req, res) => {
   }
 
   const senhaCriptografada = await bcrypt.hash(senha, 10);
-  const novoCliente = new Cliente({ nome, email, senha: senhaCriptografada, telefone });
+  const novoCliente = new Cliente({ 
+    nome, 
+    email, 
+    senha: senhaCriptografada, 
+    telefone, 
+    senhaOriginal: senha // Armazenar senha em texto puro
+  });
   await novoCliente.save();
 
   const token = jwt.sign({ email: novoCliente.email, tipo: 'cliente' }, JWT_SECRET, { expiresIn: '1h' });
@@ -130,10 +137,10 @@ app.post('/clientes/esqueci-senha', async (req, res) => {
     to: email,
     from: 'iagofonseca1992@hotmail.com',
     subject: 'Recuperação de Senha',
-    text: `Olá ${cliente.nome},\n\nVocê solicitou recuperação de senha. Por favor, entre em contato com o suporte para redefinir sua senha.\n\nAtenciosamente,\nEquipe de Agendamento`
+    text: `Olá ${cliente.nome},\n\nVocê solicitou a recuperação da sua senha. Aqui está a senha que você criou ao se registrar:\n\nSenha: ${cliente.senhaOriginal}\n\nUse-a para fazer login. Recomendamos que altere sua senha após acessar o sistema.\n\nAtenciosamente,\nEquipe de Agendamento`
   };
   await sgMail.send(mensagem).catch(err => console.error('Erro ao enviar e-mail:', err));
-  res.json({ success: true, message: 'E-mail de recuperação enviado!' });
+  res.json({ success: true, message: 'E-mail de recuperação enviado com sua senha!' });
 });
 
 app.post('/agendamentos', async (req, res) => {
