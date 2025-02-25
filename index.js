@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const sgMail = require('@sendgrid/mail');
 const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken'); // Adicionar JWT
+const jwt = require('jsonwebtoken');
 const app = express();
 
 const corsOptions = {
@@ -34,6 +34,7 @@ const agendamentoSchema = new mongoose.Schema({
   cliente: String,
   telefone: String,
   email: String,
+  clienteId: { type: mongoose.Schema.Types.ObjectId, ref: 'Cliente' }, // Vincular ao cliente
   dataCriacao: { type: Date, default: Date.now }
 });
 
@@ -42,14 +43,20 @@ const usuarioSchema = new mongoose.Schema({
   senha: String
 });
 
+const clienteSchema = new mongoose.Schema({
+  nome: String,
+  email: { type: String, unique: true },
+  senha: String,
+  telefone: String
+});
+
 const Agendamento = mongoose.model('Agendamento', agendamentoSchema);
 const Usuario = mongoose.model('Usuario', usuarioSchema);
+const Cliente = mongoose.model('Cliente', clienteSchema);
 
-// Chave secreta para JWT (em produção, use uma variável de ambiente)
 const JWT_SECRET = 'sua-chave-secreta-super-segura';
 
-// Middleware para verificar token
-const autenticarToken = (req, res, next) => {
+const autenticarTokenProprietario = (req, res, next) => {
   const token = req.headers['authorization'];
   if (!token) return res.status(401).json({ success: false, message: 'Token não fornecido' });
 
@@ -60,12 +67,51 @@ const autenticarToken = (req, res, next) => {
   });
 };
 
-// Rota de login com JWT
+const autenticarTokenCliente = (req, res, next) => {
+  const token = req.headers['authorization'];
+  if (!token) return res.status(401).json({ success: false, message: 'Token não fornecido' });
+
+  jwt.verify(token, JWT_SECRET, (err, cliente) => {
+    if (err) return res.status(403).json({ success: false, message: 'Token inválido' });
+    req.cliente = cliente;
+    next();
+  });
+};
+
+// Rota de login do proprietário
 app.post('/login', async (req, res) => {
   const { email, senha } = req.body;
   const usuario = await Usuario.findOne({ email });
   if (usuario && await bcrypt.compare(senha, usuario.senha)) {
-    const token = jwt.sign({ email: usuario.email }, JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign({ email: usuario.email, tipo: 'proprietario' }, JWT_SECRET, { expiresIn: '1h' });
+    res.json({ success: true, message: 'Login bem-sucedido', token });
+  } else {
+    res.status(401).json({ success: false, message: 'E-mail ou senha inválidos' });
+  }
+});
+
+// Rota de registro de cliente
+app.post('/clientes/registro', async (req, res) => {
+  const { nome, email, senha, telefone } = req.body;
+  const existente = await Cliente.findOne({ email });
+  if (existente) {
+    return res.status(400).json({ success: false, message: 'E-mail já registrado!' });
+  }
+
+  const senhaCriptografada = await bcrypt.hash(senha, 10);
+  const novoCliente = new Cliente({ nome, email, senha: senhaCriptografada, telefone });
+  await novoCliente.save();
+
+  const token = jwt.sign({ email: novoCliente.email, tipo: 'cliente' }, JWT_SECRET, { expiresIn: '1h' });
+  res.status(201).json({ success: true, message: 'Cliente registrado com sucesso!', token });
+});
+
+// Rota de login do cliente
+app.post('/clientes/login', async (req, res) => {
+  const { email, senha } = req.body;
+  const cliente = await Cliente.findOne({ email });
+  if (cliente && await bcrypt.compare(senha, cliente.senha)) {
+    const token = jwt.sign({ email: cliente.email, tipo: 'cliente' }, JWT_SECRET, { expiresIn: '1h' });
     res.json({ success: true, message: 'Login bem-sucedido', token });
   } else {
     res.status(401).json({ success: false, message: 'E-mail ou senha inválidos' });
@@ -105,8 +151,13 @@ app.post('/agendamentos', async (req, res) => {
   res.status(201).json({ success: true, message: 'Agendamento criado com sucesso!' });
 });
 
-app.get('/agendamentos', autenticarToken, async (req, res) => {
+app.get('/agendamentos', autenticarTokenProprietario, async (req, res) => {
   const agendamentos = await Agendamento.find();
+  res.json(agendamentos);
+});
+
+app.get('/clientes/agendamentos', autenticarTokenCliente, async (req, res) => {
+  const agendamentos = await Agendamento.find({ email: req.cliente.email });
   res.json(agendamentos);
 });
 
@@ -121,7 +172,7 @@ app.get('/horarios-disponiveis', async (req, res) => {
   res.json(horariosDisponiveis);
 });
 
-app.put('/agendamentos/:id', autenticarToken, async (req, res) => {
+app.put('/agendamentos/:id', autenticarTokenProprietario, async (req, res) => {
   const { id } = req.params;
   const { procedimento, data, horario, cliente, telefone, email } = req.body;
   const existente = await Agendamento.findOne({ data, horario, _id: { $ne: id } });
@@ -137,7 +188,7 @@ app.put('/agendamentos/:id', autenticarToken, async (req, res) => {
   }
 });
 
-app.delete('/agendamentos/muitos', autenticarToken, async (req, res) => {
+app.delete('/agendamentos/muitos', autenticarTokenProprietario, async (req, res) => {
   const { ids } = req.body;
   if (!ids || !Array.isArray(ids) || ids.length === 0) {
     return res.status(400).json({ success: false, message: 'Nenhum agendamento selecionado para exclusão!' });
@@ -151,7 +202,7 @@ app.delete('/agendamentos/muitos', autenticarToken, async (req, res) => {
   }
 });
 
-app.delete('/agendamentos/:id', autenticarToken, async (req, res) => {
+app.delete('/agendamentos/:id', autenticarTokenProprietario, async (req, res) => {
   const { id } = req.params;
   const deleted = await Agendamento.findByIdAndDelete(id);
   if (deleted) {
