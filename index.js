@@ -91,7 +91,10 @@ app.post('/login', async (req, res) => {
 });
 
 app.post('/clientes/registro', async (req, res) => {
-  const { nome, email, senha, telefone } = req.body;
+  let { nome, email, senha, telefone } = req.body;
+  email = email.toLowerCase(); // Converter e-mail para minúsculo
+  nome = nome.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' '); // Capitalizar nome
+
   const emailExistente = await Cliente.findOne({ email });
   const telefoneExistente = await Cliente.findOne({ telefone });
   if (emailExistente) {
@@ -116,18 +119,23 @@ app.post('/clientes/registro', async (req, res) => {
 });
 
 app.post('/clientes/login', async (req, res) => {
-  const { email, senha } = req.body;
+  let { email, senha } = req.body;
+  email = email.toLowerCase(); // Converter e-mail para minúsculo
   const cliente = await Cliente.findOne({ email });
-  if (cliente && await bcrypt.compare(senha, cliente.senha)) {
+  if (!cliente) {
+    return res.status(404).json({ success: false, message: 'E-mail não cadastrado' });
+  }
+  if (await bcrypt.compare(senha, cliente.senha)) {
     const token = jwt.sign({ email: cliente.email, tipo: 'cliente' }, JWT_SECRET, { expiresIn: '1h' });
     res.json({ success: true, message: 'Login bem-sucedido', token });
   } else {
-    res.status(401).json({ success: false, message: 'E-mail ou senha inválidos' });
+    res.status(401).json({ success: false, message: 'Senha inválida' });
   }
 });
 
 app.post('/clientes/esqueci-senha', async (req, res) => {
-  const { email } = req.body;
+  let { email } = req.body;
+  email = email.toLowerCase(); // Converter e-mail para minúsculo
   const cliente = await Cliente.findOne({ email });
   if (!cliente) {
     return res.status(404).json({ success: false, message: 'E-mail não encontrado!' });
@@ -144,11 +152,14 @@ app.post('/clientes/esqueci-senha', async (req, res) => {
 });
 
 app.post('/agendamentos', autenticarTokenCliente, async (req, res) => {
-  const { procedimento, data, horario, cliente, telefone, email } = req.body;
+  let { procedimento, data, horario, cliente, telefone, email } = req.body;
   const procedimentosValidos = ['Extensão de Cílios', 'Lábios', 'Sobrancelha'];
   if (!procedimentosValidos.includes(procedimento)) {
     return res.status(400).json({ success: false, message: 'Procedimento inválido!' });
   }
+
+  email = email.toLowerCase(); // Converter e-mail para minúsculo
+  cliente = cliente.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' '); // Capitalizar nome
 
   const existente = await Agendamento.findOne({ data, horario });
   if (existente) {
@@ -225,11 +236,14 @@ app.get('/relatorios/agendamentos-por-dia', autenticarTokenProprietario, async (
 
 app.put('/agendamentos/:id', autenticarTokenProprietario, async (req, res) => {
   const { id } = req.params;
-  const { procedimento, data, horario, cliente, telefone, email } = req.body;
+  let { procedimento, data, horario, cliente, telefone, email } = req.body;
   const procedimentosValidos = ['Extensão de Cílios', 'Lábios', 'Sobrancelha'];
   if (!procedimentosValidos.includes(procedimento)) {
     return res.status(400).json({ success: false, message: 'Procedimento inválido!' });
   }
+
+  email = email.toLowerCase(); // Converter e-mail para minúsculo
+  cliente = cliente.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' '); // Capitalizar nome
 
   const existente = await Agendamento.findOne({ data, horario, _id: { $ne: id } });
   if (existente) {
@@ -246,7 +260,7 @@ app.put('/agendamentos/:id', autenticarTokenProprietario, async (req, res) => {
 
 app.put('/clientes/agendamentos/:id', autenticarTokenCliente, async (req, res) => {
   const { id } = req.params;
-  const { procedimento, data, horario } = req.body;
+  let { procedimento, data, horario } = req.body;
   const agendamento = await Agendamento.findById(id);
   if (!agendamento || agendamento.email !== req.cliente.email) {
     return res.status(403).json({ success: false, message: 'Você não tem permissão para editar este agendamento!' });
