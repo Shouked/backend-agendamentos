@@ -16,7 +16,11 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
-app.use(express.json());
+app.use(express.json({ type: 'application/json', charset: 'utf-8' })); // Garantir UTF-8
+app.use((req, res, next) => {
+  res.setHeader('Content-Type', 'application/json; charset=utf-8'); // Forçar UTF-8 nas respostas
+  next();
+});
 
 mongoose.connect('mongodb+srv://iagofonseca:Toldo+10@cluster0.oo8my.mongodb.net/agendamentos?retryWrites=true&w=majority&appName=Cluster0', {
   useNewUrlParser: true,
@@ -92,8 +96,8 @@ app.post('/login', async (req, res) => {
 
 app.post('/clientes/registro', async (req, res) => {
   let { nome, email, senha, telefone } = req.body;
-  email = email.toLowerCase(); // Converter e-mail para minúsculo
-  nome = nome.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' '); // Capitalizar nome
+  email = email.toLowerCase();
+  nome = nome.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
 
   const emailExistente = await Cliente.findOne({ email });
   const telefoneExistente = await Cliente.findOne({ telefone });
@@ -120,7 +124,7 @@ app.post('/clientes/registro', async (req, res) => {
 
 app.post('/clientes/login', async (req, res) => {
   let { email, senha } = req.body;
-  email = email.toLowerCase(); // Converter e-mail para minúsculo
+  email = email.toLowerCase();
   const cliente = await Cliente.findOne({ email });
   if (!cliente) {
     return res.status(404).json({ success: false, message: 'E-mail não cadastrado' });
@@ -135,7 +139,7 @@ app.post('/clientes/login', async (req, res) => {
 
 app.post('/clientes/esqueci-senha', async (req, res) => {
   let { email } = req.body;
-  email = email.toLowerCase(); // Converter e-mail para minúsculo
+  email = email.toLowerCase();
   const cliente = await Cliente.findOne({ email });
   if (!cliente) {
     return res.status(404).json({ success: false, message: 'E-mail não encontrado!' });
@@ -158,8 +162,8 @@ app.post('/agendamentos', autenticarTokenCliente, async (req, res) => {
     return res.status(400).json({ success: false, message: 'Procedimento inválido!' });
   }
 
-  email = email.toLowerCase(); // Converter e-mail para minúsculo
-  cliente = cliente.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' '); // Capitalizar nome
+  email = email.toLowerCase();
+  cliente = cliente.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
 
   const existente = await Agendamento.findOne({ data, horario });
   if (existente) {
@@ -242,8 +246,8 @@ app.put('/agendamentos/:id', autenticarTokenProprietario, async (req, res) => {
     return res.status(400).json({ success: false, message: 'Procedimento inválido!' });
   }
 
-  email = email.toLowerCase(); // Converter e-mail para minúsculo
-  cliente = cliente.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' '); // Capitalizar nome
+  email = email.toLowerCase();
+  cliente = cliente.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
 
   const existente = await Agendamento.findOne({ data, horario, _id: { $ne: id } });
   if (existente) {
