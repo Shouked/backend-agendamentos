@@ -7,6 +7,7 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
+// Conexão com MongoDB Atlas
 mongoose.connect('mongodb+srv://iagofonseca:Toldo+10@cluster0.oo8my.mongodb.net/agendamentos?retryWrites=true&w=majority&appName=Cluster0', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -14,8 +15,10 @@ mongoose.connect('mongodb+srv://iagofonseca:Toldo+10@cluster0.oo8my.mongodb.net/
 .then(() => console.log('Conectado ao MongoDB!'))
 .catch(err => console.log('Erro ao conectar:', err));
 
+// Configurar SendGrid
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
+// Schema do agendamento
 const agendamentoSchema = new mongoose.Schema({
   procedimento: String,
   data: String,
@@ -26,6 +29,7 @@ const agendamentoSchema = new mongoose.Schema({
   dataCriacao: { type: Date, default: Date.now }
 });
 
+// Schema do usuário
 const usuarioSchema = new mongoose.Schema({
   email: String,
   senha: String
@@ -34,6 +38,7 @@ const usuarioSchema = new mongoose.Schema({
 const Agendamento = mongoose.model('Agendamento', agendamentoSchema);
 const Usuario = mongoose.model('Usuario', usuarioSchema);
 
+// Rota de login
 app.post('/login', async (req, res) => {
   const { email, senha } = req.body;
   const usuario = await Usuario.findOne({ email, senha });
@@ -44,6 +49,7 @@ app.post('/login', async (req, res) => {
   }
 });
 
+// Rota para criar agendamento
 app.post('/agendamentos', async (req, res) => {
   const { procedimento, data, horario, cliente, telefone, email } = req.body;
   const existente = await Agendamento.findOne({ data, horario });
@@ -56,7 +62,7 @@ app.post('/agendamentos', async (req, res) => {
 
   const msgProprietario = {
     to: 'kingshowk23@gmail.com',
-    from: 'iagofonseca19992@gmail.com',
+    from: 'iagofonseca1992@hotmail.com',
     subject: 'Novo Agendamento Criado',
     text: `Um novo agendamento foi feito!\n\nProcedimento: ${procedimento}\nData: ${data}\nHorário: ${horario}\nCliente: ${cliente}\nTelefone: ${telefone}\nE-mail: ${email}\nCriado em: ${novoAgendamento.dataCriacao}`
   };
@@ -66,7 +72,7 @@ app.post('/agendamentos', async (req, res) => {
   if (email) {
     const msgCliente = {
       to: email,
-      from: 'iagofonseca19992@gmail.com',
+      from: 'iagofonseca1992@hotmail.com',
       subject: 'Confirmação de Agendamento',
       text: `Seu agendamento foi confirmado!\n\nProcedimento: ${procedimento}\nData: ${data}\nHorário: ${horario}\nEstamos ansiosos para atendê-lo(a)!`
     };
@@ -77,23 +83,25 @@ app.post('/agendamentos', async (req, res) => {
   res.status(201).json({ success: true, message: 'Agendamento criado com sucesso!' });
 });
 
+// Rota para listar agendamentos
 app.get('/agendamentos', async (req, res) => {
   const agendamentos = await Agendamento.find();
   res.json(agendamentos);
 });
 
+// Rota para horários disponíveis
 app.get('/horarios-disponiveis', async (req, res) => {
   const { data } = req.query;
   const agendamentos = await Agendamento.find({ data });
   const todosHorarios = [
     "08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00"
   ];
-  const horariosOcupados = agendaments.map(ag => ag.horario);
+  const horariosOcupados = agendamentos.map(ag => ag.horario);
   const horariosDisponiveis = todosHorarios.filter(h => !horariosOcupados.includes(h));
   res.json(horariosDisponiveis);
 });
 
-// Nova rota para editar agendamento
+// Rota para editar agendamento
 app.put('/agendamentos/:id', async (req, res) => {
   const { id } = req.params;
   const { procedimento, data, horario, cliente, telefone, email } = req.body;
@@ -110,7 +118,7 @@ app.put('/agendamentos/:id', async (req, res) => {
   }
 });
 
-// Nova rota para excluir agendamento
+// Rota para excluir um agendamento
 app.delete('/agendamentos/:id', async (req, res) => {
   const { id } = req.params;
   const deleted = await Agendamento.findByIdAndDelete(id);
@@ -118,6 +126,21 @@ app.delete('/agendamentos/:id', async (req, res) => {
     res.json({ success: true, message: 'Agendamento excluído com sucesso!' });
   } else {
     res.status(404).json({ success: false, message: 'Agendamento não encontrado' });
+  }
+});
+
+// Nova rota para excluir múltiplos agendamentos
+app.delete('/agendamentos/muitos', async (req, res) => {
+  const { ids } = req.body; // Array de IDs enviado pelo frontend
+  if (!ids || !Array.isArray(ids) || ids.length === 0) {
+    return res.status(400).json({ success: false, message: 'Nenhum agendamento selecionado para exclusão!' });
+  }
+
+  const result = await Agendamento.deleteMany({ _id: { $in: ids } });
+  if (result.deletedCount > 0) {
+    res.json({ success: true, message: `${result.deletedCount} agendamento(s) excluído(s) com sucesso!` });
+  } else {
+    res.status(404).json({ success: false, message: 'Nenhum agendamento encontrado para exclusão!' });
   }
 });
 
