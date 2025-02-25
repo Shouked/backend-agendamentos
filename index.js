@@ -7,7 +7,7 @@ const app = express();
 // Configuração avançada de CORS
 const corsOptions = {
   origin: 'https://biancadomingues.netlify.app', // Apenas o frontend específico
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Inclui OPTIONS explicitamente
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Métodos permitidos
   allowedHeaders: ['Content-Type', 'Authorization'], // Cabeçalhos permitidos
   credentials: false, // Não usamos credenciais por agora
   optionsSuccessStatus: 200 // Para compatibilidade
@@ -81,7 +81,7 @@ app.post('/agendamentos', async (req, res) => {
     text: `Um novo agendamento foi feito!\n\nProcedimento: ${procedimento}\nData: ${data}\nHorário: ${horario}\nCliente: ${cliente}\nTelefone: ${telefone}\nE-mail: ${email}\nCriado em: ${novoAgendamento.dataCriacao}`
   };
   console.log('Tentando enviar e-mail ao proprietário');
-  await sgMail.send(msgProprietario);
+  await sgMail.send(msgProprietario).catch(err => console.error('Erro ao enviar e-mail ao proprietário:', err));
 
   if (email) {
     const msgCliente = {
@@ -91,7 +91,7 @@ app.post('/agendamentos', async (req, res) => {
       text: `Seu agendamento foi confirmado!\n\nProcedimento: ${procedimento}\nData: ${data}\nHorário: ${horario}\nEstamos ansiosos para atendê-lo(a)!`
     };
     console.log('Tentando enviar e-mail ao cliente');
-    await sgMail.send(msgCliente);
+    await sgMail.send(msgCliente).catch(err => console.error('Erro ao enviar e-mail ao cliente:', err));
   }
 
   res.status(201).json({ success: true, message: 'Agendamento criado com sucesso!' });
@@ -132,18 +132,7 @@ app.put('/agendamentos/:id', async (req, res) => {
   }
 });
 
-// Rota para excluir um agendamento
-app.delete('/agendamentos/:id', async (req, res) => {
-  const { id } = req.params;
-  const deleted = await Agendamento.findByIdAndDelete(id);
-  if (deleted) {
-    res.json({ success: true, message: 'Agendamento excluído com sucesso!' });
-  } else {
-    res.status(404).json({ success: false, message: 'Agendamento não encontrado' });
-  }
-});
-
-// Rota para excluir múltiplos agendamentos
+// Rota para excluir múltiplos agendamentos (deve vir antes de /:id)
 app.delete('/agendamentos/muitos', async (req, res) => {
   const { ids } = req.body;
   if (!ids || !Array.isArray(ids) || ids.length === 0) {
@@ -158,5 +147,16 @@ app.delete('/agendamentos/muitos', async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 3000;
+// Rota para excluir um agendamento (deve vir depois de /muitos)
+app.delete('/agendamentos/:id', async (req, res) => {
+  const { id } = req.params;
+  const deleted = await Agendamento.findByIdAndDelete(id);
+  if (deleted) {
+    res.json({ success: true, message: 'Agendamento excluído com sucesso!' });
+  } else {
+    res.status(404).json({ success: false, message: 'Agendamento não encontrado' });
+  }
+});
+
+const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
