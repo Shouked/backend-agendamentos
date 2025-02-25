@@ -4,8 +4,14 @@ const cors = require('cors');
 const sgMail = require('@sendgrid/mail');
 const app = express();
 
+// Configuração avançada de CORS
+app.use(cors({
+  origin: 'https://biancadomingues.netlify.app', // Permitir apenas o frontend específico
+  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Métodos permitidos
+  allowedHeaders: ['Content-Type'] // Cabeçalhos permitidos
+}));
+
 app.use(express.json());
-app.use(cors());
 
 // Conexão com MongoDB Atlas
 mongoose.connect('mongodb+srv://iagofonseca:Toldo+10@cluster0.oo8my.mongodb.net/agendamentos?retryWrites=true&w=majority&appName=Cluster0', {
@@ -129,9 +135,9 @@ app.delete('/agendamentos/:id', async (req, res) => {
   }
 });
 
-// Nova rota para excluir múltiplos agendamentos
+// Rota para excluir múltiplos agendamentos
 app.delete('/agendamentos/muitos', async (req, res) => {
-  const { ids } = req.body; // Array de IDs enviado pelo frontend
+  const { ids } = req.body;
   if (!ids || !Array.isArray(ids) || ids.length === 0) {
     return res.status(400).json({ success: false, message: 'Nenhum agendamento selecionado para exclusão!' });
   }
