@@ -25,7 +25,7 @@ const agendamentoSchema = new mongoose.Schema({
   horario: String,
   cliente: String,
   telefone: String,
-  email: String, // Novo campo para armazenar o e-mail do cliente
+  email: String,
   dataCriacao: { type: Date, default: Date.now }
 });
 
@@ -74,8 +74,8 @@ app.post('/agendamentos', async (req, res) => {
   // E-mail para o cliente
   if (email) {
     const msgCliente = {
-      to: email, // E-mail do cliente
-      from: 'iagofonseca1992@hotmail.com', // E-mail verificado no SendGrid
+      to: email,
+      from: 'iagofonseca1992@hotmail.com',
       subject: 'Confirmação de Agendamento',
       text: `Seu agendamento foi confirmado!\n\nProcedimento: ${procedimento}\nData: ${data}\nHorário: ${horario}\nEstamos ansiosos para atendê-lo(a)!`
     };
@@ -84,7 +84,8 @@ app.post('/agendamentos', async (req, res) => {
     console.log('E-mail enviado ao cliente com sucesso!');
   }
 
-  res.status(201).send('Agendamento criado com sucesso!');
+  // Resposta em JSON
+  res.status(201).json({ success: true, message: 'Agendamento criado com sucesso!' });
 });
 
 // Rota para listar agendamentos
