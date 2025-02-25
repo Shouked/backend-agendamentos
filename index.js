@@ -28,6 +28,7 @@ const agendamentoSchema = new mongoose.Schema({
   dataCriacao: { type: Date, default: Date.now }
 });
 
+// Schema do usuário
 const usuarioSchema = new mongoose.Schema({
   email: String,
   senha: String
@@ -47,11 +48,9 @@ app.post('/login', async (req, res) => {
   }
 });
 
-// Rota para criar agendamento com validação de horário
+// Rota para criar agendamento
 app.post('/agendamentos', async (req, res) => {
   const { procedimento, data, horario, cliente, telefone } = req.body;
-
-  // Verificar se o horário já está ocupado no mesmo dia
   const existente = await Agendamento.findOne({ data, horario });
   if (existente) {
     return res.status(400).json({ success: false, message: 'Este horário já está ocupado neste dia!' });
@@ -61,7 +60,7 @@ app.post('/agendamentos', async (req, res) => {
   await novoAgendamento.save();
 
   const msg = {
-    to: 'kingshowk@gmail.com', // Seu e-mail pessoal
+    to: 'kingshowk23@gmail.com', // Seu e-mail pessoal
     from: 'iagofonseca1992@hotmail.com', // E-mail verificado no SendGrid
     subject: 'Novo Agendamento Criado',
     text: `Um novo agendamento foi feito!\n\nProcedimento: ${procedimento}\nData: ${data}\nHorário: ${horario}\nCliente: ${cliente}\nTelefone: ${telefone}\nCriado em: ${novoAgendamento.dataCriacao}`
@@ -77,6 +76,21 @@ app.post('/agendamentos', async (req, res) => {
 app.get('/agendamentos', async (req, res) => {
   const agendamentos = await Agendamento.find();
   res.json(agendamentos);
+});
+
+// Nova rota para horários disponíveis
+app.get('/horarios-disponiveis', async (req, res) => {
+  const { data } = req.query; // Data enviada pelo frontend (ex.: "2025-02-27")
+  const agendamentos = await Agendamento.find({ data }); // Busca agendamentos no dia
+
+  // Horários disponíveis entre 8h e 19h (de hora em hora)
+  const todosHorarios = [
+    "08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00"
+  ];
+  const horariosOcupados = agendamentos.map(ag => ag.horario);
+  const horariosDisponiveis = todosHorarios.filter(h => !horariosOcupados.includes(h));
+
+  res.json(horariosDisponiveis);
 });
 
 const PORT = process.env.PORT || 3000;
