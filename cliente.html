@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel do Cliente</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <style>
+    body { 
+      font-family: Arial, sans-serif; 
+      margin: 20px; 
+      background-color: #f9e6f0; 
+      text-align: center; 
+    }
+    .container { 
+      max-width: 900px; 
+      margin: 0 auto; 
+      padding: 20px; 
+      background: white; 
+      border-radius: 10px; 
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
+    }
+    input, button, select { 
+      padding: 10px; 
+      margin: 5px; 
+      border: 1px solid #e91e63; 
+      border-radius: 5px; 
+      width: 100%; 
+      box-sizing: border-box; 
+    }
+    button { 
+      background-color: #e91e63; 
+      color: white; 
+      border: none; 
+      cursor: pointer; 
+    }
+    button:hover { 
+      background-color: #c2185b; 
+    }
+    table { 
+      width: 100%; 
+      margin: 20px 0; 
+      border-collapse: collapse; 
+    }
+    th, td { 
+      border: 1px solid #ddd; 
+      padding: 8px; 
+      text-align: center; 
+      word-break: break-word; 
+    }
+    th { 
+      background-color: #e91e63; 
+      color: white; 
+    }
+    .link { 
+      color: #e91e63; 
+      text-decoration: underline; 
+      cursor: pointer; 
+    }
+    .edit-btn { background-color: #4CAF50; }
+    .delete-btn { background-color: #f44336; }
+    .modal { 
+      display: none; 
+      position: fixed; 
+      top: 50%; 
+      left: 50%; 
+      transform: translate(-50%, -50%); 
+      background: white; 
+      padding: 20px; 
+      border-radius: 10px; 
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3); 
+      z-index: 1000; 
+      width: 400px; 
+      max-width: 90%; 
+    }
+    .overlay { 
+      display: none; 
+      position: fixed; 
+      top: 0; 
+      left: 0; 
+      width: 100%; 
+      height: 100%; 
+      background: rgba(0,0,0,0.5); 
+      z-index: 999; 
+    }
+    .confirmacao-dados { 
+      font-size: 16px; 
+      text-align: left; 
+      margin-bottom: 20px; 
+      word-break: break-word; 
+    }
+    .confirmacao-dados strong { 
+      color: #e91e63; 
+    }
+    .confirmacao-botoes { 
+      display: flex; 
+      justify-content: space-between; 
+    }
+    .confirmacao-botoes button { 
+      width: 48%; 
+    }
+    #registrarBtn { 
+      background-color: #4CAF50; 
+      margin-top: 10px; 
+    }
+    #registrarBtn:hover { 
+      background-color: #45a049; 
+    }
+    @media (max-width: 600px) {
+      table, thead, tbody, th, td, tr { 
+        display: block; 
+      }
+      thead tr { 
+        position: absolute; 
+        top: -9999px; 
+        left: -9999px; 
+      }
+      tr { 
+        margin-bottom: 15px; 
+        border: 1px solid #ddd; 
+        border-radius: 5px; 
+      }
+      td { 
+        border: none; 
+        position: relative; 
+        padding-left: 50%; 
+        text-align: left; 
+      }
+      td:before { 
+        position: absolute; 
+        left: 10px; 
+        content: attr(data-label); 
+        font-weight: bold; 
+        color: #e91e63; 
+      }
+      td:nth-child(1):before { content: "Procedimento"; }
+      td:nth-child(2):before { content: "Data"; }
+      td:nth-child(3):before { content: "Horário"; }
+      td:nth-child(4):before { content: "Telefone"; }
+      td:nth-child(5):before { content: "E-mail"; }
+      td:nth-child(6):before { content: "Ações"; }
+      .edit-btn, .delete-btn { 
+        display: inline-block; 
+        width: auto; 
+        margin: 5px 2px; 
+        padding: 5px 10px; 
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="login">
+    <h2>Login do Cliente</h2>
+    <input type="email" id="emailLogin" placeholder="E-mail" required oninput="this.value = this.value.toLowerCase();"><br>
+    <input type="password" id="senhaLogin" placeholder="Senha" required><br>
+    <button onclick="loginCliente()">Entrar</button>
+    <p id="mensagemErro" style="color: red;"></p>
+    <p>Não tem conta? <span class="link" onclick="mostrarRegistro()">Registre-se</span></p>
+    <p><span class="link" onclick="mostrarEsqueciSenha()">Esqueci minha senha</span></p>
+  </div>
+  <div class="container" id="registro" style="display: none;">
+    <h2>Registrar-se</h2>
+    <input type="text" id="nomeRegistro" placeholder="Nome completo" required oninput="formatarNome(this);"><br>
+    <input type="email" id="emailRegistro" placeholder="E-mail" required oninput="this.value = this.value.toLowerCase();"><br>
+    <input type="password" id="senhaRegistro" placeholder="Senha" required><br>
+    <input type="tel" id="telefoneRegistro" placeholder="Telefone (ex.: (11) 98765-4321)" required oninput="mascararTelefone(this);"><br>
+    <button onclick="registrar()">Registrar</button>
+    <p>Já tem conta? <span class="link" onclick="mostrarLogin()">Faça login</span></p>
+  </div>
+  <div class="container" id="esqueciSenha" style="display: none;">
+    <h2>Esqueci Minha Senha</h2>
+    <input type="email" id="emailEsqueci" placeholder="Digite seu e-mail" required oninput="this.value = this.value.toLowerCase();"><br>
+    <button onclick="esqueciSenha()">Enviar</button>
+    <p><span class="link" onclick="mostrarLogin()">Voltar ao login</span></p>
+  </div>
+  <div class="container" id="painelCliente" style="display: none;">
+    <h2>Meus Agendamentos</h2>
+    <button onclick="voltarAgendamento()">Novo Agendamento</button>
+    <button onclick="logoutCliente()">Sair</button>
+    <table>
+      <thead>
+        <tr><th>Procedimento</th><th>Data</th><th>Horário</th><th>Telefone</th><th>E-mail</th><th>Ações</th></tr>
+      </thead>
+      <tbody id="listaAgendamentosCliente"></tbody>
+    </table>
+  </div>
+  <div class="overlay" id="overlay"></div>
+  <div class="modal" id="modalConfirmar">
+    <h3>Confirmar Agendamento</h3>
+    <div class="confirmacao-dados" id="mensagemConfirmacao"></div>
+    <div class="confirmacao-botoes">
+      <button onclick="confirmarAgendamento()">Confirmar</button>
+      <button onclick="fecharModal()">Cancelar</button>
+    </div>
+  </div>
+  <div class="modal" id="modalEditar">
+    <h3>Editar Agendamento</h3>
+    <input type="hidden" id="editId">
+    <select id="procedimentoModal">
+      <option value="Extensão de Cílios">Extensão de Cílios</option>
+      <option value="Lábios">Lábios</option>
+      <option value="Sobrancelha">Sobrancelha</option>
+    </select>
+    <input type="text" id="dataModal" placeholder="Selecione a data">
+    <select id="horarioModal">
+      <option value="">Selecione o horário</option>
+    </select>
+    <button onclick="salvarEdicao()">Salvar</button>
+    <button onclick="fecharModal()">Cancelar</button>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://npmcdn.com/flatpickr/dist/l10n/pt.js"></script>
+  <script>
+    const API_URL = 'https://agendamentos-backend.onrender.com';
+    let tokenCliente = localStorage.getItem('tokenCliente');
+
+    function mostrarLogin() {
+      document.getElementById('registro').style.display = 'none';
+      document.getElementById('esqueciSenha').style.display = 'none';
+      document.getElementById('login').style.display = 'block';
+      document.getElementById('painelCliente').style.display = 'none';
+      document.getElementById('mensagemErro').innerHTML = '';
+      fecharModal();
+      preencherEmailLogin();
+    }
+
+    function mostrarRegistro() {
+      document.getElementById('login').style.display = 'none';
+      document.getElementById('esqueciSenha').style.display = 'none';
+      document.getElementById('registro').style.display = 'block';
+      document.getElementById('painelCliente').style.display = 'none';
+      fecharModal();
+      const emailPendente = localStorage.getItem('emailPendente');
+      if (emailPendente) {
+        document.getElementById('emailRegistro').value = emailPendente;
+      }
+    }
+
+    function mostrarEsqueciSenha() {
+      document.getElementById('login').style.display = 'none';
+      document.getElementById('registro').style.display = 'none';
+      document.getElementById('esqueciSenha').style.display = 'block';
+      document.getElementById('painelCliente').style.display = 'none';
+      fecharModal();
+    }
+
+    function mostrarModal(id) {
+      document.getElementById('overlay').style.display = 'block';
+      document.getElementById(id).style.display = 'block';
+    }
+
+    function fecharModal() {
+      document.getElementById('overlay').style.display = 'none';
+      document.getElementById('modalConfirmar').style.display = 'none';
+      document.getElementById('modalEditar').style.display = 'none';
+    }
+
+    function formatarNome(input) {
+      let value = input.value.toLowerCase();
+      input.value = value.replace(/\b\w/g, char => char.toUpperCase());
+    }
+
+    function mascararTelefone(input) {
+      let value = input.value.replace(/\D/g, '');
+      if (value.length > 11) value = value.slice(0, 11);
+      if (value.length <= 10) {
+        if (value.length > 2) value = `(${value.slice(0, 2)}) ${value.slice(2, 6)}-${value.slice(6)}`;
+        else if (value.length > 0) value = `(${value}`;
+      } else {
+        if (value.length > 2) value = `(${value.slice(0, 2)}) ${value.slice(2, 7)}-${value.slice(7)}`;
+        else if (value.length > 0) value = `(${value}`;
+      }
+      input.value = value;
+    }
+
+    function preencherEmailLogin() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const email = urlParams.get('email') || localStorage.getItem('emailPendente');
+      if (email) {
+        document.getElementById('emailLogin').value = email;
+      }
+    }
+
+    async function registrar() {
+      const nome = document.getElementById('nomeRegistro').value;
+      const email = document.getElementById('emailRegistro').value;
+      const senha = document.getElementById('senhaRegistro').value;
+      const telefone = document.getElementById('telefoneRegistro').value.replace(/\D/g, '');
+
+      if (!nome || !email || !senha || !telefone) {
+        alert('Todos os campos são obrigatórios!');
+        return;
+      }
+
+      if (!email.includes('@')) {
+        alert('Por favor, insira um e-mail válido com "@"!');
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_URL}/clientes/registro`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json; charset=utf-8' },
+          body: JSON.stringify({ nome, email, senha, telefone })
+        });
+        const result = await response.json();
+        if (result.success) {
+          tokenCliente = result.token;
+          localStorage.setItem('tokenCliente', tokenCliente);
+          console.log('Registro bem-sucedido, token:', tokenCliente);
+          await verificarAgendamentoPendente();
+        } else {
+          alert(result.message || 'Erro ao registrar!');
+        }
+      } catch (error) {
+        console.error('Erro ao registrar:', error);
+        alert('Erro ao conectar ao servidor. Tente novamente.');
+      }
+    }
+
+    async function loginCliente() {
+      const email = document.getElementById('emailLogin').value;
+      const senha = document.getElementById('senhaLogin').value;
+
+      if (!email || !senha) {
+        alert('E-mail e senha são obrigatórios!');
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_URL}/clientes/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json; charset=utf-8' },
+          body: JSON.stringify({ email, senha })
+        });
+        const result = await response.json();
+        if (result.success) {
+          tokenCliente = result.token;
+          localStorage.setItem('tokenCliente', tokenCliente);
+          console.log('Login bem-sucedido, token:', tokenCliente);
+          await verificarAgendamentoPendente();
+        } else {
+          const mensagemErro = document.getElementById('mensagemErro');
+          mensagemErro.textContent = result.message;
+          if (result.message === 'E-mail não cadastrado') {
+            mensagemErro.innerHTML += ' <button id="registrarBtn" onclick="mostrarRegistro()">Registrar-se agora</button>';
+          }
+        }
+      } catch (error) {
+        console.error('Erro ao fazer login:', error);
+        alert('Erro ao conectar ao servidor. Tente novamente.');
+      }
+    }
+
+    async function verificarAgendamentoPendente() {
+      const agendamentoPendente = localStorage.getItem('agendamentoPendente');
+      if (agendamentoPendente) {
+        const dados = JSON.parse(agendamentoPendente);
+        // Dados já estão em YYYY-MM-DD no localStorage, convertemos pra exibição
+        const [year, month, day] = dados.data.split('-');
+        const dataDisplay = `${day}/${month}/${year}`;
+        document.getElementById('mensagemConfirmacao').innerHTML = `
+          <p>Por favor, confirme os dados do seu agendamento:</p>
+          <p><strong>Procedimento:</strong> ${dados.procedimento}</p>
+          <p><strong>Data:</strong> ${dataDisplay}</p>
+          <p><strong>Horário:</strong> ${dados.horario}</p>
+          <p><strong>Cliente:</strong> ${dados.cliente}</p>
+          <p><strong>Telefone:</strong> ${dados.telefone}</p>
+          <p><strong>E-mail:</strong> ${dados.email}</p>
+        `;
+        console.log('Mostrando modal de confirmação com dados:', dados);
+        mostrarModal('modalConfirmar');
+      } else if (tokenCliente) {
+        console.log('Nenhum agendamento pendente, indo pra área do cliente');
+        document.getElementById('login').style.display = 'none';
+        document.getElementById('registro').style.display = 'none';
+        document.getElementById('esqueciSenha').style.display = 'none';
+        document.getElementById('painelCliente').style.display = 'block';
+        await carregarAgendamentosCliente();
+      }
+    }
+
+    async function confirmarAgendamento() {
+      const agendamentoPendente = localStorage.getItem('agendamentoPendente');
+      if (!agendamentoPendente) {
+        console.log('Nenhum agendamento pendente encontrado');
+        fecharModal();
+        return;
+      }
+
+      const dados = JSON.parse(agendamentoPendente);
+      // Dados já estão em YYYY-MM-DD no localStorage, não precisamos reconverter
+      console.log('Tentando confirmar agendamento com dados:', dados, 'Token:', tokenCliente);
+
+      try {
+        const response = await fetch(`${API_URL}/agendamentos`, {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json; charset=utf-8',
+            'Authorization': tokenCliente
+          },
+          body: JSON.stringify(dados)
+        });
+        const result = await response.json();
+        console.log('Resposta do servidor:', result);
+        if (result.success) {
+          alert('Agendamento confirmado com sucesso!');
+          localStorage.removeItem('agendamentoPendente');
+          localStorage.removeItem('emailPendente');
+          document.getElementById('login').style.display = 'none';
+          document.getElementById('registro').style.display = 'none';
+          document.getElementById('esqueciSenha').style.display = 'none';
+          document.getElementById('painelCliente').style.display = 'block';
+          await carregarAgendamentosCliente();
+          fecharModal();
+        } else {
+          alert(result.message || 'Erro ao confirmar agendamento!');
+          console.log('Erro do servidor:', result.message);
+        }
+      } catch (error) {
+        console.error('Erro ao confirmar agendamento:', error);
+        alert('Erro ao conectar ao servidor. Tente novamente.');
+      }
+    }
+
+    async function esqueciSenha() {
+      const email = document.getElementById('emailEsqueci').value;
+      if (!email) {
+        alert('Digite seu e-mail!');
+        return;
+      }
+      try {
+        const response = await fetch(`${API_URL}/clientes/esqueci-senha`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json; charset=utf-8' },
+          body: JSON.stringify({ email })
+        });
+        const result = await response.json();
+        if (result.success) {
+          alert('E-mail de recuperação enviado! Verifique sua caixa de entrada ou spam.');
+          mostrarLogin();
+        } else {
+          alert(result.message || 'Erro ao enviar e-mail de recuperação!');
+        }
+      } catch (error) {
+        console.error('Erro ao enviar e-mail de recuperação:', error);
+        alert('Erro ao conectar ao servidor. Tente novamente.');
+      }
+    }
+
+    async function carregarAgendamentosCliente() {
+      try {
+        const response = await fetch(`${API_URL}/clientes/agendamentos`, {
+          headers: { 'Authorization': tokenCliente }
+        });
+        const agendamentos = await response.json();
+        agendamentos.sort((a, b) => new Date(a.data + ' ' + a.horario) - new Date(b.data + ' ' + b.horario));
+        const lista = document.getElementById('listaAgendamentosCliente');
+        lista.innerHTML = '';
+        agendamentos.forEach(ag => {
+          const [year, month, day] = ag.data.split('-');
+          const dataBr = `${day}/${month}/${year}`;
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td data-label="Procedimento">${ag.procedimento}</td>
+            <td data-label="Data">${dataBr}</td>
+            <td data-label="Horário">${ag.horario}</td>
+            <td data-label="Telefone">${ag.telefone}</td>
+            <td data-label="E-mail">${ag.email || ''}</td>
+            <td data-label="Ações">
+              <button class="edit-btn" onclick="abrirModalEditar('${ag._id}')">Editar Procedimento</button>
+              <button class="delete-btn" onclick="cancelarAgendamento('${ag._id}')">Cancelar</button>
+            </td>
+          `;
+          lista.appendChild(tr);
+        });
+      } catch (error) {
+        console.error('Erro ao carregar agendamentos:', error);
+        alert('Erro ao carregar agendamentos. Tente novamente.');
+      }
+    }
+
+    async function abrirModalEditar(id) {
+      agendamentoEditandoId = id;
+      const modal = document.getElementById('modalEditar');
+      const overlay = document.getElementById('overlay');
+      document.getElementById('editId').value = id;
+      document.getElementById('procedimentoModal').style.display = 'block';
+      document.getElementById('dataModal').style.display = 'block';
+      document.getElementById('horarioModal').style.display = 'block';
+      flatpickr('#dataModal', {
+        minDate: "today",
+        dateFormat: "d/m/Y",
+        disable: [
+          function(date) {
+            return date.getDay() === 0;
+          }
+        ],
+        locale: "pt",
+        onChange: async function(selectedDates, dateStr) {
+          await carregarHorariosModal(dateStr);
+        }
+      });
+      modal.style.display = 'block';
+      overlay.style.display = 'block';
+    }
+
+    async function carregarHorariosModal(data) {
+      const [day, month, year] = data.split('/');
+      const dataISO = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+      try {
+        const response = await fetch(`${API_URL}/horarios-disponiveis?data=${dataISO}`, {
+          headers: { Authorization: tokenCliente }
+        });
+        const horarios = await response.json();
+        const horarioModal = document.getElementById('horarioModal');
+        horarioModal.innerHTML = '<option value="">Selecione o horário</option>';
+        horarios.forEach(horario => {
+          const option = document.createElement('option');
+          option.value = horario;
+          option.textContent = horario;
+          horarioModal.appendChild(option);
+        });
+      } catch (error) {
+        console.error('Erro ao carregar horários:', error);
+        alert('Erro ao carregar horários disponíveis.');
+      }
+    }
+
+    async function salvarEdicao() {
+      const id = document.getElementById('editId').value;
+      const procedimento = document.getElementById('procedimentoModal').value;
+      const dataBr = document.getElementById('dataModal').value;
+      const horario = document.getElementById('horarioModal').value;
+
+      const body = { procedimento };
+      if (dataBr && horario) {
+        const [day, month, year] = dataBr.split('/');
+        body.data = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+        body.horario = horario;
+      }
+
+      try {
+        const response = await fetch(`${API_URL}/clientes/agendamentos/${id}`, {
+          method: 'PUT',
+          headers: { 
+            'Content-Type': 'application/json; charset=utf-8',
+            'Authorization': tokenCliente
+          },
+          body: JSON.stringify(body)
+        });
+        const result = await response.json();
+        if (result.success) {
+          alert('Agendamento atualizado com sucesso!');
+          fecharModal();
+          await carregarAgendamentosCliente();
+        } else {
+          alert(result.message || 'Erro ao atualizar!');
+        }
+      } catch (error) {
+        console.error('Erro ao salvar edição:', error);
+        alert('Erro ao conectar ao servidor. Tente novamente.');
+      }
+    }
+
+    async function cancelarAgendamento(id) {
+      if (confirm('Tem certeza que deseja cancelar este agendamento?')) {
+        const response = await fetch(`${API_URL}/agendamentos/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': tokenCliente }
+        });
+        const result = await response.json();
+        if (result.success) {
+          alert('Agendamento cancelado com sucesso!');
+          await carregarAgendamentosCliente();
+        } else {
+          alert(result.message || 'Erro ao cancelar!');
+        }
+      }
+    }
+
+    function voltarAgendamento() {
+      window.location.href = '/index.html';
+    }
+
+    function logoutCliente() {
+      localStorage.removeItem('tokenCliente');
+      tokenCliente = null;
+      mostrarLogin();
+    }
+
+    if (tokenCliente) {
+      verificarAgendamentoPendente();
+    } else {
+      preencherEmailLogin();
+    }
+  </script>
+</body>
+</html>
