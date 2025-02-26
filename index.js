@@ -98,24 +98,41 @@ app.post('/clientes/registro', async (req, res) => {
 
   const emailExistente = await Cliente.findOne({ email });
   const telefoneExistente = await Cliente.findOne({ telefone });
+
+  if (emailExistente && emailExistente.senha) {
+    return res.status(400).json({ success: false, message: 'E-mail já registrado com senha!' });
+  }
+  if (telefoneExistente && telefoneExistente.senha) {
+    return res.status(400).json({ success: false, message: 'Telefone já registrado com senha!' });
+  }
+
+  const senhaCriptografada = senha ? await bcrypt.hash(senha, 10) : null;
+  let cliente;
   if (emailExistente) {
-    return res.status(400).json({ success: false, message: 'E-mail já registrado!' });
-  }
-  if (telefoneExistente) {
-    return res.status(400).json({ success: false, message: 'Telefone já registrado!' });
+    cliente = emailExistente;
+    cliente.nome = nome;
+    cliente.senha = senhaCriptografada;
+    cliente.senhaOriginal = senha;
+    await cliente.save();
+  } else if (telefoneExistente) {
+    cliente = telefoneExistente;
+    cliente.nome = nome;
+    cliente.email = email;
+    cliente.senha = senhaCriptografada;
+    cliente.senhaOriginal = senha;
+    await cliente.save();
+  } else {
+    cliente = new Cliente({ 
+      nome, 
+      email, 
+      senha: senhaCriptografada, 
+      telefone, 
+      senhaOriginal: senha 
+    });
+    await cliente.save();
   }
 
-  const senhaCriptografada = await bcrypt.hash(senha, 10);
-  const novoCliente = new Cliente({ 
-    nome, 
-    email, 
-    senha: senhaCriptografada, 
-    telefone, 
-    senhaOriginal: senha 
-  });
-  await novoCliente.save();
-
-  const token = jwt.sign({ email: novoCliente.email, tipo: 'cliente' }, JWT_SECRET, { expiresIn: '1h' });
+  const token = jwt.sign({ email: cliente.email, tipo: 'cliente' }, JWT_SECRET, { expiresIn: '1h' });
   res.status(201).json({ success: true, message: 'Cliente registrado com sucesso!', token });
 });
 
@@ -125,6 +142,9 @@ app.post('/clientes/login', async (req, res) => {
   const cliente = await Cliente.findOne({ email });
   if (!cliente) {
     return res.status(404).json({ success: false, message: 'E-mail não cadastrado' });
+  }
+  if (!cliente.senha) {
+    return res.status(400).json({ success: false, message: 'Este e-mail foi cadastrado pelo proprietário. Registre uma senha primeiro.' });
   }
   if (await bcrypt.compare(senha, cliente.senha)) {
     const token = jwt.sign({ email: cliente.email, tipo: 'cliente' }, JWT_SECRET, { expiresIn: '1h' });
@@ -152,7 +172,7 @@ app.post('/clientes/esqueci-senha', async (req, res) => {
   res.json({ success: true, message: 'E-mail de recuperação enviado com sua senha!' });
 });
 
-app.post('/agendaments', async (req, res) => {
+app.post('/agendamentos', async (req, res) => {
   const token = req.headers['authorization'];
   let decoded = null;
   if (token) {
@@ -167,8 +187,19 @@ app.post('/agendaments', async (req, res) => {
     return res.status(400).json({ success: false, message: 'Procedimento inválido!' });
   }
 
-  email = email ? email.toLowerCase() : '';
   cliente = cliente.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
+
+  // Verifica se o telefone já está registrado
+  const clienteExistente = await Cliente.findOne({ telefone });
+  if (decoded && decoded.tipo === 'proprietario') {
+    if (clienteExistente) {
+      email = clienteExistente.email; // Usa o e-mail existente
+    } else if (!email || !email.includes('@')) {
+      return res.status(400).json({ success: false, message: 'Forneça um e-mail válido com "@" para novos clientes!' });
+    }
+  } else {
+    email = email ? email.toLowerCase() : '';
+  }
 
   const existente = await Agendamento.findOne({ data, horario });
   if (existente) {
@@ -252,6 +283,20 @@ app.get('/relatorios/agendamentos-por-dia', autenticarTokenProprietario, async (
 app.get('/clientes', autenticarTokenProprietario, async (req, res) => {
   const clientes = await Cliente.find({}, 'nome email telefone');
   res.json(clientes);
+});
+
+app.delete('/clientes/muitos', autenticarTokenProprietario, async (req, res) => {
+  const { ids } = req.body;
+  if (!ids || !Array.isArray(ids) || ids.length === 0) {
+    return res.status(400).json({ success: false, message: 'Nenhum cliente selecionado para exclusão!' });
+  }
+
+  const result = await Cliente.deleteMany({ _id: { $in: ids } });
+  if (result.deletedCount > 0) {
+    res.json({ success: true, message: `${result.deletedCount} cliente(s) excluído(s) com sucesso!` });
+  } else {
+    res.status(404).json({ success: false, message: 'Nenhum cliente encontrado para exclusão!' });
+  }
 });
 
 app.put('/agendamentos/:id', autenticarTokenProprietario, async (req, res) => {
