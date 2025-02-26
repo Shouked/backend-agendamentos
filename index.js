@@ -49,7 +49,8 @@ const clienteSchema = new mongoose.Schema({
   email: { type: String, unique: true },
   senha: String,
   telefone: { type: String, unique: true },
-  senhaOriginal: String
+  senhaOriginal: String,
+  dataCriacao: { type: Date, default: Date.now }
 });
 
 const Agendamento = mongoose.model('Agendamento', agendamentoSchema);
@@ -127,7 +128,8 @@ app.post('/clientes/registro', async (req, res) => {
       email, 
       senha: senhaCriptografada, 
       telefone, 
-      senhaOriginal: senha 
+      senhaOriginal: senha,
+      dataCriacao: new Date()
     });
     await cliente.save();
   }
@@ -189,11 +191,10 @@ app.post('/agendamentos', async (req, res) => {
 
   cliente = cliente.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
 
-  // Verifica se o telefone já está registrado
   const clienteExistente = await Cliente.findOne({ telefone });
   if (decoded && decoded.tipo === 'proprietario') {
     if (clienteExistente) {
-      email = clienteExistente.email; // Usa o e-mail existente
+      email = clienteExistente.email;
     } else if (!email || !email.includes('@')) {
       return res.status(400).json({ success: false, message: 'Forneça um e-mail válido com "@" para novos clientes!' });
     }
@@ -219,7 +220,8 @@ app.post('/agendamentos', async (req, res) => {
     cliente, 
     telefone, 
     email,
-    clienteId
+    clienteId,
+    dataCriacao: new Date()
   });
   await novoAgendamento.save();
 
@@ -281,7 +283,7 @@ app.get('/relatorios/agendamentos-por-dia', autenticarTokenProprietario, async (
 });
 
 app.get('/clientes', autenticarTokenProprietario, async (req, res) => {
-  const clientes = await Cliente.find({}, 'nome email telefone');
+  const clientes = await Cliente.find({}, 'nome email telefone dataCriacao');
   res.json(clientes);
 });
 
