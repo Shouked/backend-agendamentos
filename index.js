@@ -152,8 +152,7 @@ app.post('/clientes/esqueci-senha', async (req, res) => {
   res.json({ success: true, message: 'E-mail de recuperação enviado com sua senha!' });
 });
 
-app.post('/agendamentos', async (req, res, next) => {
-  // Middleware de autenticação opcional
+app.post('/agendamentos', async (req, res) => {
   const token = req.headers['authorization'];
   let decoded = null;
   if (token) {
@@ -168,12 +167,18 @@ app.post('/agendamentos', async (req, res, next) => {
     return res.status(400).json({ success: false, message: 'Procedimento inválido!' });
   }
 
-  email = email.toLowerCase();
+  email = email ? email.toLowerCase() : '';
   cliente = cliente.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
 
   const existente = await Agendamento.findOne({ data, horario });
   if (existente) {
     return res.status(400).json({ success: false, message: 'Este horário já está ocupado neste dia!' });
+  }
+
+  let clienteId = null;
+  if (decoded && decoded.tipo === 'cliente') {
+    const clienteDoc = await Cliente.findOne({ email: decoded.email });
+    if (clienteDoc) clienteId = clienteDoc._id;
   }
 
   const novoAgendamento = new Agendamento({ 
@@ -183,7 +188,7 @@ app.post('/agendamentos', async (req, res, next) => {
     cliente, 
     telefone, 
     email,
-    clienteId: decoded && decoded.tipo === 'cliente' ? (await Cliente.findOne({ email: decoded.email }))._id : null
+    clienteId
   });
   await novoAgendamento.save();
 
@@ -244,4 +249,93 @@ app.get('/relatorios/agendamentos-por-dia', autenticarTokenProprietario, async (
   res.json(agendamentos);
 });
 
-app.put
+app.put('/agendamentos/:id', autenticarTokenProprietario, async (req, res) => {
+  const { id } = req.params;
+  let { procedimento, data, horario, cliente, telefone, email } = req.body;
+  const procedimentosValidos = ['Extensão de Cílios', 'Lábios', 'Sobrancelha'];
+  if (!procedimentosValidos.includes(procedimento)) {
+    return res.status(400).json({ success: false, message: 'Procedimento inválido!' });
+  }
+
+  email = email ? email.toLowerCase() : '';
+  cliente = cliente.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
+
+  const existente = await Agendamento.findOne({ data, horario, _id: { $ne: id } });
+  if (existente) {
+    return res.status(400).json({ success: false, message: 'Este horário já está ocupado neste dia!' });
+  }
+
+  const updated = await Agendamento.findByIdAndUpdate(id, { procedimento, data, horario, cliente, telefone, email }, { new: true });
+  if (updated) {
+    res.json({ success: true, message: 'Agendamento atualizado com sucesso!', agendamento: updated });
+  } else {
+    res.status(404).json({ success: false, message: 'Agendamento não encontrado' });
+  }
+});
+
+app.put('/clientes/agendamentos/:id', autenticarTokenCliente, async (req, res) => {
+  const { id } = req.params;
+  let { procedimento, data, horario } = req.body;
+  const agendamento = await Agendamento.findById(id);
+  if (!agendamento || agendamento.email !== req.cliente.email) {
+    return res.status(403).json({ success: false, message: 'Você não tem permissão para editar este agendamento!' });
+  }
+
+  const procedimentosValidos = ['Extensão de Cílios', 'Lábios', 'Sobrancelha'];
+  if (procedimento && !procedimentosValidos.includes(procedimento)) {
+    return res.status(400).json({ success: false, message: 'Procedimento inválido!' });
+  }
+
+  if (data && horario) {
+    const existente = await Agendamento.findOne({ data, horario, _id: { $ne: id } });
+    if (existente) {
+      return res.status(400).json({ success: false, message: 'Este horário já está ocupado neste dia!' });
+    }
+  }
+
+  const updated = await Agendamento.findByIdAndUpdate(id, { procedimento, data, horario }, { new: true });
+  if (updated) {
+    res.json({ success: true, message: 'Agendamento atualizado com sucesso!', agendamento: updated });
+  } else {
+    res.status(404).json({ success: false, message: 'Agendamento não encontrado' });
+  }
+});
+
+app.delete('/agendamentos/muitos', autenticarTokenProprietario, async (req, res) => {
+  const { ids } = req.body;
+  if (!ids || !Array.isArray(ids) || ids.length === 0) {
+    return res.status(400).json({ success: false, message: 'Nenhum agendamento selecionado para exclusão!' });
+  }
+
+  const result = await Agendamento.deleteMany({ _id: { $in: ids } });
+  if (result.deletedCount > 0) {
+    res.json({ success: true, message: `${result.deletedCount} agendamento(s) excluído(s) com sucesso!` });
+  } else {
+    res.status(404).json({ success: false, message: 'Nenhum agendamento encontrado para exclusão!' });
+  }
+});
+
+app.delete('/agendamentos/:id', async (req, res) => {
+  const { id } = req.params;
+  const token = req.headers['authorization'];
+  if (!token) return res.status(401).json({ success: false, message: 'Token não fornecido' });
+
+  jwt.verify(token, JWT_SECRET, async (err, decoded) => {
+    if (err) return res.status(403).json({ success: false, message: 'Token inválido' });
+
+    const agendamento = await Agendamento.findById(id);
+    if (!agendamento) {
+      return res.status(404).json({ success: false, message: 'Agendamento não encontrado' });
+    }
+
+    if (decoded.tipo === 'proprietario' || (decoded.tipo === 'cliente' && agendamento.email === decoded.email)) {
+      await Agendamento.findByIdAndDelete(id);
+      res.json({ success: true, message: 'Agendamento excluído com sucesso!' });
+    } else {
+      res.status(403).json({ success: false, message: 'Você não tem permissão para excluir este agendamento!' });
+    }
+  });
+});
+
+const PORT = process.env.PORT || 10000;
+app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
