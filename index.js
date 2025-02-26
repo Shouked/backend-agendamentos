@@ -152,7 +152,7 @@ app.post('/clientes/esqueci-senha', async (req, res) => {
   res.json({ success: true, message: 'E-mail de recuperação enviado com sua senha!' });
 });
 
-app.post('/agendamentos', async (req, res) => {
+app.post('/agendaments', async (req, res) => {
   const token = req.headers['authorization'];
   let decoded = null;
   if (token) {
@@ -247,6 +247,11 @@ app.get('/relatorios/agendamentos-por-dia', autenticarTokenProprietario, async (
     { $sort: { "_id": 1 } }
   ]);
   res.json(agendamentos);
+});
+
+app.get('/clientes', autenticarTokenProprietario, async (req, res) => {
+  const clientes = await Cliente.find({}, 'nome email telefone');
+  res.json(clientes);
 });
 
 app.put('/agendamentos/:id', autenticarTokenProprietario, async (req, res) => {
