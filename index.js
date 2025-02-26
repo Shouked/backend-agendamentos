@@ -7,15 +7,15 @@ const jwt = require('jsonwebtoken');
 const app = express();
 
 const corsOptions = {
-  origin: 'https://biancadomingues.netlify.app',
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: false,
-  optionsSuccessStatus: 200
+  origin: 'https://biancadomingues.netlify.app', // Permite apenas o Netlify
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Métodos permitidos
+  allowedHeaders: ['Content-Type', 'Authorization'], // Headers permitidos
+  credentials: true, // Permite cookies, autorização, etc.
+  optionsSuccessStatus: 200 // Para navegadores antigos
 };
 
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
+app.options('*', cors(corsOptions)); // Lida com preflight requests
 app.use(express.json({ type: 'application/json', charset: 'utf-8' }));
 app.use((req, res, next) => {
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
