@@ -22,12 +22,10 @@ app.use((req, res, next) => {
   next();
 });
 
-mongoose.connect('mongodb+srv://iagofonseca:Toldo+10@cluster0.oo8my.mongodb.net/agendamentos?retryWrites=true&w=majority&appName=Cluster0', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => console.log('Conectado ao MongoDB!'))
-.catch(err => console.log('Erro ao conectar:', err));
+// Usar MONGODB_URI do ambiente
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => console.log('Conectado ao MongoDB!'))
+  .catch(err => console.log('Erro ao conectar:', err));
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
@@ -59,7 +57,8 @@ const Agendamento = mongoose.model('Agendamento', agendamentoSchema);
 const Usuario = mongoose.model('Usuario', usuarioSchema);
 const Cliente = mongoose.model('Cliente', clienteSchema);
 
-const JWT_SECRET = 'sua-chave-secreta-super-segura';
+// Usar JWT_SECRET do ambiente
+const JWT_SECRET = process.env.JWT_SECRET;
 
 const autenticarTokenProprietario = (req, res, next) => {
   const token = req.headers['authorization'];
