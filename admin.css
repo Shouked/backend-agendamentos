@@ -1,231 +1,469 @@
 body {
-    font-family: Arial, sans-serif;
-    margin: 10px;
-    background: linear-gradient(135deg, #f9e6f0, #fce4ec);
-    color: #333;
-    margin-left: 0;
-    transition: margin-left 0.3s;
-    overflow-x: hidden;
+  font-family: Arial, sans-serif;
+  margin: 10px;
+  background: linear-gradient(135deg, #f9e6f0, #fce4ec);
+  color: #333;
+  margin-left: 0;
+  transition: margin-left 0.3s;
+  overflow-x: hidden; /* Evitar rolagem horizontal */
 }
 
 body.logged-out #menu-toggle,
 body.logged-out .sidebar {
-    display: none;
+  display: none; /* Oculta a sidebar e o ícone antes do login */
 }
 
 .container {
-    max-width: 100%;
-    margin: 0 auto;
-    padding: 15px;
-    background: white;
-    border-radius: 15px;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-    position: relative;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 15px;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  position: relative; /* Para posicionar o ícone corretamente */
+  overflow: auto; /* Garantir rolagem normal por padrão */
+}
+
+#login, #painel {
+  overflow: auto; /* Garantir rolagem normal nas seções de login e painel */
 }
 
 h2 {
-    text-align: center;
-    color: #d81b60;
-    margin-bottom: 20px;
-    font-size: 24px;
+  text-align: center;
+  color: #d81b60;
+  margin-bottom: 20px;
+  font-size: 24px;
 }
 
 h3 {
-    color: #d81b60;
-    font-size: 18px;
+  color: #d81b60;
+  font-size: 18px;
 }
 
 .dashboard {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    justify-content: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
 }
 
 .dashboard-button {
-    background-color: #e91e63;
-    color: white;
-    padding: 15px 20px;
-    border: none;
-    border-radius: 10px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-    flex: 1 1 100%;
-    max-width: 300px;
+  background-color: #e91e63;
+  color: white;
+  padding: 15px 20px;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  flex: 1 1 100%;
+  max-width: 300px;
 }
 
 .dashboard-button:hover {
-    background-color: #c2185b;
+  background-color: #c2185b;
 }
 
 .section {
-    display: none;
-    margin-top: 20px;
-    padding: 15px;
-    background: #fff;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  display: none;
+  margin-top: 20px;
+  padding: 15px;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-input,
-select,
-button {
-    padding: 12px;
-    margin: 5px 0;
-    border: 2px solid #e91e63;
-    border-radius: 5px;
-    font-size: 14px;
-    width: 100%;
-    box-sizing: border-box;
+input, select, button {
+  padding: 12px;
+  margin: 5px 0;
+  border: 2px solid #e91e63;
+  border-radius: 5px;
+  font-size: 14px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 button {
-    background-color: #e91e63;
-    color: white;
-    border: none;
-    cursor: pointer;
-    font-weight: bold;
+  background-color: #e91e63;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
 }
 
 button:disabled {
-    background-color: #c2185b;
-    cursor: not-allowed;
-    opacity: 0.7;
+  background-color: #c2185b;
+  cursor: not-allowed;
+  opacity: 0.7;
 }
 
 button:hover:not(:disabled) {
-    background-color: #c2185b;
+  background-color: #c2185b;
 }
 
 .action-buttons {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 10px;
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
 .action-buttons button {
-    flex: 1;
-    padding: 12px;
-    font-size: 14px;
+  flex: 1;
+  padding: 12px;
+  font-size: 14px;
 }
 
 .bulk-delete-btn {
-    background-color: #f44336;
+  background-color: #f44336;
 }
 
 table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
 }
 
-th,
-td {
-    border: 1px solid #ddd;
-    padding: 8px;
-    text-align: left;
-    word-break: break-word;
+th, td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+  word-break: break-word;
 }
 
 th {
-    background-color: #e91e63;
-    color: white;
+  background-color: #e91e63;
+  color: white;
 }
 
 .erro {
-    color: red;
-    font-size: 12px;
-    display: block;
-    margin-top: -5px;
+  color: red;
+  font-size: 12px;
+  display: block;
+  margin-top: -5px;
 }
 
 .modal {
-    display: none;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-    z-index: 1000;
-    width: 90%;
-    max-width: 400px;
-    text-align: center;
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  z-index: 1000;
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
 }
 
 .overlay {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 999;
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  z-index: 999;
 }
 
+/* Sidebar Styles */
 .sidebar {
-    height: 100vh;
-    width: 250px;
-    position: fixed;
-    top: 0;
-    left: -250px;
-    background-color: #f9e6f0;
-    padding: 60px 0 20px;
-    transition: left 0.3s ease, width 0.3s ease;
-    z-index: 1001;
-    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
-    overflow-y: auto;
+  height: 100vh; /* Usar 100% da altura da viewport */
+  width: 250px;
+  position: fixed;
+  top: 0;
+  left: -250px;
+  background-color: #f9e6f0;
+  padding: 60px 0 20px; /* Descer os botões com padding-top */
+  transition: left 0.3s, width 0.3s; /* Transição suave para a sidebar */
+  z-index: 1001;
+  box-shadow: 2px 0 5px rgba(0,0,0,0.2);
+  overflow-y: auto; /* Permite rolagem apenas na sidebar */
 }
 
 .sidebar.active {
-    left: 0;
+  left: 0;
 }
 
 .sidebar-item {
-    padding: 15px 20px;
-    text-decoration: none;
-    font-size: 16px;
-    color: #333;
-    display: flex;
-    align-items: center;
-    transition: 0.2s;
+  padding: 15px 20px;
+  text-decoration: none;
+  font-size: 16px;
+  color: #333;
+  display: flex;
+  align-items: center;
+  transition: 0.2s;
 }
 
 .sidebar-item:hover {
-    background-color: #e91e63;
-    color: white;
+  background-color: #e91e63;
+  color: white;
 }
 
 .sidebar-icon {
-    margin-right: 10px;
-    font-size: 18px;
+  margin-right: 10px;
+  font-size: 18px;
 }
 
 #menu-toggle {
-    position: absolute;
+  position: absolute; /* Remover fixed para não rolar com a página */
+  top: 10px;
+  left: 10px;
+  z-index: 1002;
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #d81b60;
+  cursor: pointer;
+  padding: 5px;
+  width: 30px; /* Limitar tamanho do ícone */
+  height: 30px; /* Limitar tamanho do ícone */
+  line-height: 30px; /* Centralizar o texto/icon no botão */
+  text-align: center;
+}
+
+/* Ícone ☰ fixo dentro da sidebar quando aberta */
+body.logged-in .sidebar.active #menu-toggle {
+  position: fixed; /* Fixo dentro da sidebar, no topo */
+  top: 10px;
+  left: 10px;
+  z-index: 1004;
+}
+
+/* Sidebar com apenas ícones após o login */
+body.logged-in .sidebar {
+  left: -250px; /* Ocultar sidebar fechada após login por padrão em mobile */
+  width: 60px; /* Somente ícones */
+  padding: 60px 0 20px; /* Manter o padding-top para descer os ícones */
+}
+
+body.logged-in .sidebar.active {
+  left: 0; /* Expande para mostrar ícones ao abrir */
+  width: 250px; /* Expande para mostrar texto ao abrir */
+}
+
+body.logged-in .sidebar-item {
+  padding: 15px 10px;
+  justify-content: center; /* Centralizar ícones quando apenas eles são exibidos */
+  font-size: 0; /* Ocultar texto */
+}
+
+body.logged-in .sidebar-item:hover {
+  background-color: #e91e63;
+  color: white;
+}
+
+body.logged-in .sidebar-item span {
+  display: none; /* Ocultar texto inicialmente */
+}
+
+/* Fixar o ícone ☰ no topo da sidebar durante rolagem (não necessário, pois já fixo com position: fixed) */
+body.logged-in .sidebar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 60px; /* Mesma largura da sidebar minimizada */
+  height: 60px; /* Espaço para o ícone ☰ */
+  z-index: 1003;
+}
+
+body.logged-in #menu-toggle {
+  position: absolute; /* Fixo dentro da sidebar minimizada, mas não rola com a página */
+  top: 10px;
+  left: 10px;
+  z-index: 1004;
+}
+
+/* Congelar a página principal ao abrir a sidebar */
+body.logged-in .sidebar.active ~ .container {
+  overflow: hidden; /* Desativar rolagem da página principal */
+  position: fixed; /* Fixar a página */
+  width: calc(100% - 250px); /* Ajustar para a largura da sidebar */
+  margin-left: 250px; /* Deslocar para o lado direito da sidebar */
+  top: 0;
+  left: 0;
+  transition: all 0.3s; /* Transição suave */
+}
+
+/* Restaurar a rolagem da página principal ao fechar a sidebar */
+body.logged-in:not(.sidebar.active) .container {
+  overflow: auto; /* Restaurar rolagem da página principal */
+  position: relative; /* Restaurar posicionamento relativo */
+  width: auto; /* Restaurar largura automática */
+  margin-left: 0; /* Remover margem */
+  top: auto;
+  left: auto;
+}
+
+/* Ajustar o body para evitar rolagem indesejada */
+body.logged-in {
+  overflow: auto; /* Garantir que o body seja rolável por padrão após login */
+}
+
+body.logged-in .sidebar.active {
+  overflow-y: auto; /* Garantir rolagem apenas na sidebar */
+}
+
+body.logged-in .sidebar.active ~ .container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  z-index: 999; /* Garantir que cubra a página, mas sem bloquear cliques */
+}
+
+/* Ajustes para PC (desktop) */
+@media (min-width: 601px) {
+  .sidebar {
+    left: 0; /* Sempre visível no desktop */
+    width: 60px; /* Somente ícones por padrão no desktop */
+    padding: 20px 0; /* Ajustar padding para desktop */
+    height: auto; /* Ajustar altura ao conteúdo */
+    position: absolute; /* Evitar sobreposição no desktop */
+    top: 0;
+    z-index: 1000; /* Ajustar z-index para não sobrepor o conteúdo */
+  }
+
+  .sidebar.active {
+    width: 250px; /* Expande para mostrar texto ao abrir */
+    position: fixed; /* Fixar na lateral ao abrir */
+    height: 100vh; /* Usar 100% da altura da viewport */
+    z-index: 1001; /* Garantir que fique acima da página */
+  }
+
+  .sidebar-item {
+    padding: 15px 10px;
+    justify-content: center; /* Centralizar ícones no desktop */
+    font-size: 0; /* Ocultar texto por padrão */
+  }
+
+  .sidebar-item:hover {
+    background-color: #e91e63;
+    color: white;
+  }
+
+  .sidebar-item span {
+    display: none; /* Ocultar texto inicialmente no desktop */
+  }
+
+  .sidebar.active .sidebar-item {
+    justify-content: flex-start; /* Alinhar ícones e texto à esquerda ao abrir */
+    font-size: 16px; /* Mostrar texto ao abrir */
+  }
+
+  .sidebar.active .sidebar-item span {
+    display: inline; /* Mostrar texto ao abrir */
+  }
+
+  #menu-toggle {
+    display: block; /* Mostrar ícone ☰ no desktop */
+    position: absolute; /* Remover fixed para não rolar com a página */
     top: 10px;
     left: 10px;
     z-index: 1002;
-    background: none;
-    border: none;
-    font-size: 24px;
-    color: #d81b60;
-    cursor: pointer;
-    padding: 5px;
-    width: 30px;
-    height: 30px;
-    line-height: 30px;
-    text-align: center;
+  }
+
+  /* Ícone ☰ fixo dentro da sidebar quando aberta no desktop */
+  body.logged-in .sidebar.active #menu-toggle {
+    position: fixed; /* Fixo dentro da sidebar, no topo */
+    top: 10px;
+    left: 10px;
+    z-index: 1004;
+  }
+
+  /* Congelar a página principal ao abrir a sidebar no desktop */
+  body.logged-in .sidebar.active ~ .container {
+    overflow: hidden; /* Desativar rolagem da página principal */
+    position: fixed; /* Fixar a página */
+    width: calc(100% - 250px); /* Ajustar para a largura da sidebar */
+    margin-left: 250px; /* Deslocar para o lado direito da sidebar */
+    top: 0;
+    left: 0;
+    transition: all 0.3s; /* Transição suave */
+  }
+
+  .container {
+    margin-left: 60px; /* Espaço para a sidebar minimizada no desktop */
+    position: relative; /* Garantir posicionamento relativo por padrão */
+    overflow: auto; /* Garantir rolagem normal por padrão */
+  }
+
+  .container.shifted {
+    margin-left: 250px; /* Espaço para a sidebar expandida no desktop */
+  }
 }
 
+/* Ajustes para mobile */
 @media (max-width: 600px) {
-    td:before {
-        font-weight: bold;
-        color: #e91e63;
-        margin-right: 10px;
-    }
+  #menu-toggle {
+    display: block;
+  }
+  .sidebar {
+    left: -250px;
+  }
+  .sidebar.active {
+    left: 0;
+  }
+  body.logged-in .sidebar {
+    left: -250px; /* Ocultar sidebar fechada em mobile após login */
+    width: 60px; /* Manter apenas ícones em mobile */
+  }
+  body.logged-in .sidebar.active {
+    left: 0;
+    width: 250px; /* Expande para mostrar texto ao abrir em mobile */
+  }
+  .container {
+    margin-left: 0;
+  }
+  .container.shifted {
+    margin-left: 0;
+  }
+  .dashboard-button {
+    flex: 1 1 100%;
+    max-width: none;
+    padding: 12px;
+  }
+  table, thead, tbody, th, td, tr {
+    display: block;
+  }
+  thead tr {
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+  }
+  tr {
+    margin-bottom: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+  }
+  td {
+    border: none;
+    position: relative;
+    padding-left: 35%;
+    text-align: left;
+  }
+  td:before {
+    position: absolute;
+    left: 8px;
+    content: attr(data-label);
+    font-weight: bold;
+    font-size: 12px;
+    color: #e91b60;
+  }
+  #agendamentosList td:nth-child(1):before { content: "Selecionar"; }
+  #agendamentosList td:nth-child(2):before { content: "Nome"; }
+  #agendamentosList td:nth-child(3):before { content: "Procedimento"; }
+  #agendamentosList td:nth-child(4):before { content: "Horário"; }
+  #clientesTable td:nth-child(1):before { content: "Selecionar"; }
+  #clientesTable td:nth-child(2):before { content: "Nome"; }
+  #clientesTable td:nth-child(3):before { content: "E-mail"; }
+  #clientesTable td:nth-child(4):before { content: "Telefone"; }
+  #clientesTable td:nth-child(5):before { content: "Data Registro"; }
 }
