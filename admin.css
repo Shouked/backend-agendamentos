@@ -203,9 +203,9 @@ th {
 }
 
 #menu-toggle {
-  position: fixed;
-  top: 10px;
-  left: 10px;
+  position: fixed !important; /* Forçar fixo no topo da página */
+  top: 10px !important;
+  left: 10px !important;
   z-index: 1002;
   background: none;
   border: none;
@@ -264,9 +264,9 @@ body.logged-in #menu-toggle {
 }
 
 body.logged-in .sidebar.active #menu-toggle {
-  position: fixed; /* Volta a ser fixo no canto esquerdo ao abrir */
-  top: 10px;
-  left: 10px;
+  position: fixed !important; /* Volta a ser fixo no canto esquerdo ao abrir */
+  top: 10px !important;
+  left: 10px !important;
 }
 
 body.logged-in .sidebar.active .sidebar-item {
@@ -276,22 +276,6 @@ body.logged-in .sidebar.active .sidebar-item {
 
 body.logged-in .sidebar.active .sidebar-item span {
   display: inline; /* Mostrar texto ao abrir */
-}
-
-/* Fixar o ícone ☰ no topo da página durante rolagem */
-#menu-toggle {
-  position: fixed !important; /* Forçar fixo no topo da página */
-  top: 10px !important;
-  left: 10px !important;
-}
-
-.container {
-  margin-left: 0;
-  transition: margin-left 0.3s;
-}
-
-.container.shifted {
-  margin-left: 250px;
 }
 
 /* Ajustes para PC (desktop) */
@@ -331,7 +315,10 @@ body.logged-in .sidebar.active .sidebar-item span {
   }
 
   #menu-toggle {
-    display: none; /* Ocultar ícone ☰ no desktop, pois a sidebar é sempre visível */
+    display: block; /* Mostrar ícone ☰ no desktop */
+    position: fixed !important; /* Forçar fixo no topo da página */
+    top: 10px !important;
+    left: 10px !important;
   }
 
   .container {
