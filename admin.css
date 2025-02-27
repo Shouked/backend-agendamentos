@@ -221,9 +221,9 @@ th {
   text-align: center;
 }
 
-/* Ícone ☰ dentro da sidebar quando aberta */
+/* Ícone ☰ fixo dentro da sidebar quando aberta */
 body.logged-in .sidebar.active #menu-toggle {
-  position: absolute; /* Fica dentro da sidebar, no topo inicial */
+  position: fixed; /* Fixo dentro da sidebar, no topo */
   top: 10px;
   left: 10px;
   z-index: 1004;
@@ -255,7 +255,7 @@ body.logged-in .sidebar-item span {
   display: none; /* Ocultar texto inicialmente */
 }
 
-/* Fixar o ícone ☰ no topo da sidebar durante rolagem */
+/* Fixar o ícone ☰ no topo da sidebar durante rolagem (não necessário, pois já fixo com position: fixed) */
 body.logged-in .sidebar::before {
   content: '';
   position: absolute;
@@ -281,6 +281,39 @@ body.logged-in .sidebar.active ~ .container {
   width: 100%;
   top: 0;
   left: 0;
+}
+
+/* Preservar a posição de rolagem da página principal ao abrir/fechar a sidebar */
+body.logged-in .sidebar.active ~ .container {
+  position: fixed;
+  width: calc(100% - 250px); /* Ajustar para a largura da sidebar */
+  margin-left: 250px; /* Deslocar para o lado direito da sidebar */
+}
+
+body.logged-in .sidebar.active ~ .container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  z-index: 999; /* Garantir que cubra a página, mas sem bloquear cliques */
+}
+
+body.logged-in .sidebar {
+  transition: left 0.3s, width 0.3s; /* Transição suave para a sidebar */
+}
+
+body.logged-in .sidebar.active {
+  left: 0;
+  width: 250px;
+}
+
+body.logged-in .sidebar-item {
+  padding: 15px 10px;
+  justify-content: center;
+  font-size: 0;
 }
 
 body.logged-in .sidebar.active .sidebar-item {
@@ -336,9 +369,9 @@ body.logged-in .sidebar.active .sidebar-item span {
     z-index: 1002;
   }
 
-  /* Ícone ☰ dentro da sidebar quando aberta no desktop */
+  /* Ícone ☰ fixo dentro da sidebar quando aberta no desktop */
   body.logged-in .sidebar.active #menu-toggle {
-    position: absolute; /* Fica dentro da sidebar, no topo inicial */
+    position: fixed; /* Fixo dentro da sidebar, no topo */
     top: 10px;
     left: 10px;
     z-index: 1004;
@@ -349,7 +382,8 @@ body.logged-in .sidebar.active .sidebar-item span {
     overflow: hidden; /* Desativar rolagem da página principal */
     height: 100vh; /* Limitar altura para evitar rolagem */
     position: fixed; /* Fixar a página */
-    width: 100%;
+    width: calc(100% - 250px); /* Ajustar para a largura da sidebar */
+    margin-left: 250px; /* Deslocar para o lado direito da sidebar */
     top: 0;
     left: 0;
   }
