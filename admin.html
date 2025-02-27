@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="admin.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"> <!-- Para ícones -->
 </head>
-<body>
+<body class="logged-out">
   <button id="menu-toggle">☰</button>
   <div class="sidebar" id="sidebar">
     <a href="#" class="sidebar-item" onclick="toggleSection('agendamentosSection')"><i class="fas fa-calendar-alt sidebar-icon"></i> Agenda</a>
@@ -88,7 +88,6 @@
     <div id="cobrançasSection" class="section" style="display: none;">
       <h3>Cobranças</h3>
       <p>Funcionalidade em desenvolvimento. Em breve, você poderá gerenciar cobranças aqui.</p>
-      <!-- Futura seção para adicionar cobranças -->
     </div>
 
     <div id="relatoriosSection" class="section" style="display: none;">
@@ -100,7 +99,6 @@
     <div id="mensagensSection" class="section" style="display: none;">
       <h3>Mensagens Predefinidas</h3>
       <p>Funcionalidade em desenvolvimento. Em breve, você poderá enviar mensagens automáticas.</p>
-      <!-- Futura seção para mensagens -->
     </div>
   </div>
 
@@ -151,6 +149,8 @@
           token = result.token;
           document.getElementById("login").style.display = "none";
           document.getElementById("painel").style.display = "block";
+          document.body.classList.remove('logged-out');
+          document.body.classList.add('logged-in');
           inicializarFlatpickr();
           await carregarClientes();
         } else {
@@ -182,7 +182,7 @@
           section.style.display = 'none';
         }
       });
-      document.getElementById('sidebar').classList.remove('active'); // Fechar sidebar após clicar
+      document.getElementById('sidebar').classList.remove('active');
       document.getElementById('painel').classList.remove('shifted');
     }
 
@@ -491,4 +491,57 @@
       checkboxes.forEach((cb) => (cb.checked = true));
     }
 
-    async fun
+    async function excluirSelecionadosClientes() {
+      const selecionados = Array.from(
+        document.querySelectorAll(".select-cliente:checked")
+      ).map((cb) => cb.value);
+      if (selecionados.length === 0) {
+        alert("Nenhum cliente selecionado!");
+        return;
+      }
+      if (
+        confirm(
+          `Tem certeza que deseja excluir ${selecionados.length} cliente(s)?`
+        )
+      ) {
+        try {
+          const response = await fetch(`${API_URL}/clientes/muitos`, {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: token,
+            },
+            body: JSON.stringify({ ids: selecionados }),
+          });
+          const result = await response.json();
+          if (result.success) {
+            alert(result.message);
+            await carregarClientes();
+          } else {
+            alert(result.message || "Erro ao excluir clientes!");
+          }
+        } catch (error) {
+          console.error('Erro ao excluir clientes:', error);
+          alert('Erro ao conectar ao servidor. Tente novamente.');
+        }
+      }
+    }
+
+    async function carregarRelatorios() {
+      try {
+        const response = await fetch(`${API_URL}/relatorios/agendamentos-por-dia`, {
+          headers: { Authorization: token }
+        });
+        const relatorios = await response.json();
+        const conteudo = document.getElementById('relatoriosConteudo');
+        conteudo.innerHTML = '<h4>Agendamentos por Dia:</h4><ul>' +
+          relatorios.map(r => `<li>Data: ${r._id}, Total: ${r.total}</li>`).join('') +
+          '</ul>';
+      } catch (error) {
+        console.error('Erro ao carregar relatórios:', error);
+        alert('Erro ao carregar relatórios. Tente novamente.');
+      }
+    }
+  </script>
+</body>
+</html>
