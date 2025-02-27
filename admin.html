@@ -6,8 +6,18 @@
   <title>Painel do Proprietário</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <link rel="stylesheet" href="admin.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"> <!-- Para ícones -->
 </head>
 <body>
+  <button id="menu-toggle">☰</button>
+  <div class="sidebar" id="sidebar">
+    <a href="#" class="sidebar-item" onclick="toggleSection('agendamentosSection')"><i class="fas fa-calendar-alt sidebar-icon"></i> Agenda</a>
+    <a href="#" class="sidebar-item" onclick="toggleSection('clientesSection')"><i class="fas fa-users sidebar-icon"></i> Clientes</a>
+    <a href="#" class="sidebar-item" onclick="toggleSection('cobrançasSection')"><i class="fas fa-money-bill-wave sidebar-icon"></i> Cobranças</a>
+    <a href="#" class="sidebar-item" onclick="toggleSection('relatoriosSection')"><i class="fas fa-chart-bar sidebar-icon"></i> Relatórios</a>
+    <a href="#" class="sidebar-item" onclick="toggleSection('mensagensSection')"><i class="fas fa-envelope sidebar-icon"></i> Mensagens Predefinidas</a>
+  </div>
+
   <div class="container" id="login">
     <h2>Login do Proprietário</h2>
     <input type="email" id="email" placeholder="E-mail" /><br />
@@ -16,11 +26,6 @@
   </div>
   <div class="container" id="painel" style="display: none">
     <h2>Painel do Proprietário</h2>
-    <div class="dashboard">
-      <button class="dashboard-button" onclick="toggleSection('agendamentoSection')">Agendar Procedimento</button>
-      <button class="dashboard-button" onclick="toggleSection('agendamentosSection')">Ver Agendamentos</button>
-      <button class="dashboard-button" onclick="toggleSection('clientesSection')">Lista de Clientes</button>
-    </div>
 
     <div id="agendamentoSection" class="section">
       <h3>Criar Novo Agendamento</h3>
@@ -79,6 +84,24 @@
         <tbody id="listaClientes"></tbody>
       </table>
     </div>
+
+    <div id="cobrançasSection" class="section" style="display: none;">
+      <h3>Cobranças</h3>
+      <p>Funcionalidade em desenvolvimento. Em breve, você poderá gerenciar cobranças aqui.</p>
+      <!-- Futura seção para adicionar cobranças -->
+    </div>
+
+    <div id="relatoriosSection" class="section" style="display: none;">
+      <h3>Relatórios</h3>
+      <div id="relatoriosConteudo"></div>
+      <button onclick="carregarRelatorios()">Carregar Relatórios</button>
+    </div>
+
+    <div id="mensagensSection" class="section" style="display: none;">
+      <h3>Mensagens Predefinidas</h3>
+      <p>Funcionalidade em desenvolvimento. Em breve, você poderá enviar mensagens automáticas.</p>
+      <!-- Futura seção para mensagens -->
+    </div>
   </div>
 
   <div class="overlay" id="overlay"></div>
@@ -103,6 +126,12 @@
   <script>
     const API_URL = "https://agendamentos-backend.onrender.com";
     let token = null;
+
+    // Toggle sidebar
+    document.getElementById('menu-toggle').addEventListener('click', () => {
+      document.getElementById('sidebar').classList.toggle('active');
+      document.getElementById('painel').classList.toggle('shifted');
+    });
 
     async function login() {
       const loginBtn = document.getElementById('loginBtn');
@@ -137,7 +166,7 @@
     }
 
     function toggleSection(sectionId) {
-      const sections = ['agendamentoSection', 'agendamentosSection', 'clientesSection'];
+      const sections = ['agendamentoSection', 'agendamentosSection', 'clientesSection', 'cobrançasSection', 'relatoriosSection', 'mensagensSection'];
       sections.forEach(id => {
         const section = document.getElementById(id);
         if (id === sectionId) {
@@ -146,11 +175,15 @@
             carregarAgendamentos();
           } else if (id === 'clientesSection' && section.style.display === 'block') {
             carregarClientes();
+          } else if (id === 'relatoriosSection' && section.style.display === 'block') {
+            carregarRelatorios();
           }
         } else {
           section.style.display = 'none';
         }
       });
+      document.getElementById('sidebar').classList.remove('active'); // Fechar sidebar após clicar
+      document.getElementById('painel').classList.remove('shifted');
     }
 
     function inicializarFlatpickr() {
@@ -458,41 +491,4 @@
       checkboxes.forEach((cb) => (cb.checked = true));
     }
 
-    async function excluirSelecionadosClientes() {
-      const selecionados = Array.from(
-        document.querySelectorAll(".select-cliente:checked")
-      ).map((cb) => cb.value);
-      if (selecionados.length === 0) {
-        alert("Nenhum cliente selecionado!");
-        return;
-      }
-      if (
-        confirm(
-          `Tem certeza que deseja excluir ${selecionados.length} cliente(s)?`
-        )
-      ) {
-        try {
-          const response = await fetch(`${API_URL}/clientes/muitos`, {
-            method: "DELETE",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: token,
-            },
-            body: JSON.stringify({ ids: selecionados }),
-          });
-          const result = await response.json();
-          if (result.success) {
-            alert(result.message);
-            await carregarClientes();
-          } else {
-            alert(result.message || "Erro ao excluir clientes!");
-          }
-        } catch (error) {
-          console.error('Erro ao excluir clientes:', error);
-          alert('Erro ao conectar ao servidor. Tente novamente.');
-        }
-      }
-    }
-  </script>
-</body>
-</html>
+    async fun
