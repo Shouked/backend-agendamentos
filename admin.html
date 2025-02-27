@@ -168,7 +168,7 @@
       const sections = ['agendamentoSection', 'agendamentosSection', 'clientesSection', 'cobrançasSection', 'relatoriosSection', 'mensagensSection'];
       sections.forEach(id => {
         const section = document.getElementById(id);
-        section.style.display = 'none'; // Limpar todas as seções antes de exibir
+        section.style.display = 'none'; // Esconder todas as seções
         const lista = section.querySelector('tbody') || section.querySelector('div');
         if (lista) lista.innerHTML = ''; // Limpar conteúdo anterior
       });
