@@ -166,18 +166,17 @@ th {
 
 /* Sidebar Styles */
 .sidebar {
-  height: 100%;
+  height: 100vh; /* Usar 100% da altura da viewport */
   width: 250px;
   position: fixed;
   top: 0;
   left: -250px;
   background-color: #f9e6f0;
   padding: 60px 0 20px; /* Descer os botões com padding-top */
-  transition: 0.3s, left 0.3s, width 0.3s; /* Transição suave para a sidebar */
+  transition: left 0.3s, width 0.3s; /* Transição suave para a sidebar */
   z-index: 1001;
   box-shadow: 2px 0 5px rgba(0,0,0,0.2);
   overflow-y: auto; /* Permite rolagem apenas na sidebar */
-  max-height: 100vh; /* Limitar altura para rolagem */
 }
 
 .sidebar.active {
@@ -276,7 +275,6 @@ body.logged-in #menu-toggle {
 /* Congelar a página principal ao abrir a sidebar */
 body.logged-in .sidebar.active ~ .container {
   overflow: hidden; /* Desativar rolagem da página principal */
-  height: auto; /* Remover limite de altura para evitar travamento */
   position: fixed; /* Fixar a página */
   width: calc(100% - 250px); /* Ajustar para a largura da sidebar */
   margin-left: 250px; /* Deslocar para o lado direito da sidebar */
@@ -288,7 +286,6 @@ body.logged-in .sidebar.active ~ .container {
 /* Restaurar a rolagem da página principal ao fechar a sidebar */
 body.logged-in:not(.sidebar.active) .container {
   overflow: auto; /* Restaurar rolagem da página principal */
-  height: auto; /* Restaurar altura automática */
   position: relative; /* Restaurar posicionamento relativo */
   width: auto; /* Restaurar largura automática */
   margin-left: 0; /* Remover margem */
@@ -297,6 +294,10 @@ body.logged-in:not(.sidebar.active) .container {
 }
 
 /* Ajustar o body para evitar rolagem indesejada */
+body.logged-in {
+  overflow: auto; /* Garantir que o body seja rolável por padrão após login */
+}
+
 body.logged-in .sidebar.active {
   overflow-y: auto; /* Garantir rolagem apenas na sidebar */
 }
@@ -312,40 +313,21 @@ body.logged-in .sidebar.active ~ .container::before {
   z-index: 999; /* Garantir que cubra a página, mas sem bloquear cliques */
 }
 
-body.logged-in .sidebar {
-  transition: left 0.3s, width 0.3s; /* Transição suave para a sidebar */
-}
-
-body.logged-in .sidebar.active {
-  left: 0;
-  width: 250px;
-}
-
-body.logged-in .sidebar-item {
-  padding: 15px 10px;
-  justify-content: center;
-  font-size: 0;
-}
-
-body.logged-in .sidebar.active .sidebar-item {
-  justify-content: flex-start; /* Alinhar ícones e texto à esquerda ao abrir */
-  font-size: 16px; /* Mostrar texto ao abrir */
-}
-
-body.logged-in .sidebar.active .sidebar-item span {
-  display: inline; /* Mostrar texto ao abrir */
-}
-
 /* Ajustes para PC (desktop) */
 @media (min-width: 601px) {
   .sidebar {
     left: 0; /* Sempre visível no desktop */
     width: 60px; /* Somente ícones por padrão no desktop */
     padding: 20px 0; /* Ajustar padding para desktop */
+    height: auto; /* Remover altura fixa para ajustar ao conteúdo */
+    position: absolute; /* Mudar para absolute no desktop para evitar sobreposição */
+    top: 0;
   }
 
   .sidebar.active {
     width: 250px; /* Expande para mostrar texto ao abrir */
+    position: fixed; /* Voltar a fixed ao abrir para fixar na lateral */
+    height: 100vh; /* Usar 100% da altura da viewport */
   }
 
   .sidebar-item {
@@ -391,7 +373,6 @@ body.logged-in .sidebar.active .sidebar-item span {
   /* Congelar a página principal ao abrir a sidebar no desktop */
   body.logged-in .sidebar.active ~ .container {
     overflow: hidden; /* Desativar rolagem da página principal */
-    height: auto; /* Remover limite de altura para evitar travamento */
     position: fixed; /* Fixar a página */
     width: calc(100% - 250px); /* Ajustar para a largura da sidebar */
     margin-left: 250px; /* Deslocar para o lado direito da sidebar */
@@ -402,6 +383,7 @@ body.logged-in .sidebar.active .sidebar-item span {
 
   .container {
     margin-left: 60px; /* Espaço para a sidebar minimizada no desktop */
+    position: relative; /* Garantir posicionamento relativo por padrão */
   }
 
   .container.shifted {
