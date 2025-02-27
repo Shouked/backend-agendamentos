@@ -393,7 +393,7 @@
           document.getElementById('cliente').value = '';
           document.getElementById('telefone').value = '';
           document.getElementById('emailAgendamento').value = '';
-          toggleSection('agendamentoSection');
+          toggleSection('agendamentosSection'); // Mudança pra mostrar a lista atualizada
           await carregarAgendamentos();
         } else {
           alert(result.message || "Erro ao criar agendamento!");
