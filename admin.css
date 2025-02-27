@@ -209,7 +209,7 @@ th {
 }
 
 #menu-toggle {
-  position: absolute; /* Remover fixed para não rolar com a página */
+  position: fixed; /* Fixar o ícone no topo da página */
   top: 10px;
   left: 10px;
   z-index: 1002;
@@ -272,7 +272,7 @@ body.logged-in .sidebar::before {
 }
 
 body.logged-in #menu-toggle {
-  position: absolute; /* Fixo dentro da sidebar minimizada, mas não rola com a página */
+  position: fixed; /* Manter fixo na página, mas sumir ao rolar */
   top: 10px;
   left: 10px;
   z-index: 1004;
@@ -306,17 +306,6 @@ body.logged-in {
 
 body.logged-in .sidebar.active {
   overflow-y: auto; /* Garantir rolagem apenas na sidebar */
-}
-
-body.logged-in .sidebar.active ~ .container::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: transparent;
-  z-index: 999; /* Garantir que cubra a página, mas sem bloquear cliques */
 }
 
 /* Ajustes para PC (desktop) */
@@ -364,7 +353,7 @@ body.logged-in .sidebar.active ~ .container::before {
 
   #menu-toggle {
     display: block; /* Mostrar ícone ☰ no desktop */
-    position: absolute; /* Remover fixed para não rolar com a página */
+    position: fixed; /* Fixar o ícone no topo da página */
     top: 10px;
     left: 10px;
     z-index: 1002;
