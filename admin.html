@@ -164,7 +164,7 @@
           document.getElementById("painel").style.display = "block";
           document.body.classList.remove('logged-out');
           document.body.classList.add('logged-in');
-          toggleSection('agendamentoSection'); // Mostrar a seção inicial após login
+          toggleSection('agendamentoSection');
           inicializarFlatpickr();
           await carregarClientes();
         } else {
@@ -314,7 +314,9 @@
             itemDiv.className = 'agendamento-item';
             itemDiv.innerHTML = `
               <input type="checkbox" class="select-agendamento" value="${ag._id}">
-              <span>${ag.cliente} - ${ag.procedimento} às ${ag.horario}</span>
+              <span>${ag.cliente}</span>
+              <span>${ag.procedimento}</span>
+              <span>${ag.horario}</span>
               <button class="edit-btn" onclick="abrirModalEditar('${ag._id}')">Editar</button>
             `;
             listDiv.appendChild(itemDiv);
