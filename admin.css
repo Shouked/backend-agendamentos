@@ -231,8 +231,9 @@ body.sidebar-open {
 
 .agendamento-item {
   position: relative;
-  padding: 10px;
+  padding: 15px 10px;
   border-bottom: 1px solid #eee;
+  min-height: 60px; /* Espaço mínimo pra layout */
 }
 
 .agendamento-item:last-child {
@@ -242,19 +243,26 @@ body.sidebar-open {
 .agendamento-item input[type="checkbox"] {
   position: absolute;
   top: 5px;
-  left: 5px;
+  right: 5px;
   width: 16px;
   height: 16px;
   cursor: pointer;
 }
 
+.agendamento-item span {
+  display: block; /* Cada dado em uma linha */
+  font-size: 14px;
+}
+
 .edit-btn {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
   background-color: #2196f3;
-  padding: 5px 10px;
+  padding: 2px 8px; /* Tamanho ajustado à palavra "Editar" */
   font-size: 12px;
   border-radius: 3px;
-  margin-left: 10px;
-  display: inline-block;
+  color: white;
 }
 
 /* Ajustes para desktop */
@@ -284,9 +292,7 @@ body.sidebar-open {
   }
 
   .agendamento-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    padding: 15px;
   }
 }
 
@@ -307,9 +313,5 @@ body.sidebar-open {
 
   .agendamento-item {
     padding: 15px 5px;
-  }
-
-  .agendamento-item input[type="checkbox"] {
-    top: 10px;
   }
 }
