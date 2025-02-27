@@ -163,6 +163,9 @@
           headers: { 'Content-Type': 'application/json; charset=utf-8' },
           body: JSON.stringify({ nome, email, senha, telefone })
         });
+        if (!response.ok) {
+          throw new Error(`Erro HTTP: ${response.status} - ${response.statusText}`);
+        }
         const result = await response.json();
         if (result.success) {
           tokenCliente = result.token;
@@ -199,6 +202,9 @@
           headers: { 'Content-Type': 'application/json; charset=utf-8' },
           body: JSON.stringify({ email, senha })
         });
+        if (!response.ok) {
+          throw new Error(`Erro HTTP: ${response.status} - ${response.statusText}`);
+        }
         const result = await response.json();
         if (result.success) {
           tokenCliente = result.token;
@@ -305,6 +311,9 @@
           headers: { 'Content-Type': 'application/json; charset=utf-8' },
           body: JSON.stringify({ email })
         });
+        if (!response.ok) {
+          throw new Error(`Erro HTTP: ${response.status} - ${response.statusText}`);
+        }
         const result = await response.json();
         if (result.success) {
           alert('E-mail de recuperação enviado! Verifique sua caixa de entrada ou spam.');
@@ -433,6 +442,9 @@
           },
           body: JSON.stringify(body)
         });
+        if (!response.ok) {
+          throw new Error(`Erro HTTP: ${response.status} - ${response.statusText}`);
+        }
         const result = await response.json();
         if (result.success) {
           alert('Agendamento atualizado com sucesso!');
@@ -453,6 +465,9 @@
           method: 'DELETE',
           headers: { 'Authorization': tokenCliente }
         });
+        if (!response.ok) {
+          throw new Error(`Erro HTTP: ${response.status} - ${response.statusText}`);
+        }
         const result = await response.json();
         if (result.success) {
           alert('Agendamento cancelado com sucesso!');
