@@ -129,12 +129,12 @@
       submitBtn.textContent = 'Carregando...';
       try {
         console.log('Salvando agendamento com token:', tokenCliente, 'Dados:', dados);
+        const headers = { 'Content-Type': 'application/json' };
+        if (tokenCliente) headers['Authorization'] = tokenCliente;
+        
         const response = await fetch(`${API_URL}/agendamentos`, {
           method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            ...(tokenCliente ? { 'Authorization': tokenCliente } : {})
-          },
+          headers: headers,
           body: JSON.stringify(dados)
         });
         if (!response.ok) {
@@ -154,7 +154,7 @@
         }
       } catch (error) {
         console.error('Erro ao salvar agendamento:', error);
-        alert('Erro ao conectar ao servidor. Tente novamente.');
+        document.getElementById('erroHorario').textContent = 'Erro ao conectar ao servidor. Tente novamente.';
       } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = 'Agendar';
