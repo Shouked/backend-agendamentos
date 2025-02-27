@@ -173,7 +173,7 @@ th {
   left: -250px;
   background-color: #f9e6f0;
   padding: 60px 0 20px; /* Descer os botões com padding-top */
-  transition: 0.3s;
+  transition: 0.3s, left 0.3s, width 0.3s; /* Transição suave para a sidebar */
   z-index: 1001;
   box-shadow: 2px 0 5px rgba(0,0,0,0.2);
   overflow-y: auto; /* Permite rolagem apenas na sidebar */
@@ -276,18 +276,29 @@ body.logged-in #menu-toggle {
 /* Congelar a página principal ao abrir a sidebar */
 body.logged-in .sidebar.active ~ .container {
   overflow: hidden; /* Desativar rolagem da página principal */
-  height: 100vh; /* Limitar altura para evitar rolagem */
+  height: auto; /* Remover limite de altura para evitar travamento */
   position: fixed; /* Fixar a página */
-  width: 100%;
-  top: 0;
-  left: 0;
-}
-
-/* Preservar a posição de rolagem da página principal ao abrir/fechar a sidebar */
-body.logged-in .sidebar.active ~ .container {
-  position: fixed;
   width: calc(100% - 250px); /* Ajustar para a largura da sidebar */
   margin-left: 250px; /* Deslocar para o lado direito da sidebar */
+  top: 0;
+  left: 0;
+  transition: all 0.3s; /* Transição suave */
+}
+
+/* Restaurar a rolagem da página principal ao fechar a sidebar */
+body.logged-in:not(.sidebar.active) .container {
+  overflow: auto; /* Restaurar rolagem da página principal */
+  height: auto; /* Restaurar altura automática */
+  position: relative; /* Restaurar posicionamento relativo */
+  width: auto; /* Restaurar largura automática */
+  margin-left: 0; /* Remover margem */
+  top: auto;
+  left: auto;
+}
+
+/* Ajustar o body para evitar rolagem indesejada */
+body.logged-in .sidebar.active {
+  overflow-y: auto; /* Garantir rolagem apenas na sidebar */
 }
 
 body.logged-in .sidebar.active ~ .container::before {
@@ -380,12 +391,13 @@ body.logged-in .sidebar.active .sidebar-item span {
   /* Congelar a página principal ao abrir a sidebar no desktop */
   body.logged-in .sidebar.active ~ .container {
     overflow: hidden; /* Desativar rolagem da página principal */
-    height: 100vh; /* Limitar altura para evitar rolagem */
+    height: auto; /* Remover limite de altura para evitar travamento */
     position: fixed; /* Fixar a página */
     width: calc(100% - 250px); /* Ajustar para a largura da sidebar */
     margin-left: 250px; /* Deslocar para o lado direito da sidebar */
     top: 0;
     left: 0;
+    transition: all 0.3s; /* Transição suave */
   }
 
   .container {
