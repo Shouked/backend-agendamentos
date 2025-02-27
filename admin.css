@@ -186,7 +186,8 @@ th {
   text-decoration: none;
   font-size: 16px;
   color: #333;
-  display: block;
+  display: flex;
+  align-items: center;
   transition: 0.2s;
 }
 
@@ -211,6 +212,45 @@ th {
   color: #d81b60;
   cursor: pointer;
   padding: 5px;
+  width: 30px; /* Limitar tamanho do ícone */
+  height: 30px; /* Limitar tamanho do ícone */
+  line-height: 30px; /* Centralizar o texto/icon no botão */
+  text-align: center;
+}
+
+/* Sidebar com apenas ícones após o login */
+body.logged-in .sidebar {
+  left: 0; /* Aparece automaticamente após login */
+  width: 60px; /* Somente ícones */
+  padding: 20px 0;
+}
+
+body.logged-in .sidebar.active {
+  width: 250px; /* Expande para mostrar texto ao abrir */
+}
+
+body.logged-in .sidebar-item {
+  padding: 15px 10px;
+  justify-content: center; /* Centralizar ícones quando apenas eles são exibidos */
+  font-size: 0; /* Ocultar texto */
+}
+
+body.logged-in .sidebar-item:hover {
+  background-color: #e91e63;
+  color: white;
+}
+
+body.logged-in .sidebar-item span {
+  display: none; /* Ocultar texto inicialmente */
+}
+
+body.logged-in .sidebar.active .sidebar-item {
+  justify-content: flex-start; /* Alinhar ícones e texto à esquerda ao abrir */
+  font-size: 16px; /* Mostrar texto ao abrir */
+}
+
+body.logged-in .sidebar.active .sidebar-item span {
+  display: inline; /* Mostrar texto ao abrir */
 }
 
 .container {
@@ -231,6 +271,14 @@ th {
   }
   .sidebar.active {
     left: 0;
+  }
+  body.logged-in .sidebar {
+    left: -250px; /* Ocultar sidebar fechada em mobile após login */
+    width: 60px; /* Manter apenas ícones em mobile */
+  }
+  body.logged-in .sidebar.active {
+    left: 0;
+    width: 250px; /* Expande para mostrar texto ao abrir em mobile */
   }
   .container {
     margin-left: 0;
