@@ -139,7 +139,7 @@
         document.querySelector('.container').style.position = 'fixed';
         document.querySelector('.container').style.width = 'calc(100% - 250px)';
         document.querySelector('.container').style.marginLeft = '250px';
-        document.querySelector('.container').style.top = '0';
+        document.querySelector('.container').style.top = `-${scrollPosition}px`; // Preservar posição
         document.querySelector('.container').style.left = '0';
       } else {
         // Restaurar a rolagem da página principal
