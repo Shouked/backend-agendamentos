@@ -5,155 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Painel do Cliente</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-  <style>
-    body { 
-      font-family: Arial, sans-serif; 
-      margin: 20px; 
-      background-color: #f9e6f0; 
-      text-align: center; 
-    }
-    .container { 
-      max-width: 900px; 
-      margin: 0 auto; 
-      padding: 20px; 
-      background: white; 
-      border-radius: 10px; 
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
-    }
-    input, button, select { 
-      padding: 10px; 
-      margin: 5px; 
-      border: 1px solid #e91e63; 
-      border-radius: 5px; 
-      width: 100%; 
-      box-sizing: border-box; 
-    }
-    button { 
-      background-color: #e91e63; 
-      color: white; 
-      border: none; 
-      cursor: pointer; 
-    }
-    button:hover { 
-      background-color: #c2185b; 
-    }
-    table { 
-      width: 100%; 
-      margin: 20px 0; 
-      border-collapse: collapse; 
-    }
-    th, td { 
-      border: 1px solid #ddd; 
-      padding: 8px; 
-      text-align: center; 
-      word-break: break-word; 
-    }
-    th { 
-      background-color: #e91e63; 
-      color: white; 
-    }
-    .link { 
-      color: #e91e63; 
-      text-decoration: underline; 
-      cursor: pointer; 
-    }
-    .edit-btn { background-color: #4CAF50; }
-    .delete-btn { background-color: #f44336; }
-    .modal { 
-      display: none; 
-      position: fixed; 
-      top: 50%; 
-      left: 50%; 
-      transform: translate(-50%, -50%); 
-      background: white; 
-      padding: 20px; 
-      border-radius: 10px; 
-      box-shadow: 0 4px 15px rgba(0,0,0,0.3); 
-      z-index: 1000; 
-      width: 400px; 
-      max-width: 90%; 
-    }
-    .overlay { 
-      display: none; 
-      position: fixed; 
-      top: 0; 
-      left: 0; 
-      width: 100%; 
-      height: 100%; 
-      background: rgba(0,0,0,0.5); 
-      z-index: 999; 
-    }
-    .confirmacao-dados { 
-      font-size: 16px; 
-      text-align: left; 
-      margin-bottom: 20px; 
-      word-break: break-word; 
-    }
-    .confirmacao-dados strong { 
-      color: #e91e63; 
-    }
-    .confirmacao-botoes { 
-      display: flex; 
-      justify-content: space-between; 
-    }
-    .confirmacao-botoes button { 
-      width: 48%; 
-    }
-    #registrarBtn { 
-      background-color: #4CAF50; 
-      margin-top: 10px; 
-    }
-    #registrarBtn:hover { 
-      background-color: #45a049; 
-    }
-    @media (max-width: 600px) {
-      table, thead, tbody, th, td, tr { 
-        display: block; 
-      }
-      thead tr { 
-        position: absolute; 
-        top: -9999px; 
-        left: -9999px; 
-      }
-      tr { 
-        margin-bottom: 15px; 
-        border: 1px solid #ddd; 
-        border-radius: 5px; 
-      }
-      td { 
-        border: none; 
-        position: relative; 
-        padding-left: 50%; 
-        text-align: left; 
-      }
-      td:before { 
-        position: absolute; 
-        left: 10px; 
-        content: attr(data-label); 
-        font-weight: bold; 
-        color: #e91e63; 
-      }
-      td:nth-child(1):before { content: "Procedimento"; }
-      td:nth-child(2):before { content: "Data"; }
-      td:nth-child(3):before { content: "Horário"; }
-      td:nth-child(4):before { content: "Telefone"; }
-      td:nth-child(5):before { content: "E-mail"; }
-      td:nth-child(6):before { content: "Ações"; }
-      .edit-btn, .delete-btn { 
-        display: inline-block; 
-        width: auto; 
-        margin: 5px 2px; 
-        padding: 5px 10px; 
-      }
-    }
-  </style>
+  <link rel="stylesheet" href="cliente.css">
 </head>
 <body>
   <div class="container" id="login">
     <h2>Login do Cliente</h2>
     <input type="email" id="emailLogin" placeholder="E-mail" required oninput="this.value = this.value.toLowerCase();"><br>
     <input type="password" id="senhaLogin" placeholder="Senha" required><br>
-    <button onclick="loginCliente()">Entrar</button>
+    <button id="loginBtn" onclick="loginCliente()">Entrar</button>
     <p id="mensagemErro" style="color: red;"></p>
     <p>Não tem conta? <span class="link" onclick="mostrarRegistro()">Registre-se</span></p>
     <p><span class="link" onclick="mostrarEsqueciSenha()">Esqueci minha senha</span></p>
@@ -320,11 +179,17 @@
     }
 
     async function loginCliente() {
+      const loginBtn = document.getElementById('loginBtn');
+      loginBtn.disabled = true;
+      loginBtn.textContent = 'Carregando...';
+
       const email = document.getElementById('emailLogin').value;
       const senha = document.getElementById('senhaLogin').value;
 
       if (!email || !senha) {
         alert('E-mail e senha são obrigatórios!');
+        loginBtn.disabled = false;
+        loginBtn.textContent = 'Entrar';
         return;
       }
 
@@ -350,6 +215,9 @@
       } catch (error) {
         console.error('Erro ao fazer login:', error);
         alert('Erro ao conectar ao servidor. Tente novamente.');
+      } finally {
+        loginBtn.disabled = false;
+        loginBtn.textContent = 'Entrar';
       }
     }
 
@@ -357,7 +225,6 @@
       const agendamentoPendente = localStorage.getItem('agendamentoPendente');
       if (agendamentoPendente) {
         const dados = JSON.parse(agendamentoPendente);
-        // Dados já estão em YYYY-MM-DD no localStorage, convertemos pra exibição
         const [year, month, day] = dados.data.split('-');
         const dataDisplay = `${day}/${month}/${year}`;
         document.getElementById('mensagemConfirmacao').innerHTML = `
@@ -390,7 +257,6 @@
       }
 
       const dados = JSON.parse(agendamentoPendente);
-      // Dados já estão em YYYY-MM-DD no localStorage, não precisamos reconverter
       console.log('Tentando confirmar agendamento com dados:', dados, 'Token:', tokenCliente);
 
       try {
