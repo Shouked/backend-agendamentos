@@ -171,10 +171,15 @@ th {
     font-size: 12px;
     color: #e91e63;
   }
-  td:nth-child(1):before { content: "Selecionar"; }
-  td:nth-child(2):before { content: "Nome"; }
-  td:nth-child(3):before { content: "Procedimento"; }
-  td:nth-child(4):before { content: "Horário"; }
-  td:nth-child(5):before { content: "E-mail"; }
-  td:nth-child(6):before { content: "Data Registro"; }
+  /* Para a tabela de agendamentos */
+  #agendamentosList td:nth-child(1):before { content: "Selecionar"; }
+  #agendamentosList td:nth-child(2):before { content: "Nome"; }
+  #agendamentosList td:nth-child(3):before { content: "Procedimento"; }
+  #agendamentsList td:nth-child(4):before { content: "Horário"; }
+  /* Para a tabela de clientes */
+  #clientesTable td:nth-child(1):before { content: "Selecionar"; }
+  #clientesTable td:nth-child(2):before { content: "Nome"; }
+  #clientesTable td:nth-child(3):before { content: "E-mail"; }
+  #clientesTable td:nth-child(4):before { content: "Telefone"; }
+  #clientesTable td:nth-child(5):before { content: "Data Registro"; }
 }
