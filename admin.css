@@ -203,9 +203,9 @@ th {
 }
 
 #menu-toggle {
-  position: fixed !important; /* Forçar fixo no topo da página */
-  top: 10px !important;
-  left: 10px !important;
+  position: absolute; /* Remover fixed para não rolar com a página */
+  top: 10px;
+  left: 10px;
   z-index: 1002;
   background: none;
   border: none;
@@ -257,16 +257,16 @@ body.logged-in .sidebar::before {
 }
 
 body.logged-in #menu-toggle {
-  position: absolute; /* Fixo dentro da sidebar minimizada */
+  position: absolute; /* Fixo dentro da sidebar minimizada, mas não rola com a página */
   top: 10px;
   left: 10px;
   z-index: 1004;
 }
 
 body.logged-in .sidebar.active #menu-toggle {
-  position: fixed !important; /* Volta a ser fixo no canto esquerdo ao abrir */
-  top: 10px !important;
-  left: 10px !important;
+  position: absolute; /* Mantém absoluto ao abrir, para não rolar */
+  top: 10px;
+  left: 10px;
 }
 
 body.logged-in .sidebar.active .sidebar-item {
@@ -316,9 +316,9 @@ body.logged-in .sidebar.active .sidebar-item span {
 
   #menu-toggle {
     display: block; /* Mostrar ícone ☰ no desktop */
-    position: fixed !important; /* Forçar fixo no topo da página */
-    top: 10px !important;
-    left: 10px !important;
+    position: absolute; /* Remover fixed para não rolar com a página */
+    top: 10px;
+    left: 10px;
     z-index: 1002;
   }
 
