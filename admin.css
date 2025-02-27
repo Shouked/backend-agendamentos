@@ -19,6 +19,7 @@ body.logged-out .sidebar {
   background: white;
   border-radius: 15px;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  position: relative; /* Para posicionar o ícone corretamente */
 }
 
 h2 {
@@ -267,7 +268,7 @@ th {
     content: attr(data-label);
     font-weight: bold;
     font-size: 12px;
-    color: #e91e63;
+    color: #e91b60;
   }
   #agendamentosList td:nth-child(1):before { content: "Selecionar"; }
   #agendamentosList td:nth-child(2):before { content: "Nome"; }
