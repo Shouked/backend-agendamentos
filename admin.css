@@ -233,7 +233,7 @@ body.sidebar-open {
   position: relative;
   padding: 15px 10px;
   border-bottom: 1px solid #eee;
-  min-height: 60px; /* Espaço mínimo pra layout */
+  min-height: 60px;
 }
 
 .agendamento-item:last-child {
@@ -250,7 +250,7 @@ body.sidebar-open {
 }
 
 .agendamento-item span {
-  display: block; /* Cada dado em uma linha */
+  display: block;
   font-size: 14px;
 }
 
@@ -259,10 +259,12 @@ body.sidebar-open {
   bottom: 5px;
   right: 5px;
   background-color: #2196f3;
-  padding: 2px 8px; /* Tamanho ajustado à palavra "Editar" */
+  padding: 0; /* Remove padding pra azul ficar só no texto */
   font-size: 12px;
   border-radius: 3px;
   color: white;
+  border: none; /* Remove borda pra não aumentar o azul */
+  line-height: 1.5; /* Altura ajustada ao texto */
 }
 
 /* Ajustes para desktop */
