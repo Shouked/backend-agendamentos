@@ -222,7 +222,7 @@ body.sidebar-open {
 
 .agendamento-list {
   display: none;
-  padding: 10px;
+  padding: 5px; /* Reduzido pra ocupar menos espaço */
   background: #fff;
   border: 1px solid #ddd;
   border-radius: 5px;
@@ -231,9 +231,9 @@ body.sidebar-open {
 
 .agendamento-item {
   position: relative;
-  padding: 15px 10px;
+  padding: 8px 10px; /* Altura reduzida */
   border-bottom: 1px solid #eee;
-  min-height: 60px;
+  min-height: 50px; /* Altura mínima reduzida */
 }
 
 .agendamento-item:last-child {
@@ -259,12 +259,12 @@ body.sidebar-open {
   bottom: 5px;
   right: 5px;
   background-color: #2196f3;
-  padding: 0; /* Remove padding pra azul ficar só no texto */
+  padding: 0; /* Sem padding pra azul ficar só no texto */
   font-size: 12px;
   border-radius: 3px;
   color: white;
-  border: none; /* Remove borda pra não aumentar o azul */
-  line-height: 1.5; /* Altura ajustada ao texto */
+  border: none;
+  line-height: 1.2; /* Altura ajustada ao texto */
 }
 
 /* Ajustes para desktop */
@@ -294,7 +294,7 @@ body.sidebar-open {
   }
 
   .agendamento-item {
-    padding: 15px;
+    padding: 8px 15px;
   }
 }
 
@@ -314,6 +314,6 @@ body.sidebar-open {
   }
 
   .agendamento-item {
-    padding: 15px 5px;
+    padding: 8px 5px;
   }
 }
