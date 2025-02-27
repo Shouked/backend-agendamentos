@@ -37,7 +37,7 @@ const agendamentoSchema = new mongoose.Schema({
   email: { type: String, default: '' },
   clienteId: { type: mongoose.Schema.Types.ObjectId, ref: 'Cliente', required: false },
   dataCriacao: { type: Date, default: Date.now }
-}, { _id: true }); // Garante que _id seja gerado automaticamente
+}, { _id: true });
 
 const usuarioSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
@@ -210,30 +210,43 @@ app.post('/agendamentos', async (req, res) => {
   }
 
   cliente = cliente.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
+  email = email ? email.toLowerCase() : '';
 
   try {
-    const clienteExistente = await Cliente.findOne({ telefone });
-    if (decoded && decoded.tipo === 'proprietario') {
-      if (clienteExistente) {
-        email = clienteExistente.email;
-      } else if (!email || !email.includes('@')) {
-        return res.status(400).json({ success: false, message: 'Forneça um e-mail válido com "@" para novos clientes!' });
-      }
-    } else {
-      email = email ? email.toLowerCase() : '';
-    }
-
+    // Verifica se o horário está ocupado
     const existente = await Agendamento.findOne({ data, horario });
     if (existente) {
       return res.status(400).json({ success: false, message: 'Este horário já está ocupado neste dia!' });
     }
 
-    let clienteId = null;
-    if (decoded && decoded.tipo === 'cliente') {
-      const clienteDoc = await Cliente.findOne({ email: decoded.email });
-      if (clienteDoc) clienteId = clienteDoc._id;
+    // Busca ou cria um cliente
+    let clienteDoc = await Cliente.findOne({ telefone });
+    if (!clienteDoc) {
+      if (!email || !email.includes('@')) {
+        return res.status(400).json({ success: false, message: 'Forneça um e-mail válido com "@" para novos clientes!' });
+      }
+      clienteDoc = new Cliente({
+        nome: cliente,
+        email,
+        telefone,
+        dataCriacao: new Date()
+      });
+      await clienteDoc.save();
+      console.log('Novo cliente criado:', clienteDoc);
+    } else {
+      email = clienteDoc.email; // Usa o email do cliente existente
     }
 
+    // Define o clienteId
+    let clienteId = null;
+    if (decoded && decoded.tipo === 'cliente') {
+      const clienteAutenticado = await Cliente.findOne({ email: decoded.email });
+      if (clienteAutenticado) clienteId = clienteAutenticado._id;
+    } else if (decoded && decoded.tipo === 'proprietario') {
+      clienteId = clienteDoc._id; // Associa o clienteId ao cliente encontrado ou criado
+    }
+
+    // Cria o agendamento
     const novoAgendamento = new Agendamento({ 
       procedimento, 
       data, 
@@ -247,6 +260,7 @@ app.post('/agendamentos', async (req, res) => {
     const savedAgendamento = await novoAgendamento.save();
     console.log('Agendamento salvo no MongoDB:', savedAgendamento);
 
+    // Envia e-mails
     const msgProprietario = {
       to: 'kingshowk23@gmail.com',
       from: 'iagofonseca1992@hotmail.com',
