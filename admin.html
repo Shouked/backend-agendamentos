@@ -123,35 +123,6 @@
   <script>
     const API_URL = "https://agendamentos-backend.onrender.com";
     let token = null;
-    let scrollPosition = 0; // Variável para armazenar a posição de rolagem da página
-
-    // Toggle sidebar e gerenciar rolagem de forma simplificada
-    document.getElementById('menu-toggle').addEventListener('click', () => {
-      const sidebar = document.getElementById('sidebar');
-      const painel = document.getElementById('painel');
-      sidebar.classList.toggle('active');
-      painel.classList.toggle('shifted');
-
-      if (sidebar.classList.contains('active')) {
-        // Congelar a página principal e salvar a posição de rolagem
-        scrollPosition = window.scrollY;
-        document.body.style.overflow = 'hidden'; // Desativar rolagem do body
-        document.querySelector('.container').style.position = 'fixed';
-        document.querySelector('.container').style.width = 'calc(100% - 250px)';
-        document.querySelector('.container').style.marginLeft = '250px';
-        document.querySelector('.container').style.top = `-${scrollPosition}px`; // Preservar posição
-        document.querySelector('.container').style.left = '0';
-      } else {
-        // Restaurar a rolagem da página principal
-        document.body.style.overflow = 'auto'; // Restaurar rolagem do body
-        document.querySelector('.container').style.position = 'relative';
-        document.querySelector('.container').style.width = 'auto';
-        document.querySelector('.container').style.marginLeft = '0';
-        document.querySelector('.container').style.top = 'auto';
-        document.querySelector('.container').style.left = 'auto';
-        window.scrollTo(0, scrollPosition); // Restaurar a posição de rolagem
-      }
-    });
 
     async function login() {
       const loginBtn = document.getElementById('loginBtn');
@@ -176,13 +147,6 @@
           document.getElementById("painel").style.display = "block";
           document.body.classList.remove('logged-out');
           document.body.classList.add('logged-in');
-          // Garantir que a página seja rolável após o login
-          document.body.style.overflow = 'auto';
-          document.querySelector('.container').style.position = 'relative';
-          document.querySelector('.container').style.width = 'auto';
-          document.querySelector('.container').style.marginLeft = '0';
-          document.querySelector('.container').style.top = 'auto';
-          document.querySelector('.container').style.left = 'auto';
           inicializarFlatpickr();
           await carregarClientes();
         } else {
