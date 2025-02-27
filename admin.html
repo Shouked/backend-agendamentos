@@ -18,6 +18,7 @@
   <div class="container" id="painel" style="display: none">
     <button id="menu-toggle">☰</button>
     <div class="sidebar" id="sidebar">
+      <a href="#" class="sidebar-item" onclick="toggleSection('agendamentoSection')"><i class="fas fa-home sidebar-icon"></i><span>Início</span></a>
       <a href="#" class="sidebar-item" onclick="toggleSection('agendamentosSection')"><i class="fas fa-calendar-alt sidebar-icon"></i><span>Agenda</span></a>
       <a href="#" class="sidebar-item" onclick="toggleSection('clientesSection')"><i class="fas fa-users sidebar-icon"></i><span>Clientes</span></a>
       <a href="#" class="sidebar-item" onclick="toggleSection('cobrançasSection')"><i class="fas fa-money-bill-wave sidebar-icon"></i><span>Cobranças</span></a>
@@ -56,12 +57,7 @@
         <button onclick="selecionarTodosAgendamentos()">Selecionar Todos</button>
         <button class="bulk-delete-btn" onclick="excluirSelecionadosAgendamentos()">Excluir Selecionados</button>
       </div>
-      <table id="agendamentosList">
-        <thead>
-          <tr><th>Selecionar</th><th>Nome</th><th>Procedimento</th><th>Horário</th></tr>
-        </thead>
-        <tbody id="listaAgendamentos"></tbody>
-      </table>
+      <div id="listaAgendamentos"></div>
     </div>
 
     <div id="clientesSection" class="section">
@@ -124,7 +120,6 @@
     const API_URL = "https://agendamentos-backend.onrender.com";
     let token = null;
 
-    // Toggle sidebar e controle de rolagem
     document.getElementById('menu-toggle').addEventListener('click', () => {
       const sidebar = document.getElementById('sidebar');
       const body = document.body;
@@ -132,7 +127,6 @@
       body.classList.toggle('sidebar-open');
     });
 
-    // Esconder o menu-toggle ao rolar (somente em mobile)
     window.addEventListener('scroll', () => {
       const menuToggle = document.getElementById('menu-toggle');
       const isMobile = window.matchMedia("(max-width: 600px)").matches;
@@ -143,7 +137,7 @@
           menuToggle.classList.remove('hidden');
         }
       } else {
-        menuToggle.classList.remove('hidden'); // Sempre visível no desktop
+        menuToggle.classList.remove('hidden');
       }
     });
 
@@ -170,6 +164,7 @@
           document.getElementById("painel").style.display = "block";
           document.body.classList.remove('logged-out');
           document.body.classList.add('logged-in');
+          toggleSection('agendamentoSection'); // Mostrar a seção inicial após login
           inicializarFlatpickr();
           await carregarClientes();
         } else {
@@ -189,7 +184,7 @@
       sections.forEach(id => {
         const section = document.getElementById(id);
         section.style.display = 'none';
-        const lista = section.querySelector('tbody') || section.querySelector('div');
+        const lista = section.querySelector('tbody') || section.querySelector('#listaAgendamentos');
         if (lista) lista.innerHTML = '';
       });
       
@@ -279,7 +274,6 @@
 
     async function carregarAgendamentos() {
       try {
-        console.log('Tentando carregar agendamentos com token:', token);
         const response = await fetch(`${API_URL}/agendamentos`, {
           headers: { Authorization: token },
         });
@@ -287,13 +281,11 @@
           throw new Error(`Erro HTTP: ${response.status}`);
         }
         const agendamentos = await response.json();
-        console.log('Agendamentos recebidos:', agendamentos);
-
         const lista = document.getElementById('listaAgendamentos');
         lista.innerHTML = '';
 
         if (!agendamentos || agendamentos.length === 0) {
-          lista.innerHTML = '<tr><td colspan="4">Nenhum agendamento encontrado.</td></tr>';
+          lista.innerHTML = '<p>Nenhum agendamento encontrado.</p>';
           return;
         }
 
@@ -309,22 +301,31 @@
           const dateObj = new Date(date);
           const diaSemana = dateObj.toLocaleDateString('pt-BR', { weekday: 'long' });
           const dataBr = dateObj.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+          const dateDiv = document.createElement('div');
+          dateDiv.className = 'agendamento-date';
+          dateDiv.textContent = `${diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1)} - ${dataBr}`;
           
-          const header = document.createElement('tr');
-          header.innerHTML = `<th colspan="4">${diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1)} - ${dataBr}</th>`;
-          lista.appendChild(header);
+          const listDiv = document.createElement('div');
+          listDiv.className = 'agendamento-list';
 
           agendamentosDoDia.forEach(ag => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-              <td data-label="Selecionar"><input type="checkbox" class="select-agendamento" value="${ag._id}"></td>
-              <td data-label="Nome">${ag.cliente}</td>
-              <td data-label="Procedimento">${ag.procedimento}</td>
-              <td data-label="Horário">${ag.horario}</td>
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'agendamento-item';
+            itemDiv.innerHTML = `
+              <input type="checkbox" class="select-agendamento" value="${ag._id}">
+              <span>${ag.cliente} - ${ag.procedimento} às ${ag.horario}</span>
+              <button class="edit-btn" onclick="abrirModalEditar('${ag._id}')">Editar</button>
             `;
-            tr.querySelector('td:nth-child(2)').onclick = () => abrirModalEditar(ag._id);
-            lista.appendChild(tr);
+            listDiv.appendChild(itemDiv);
           });
+
+          dateDiv.addEventListener('click', () => {
+            listDiv.style.display = listDiv.style.display === 'block' ? 'none' : 'block';
+          });
+
+          lista.appendChild(dateDiv);
+          lista.appendChild(listDiv);
         }
       } catch (error) {
         console.error('Erro ao carregar agendamentos:', error);
@@ -407,7 +408,6 @@
           headers: { Authorization: token },
         });
         const clientes = await response.json();
-        console.log('Clientes carregados:', clientes);
         const lista = document.getElementById('listaClientes');
         lista.innerHTML = '';
         if (!clientes || clientes.length === 0) {
