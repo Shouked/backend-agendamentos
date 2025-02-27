@@ -132,13 +132,18 @@
       body.classList.toggle('sidebar-open');
     });
 
-    // Esconder o menu-toggle ao rolar
+    // Esconder o menu-toggle ao rolar (somente em mobile)
     window.addEventListener('scroll', () => {
       const menuToggle = document.getElementById('menu-toggle');
-      if (window.scrollY > 50) {
-        menuToggle.classList.add('hidden');
+      const isMobile = window.matchMedia("(max-width: 600px)").matches;
+      if (isMobile) {
+        if (window.scrollY > 50) {
+          menuToggle.classList.add('hidden');
+        } else {
+          menuToggle.classList.remove('hidden');
+        }
       } else {
-        menuToggle.classList.remove('hidden');
+        menuToggle.classList.remove('hidden'); // Sempre visível no desktop
       }
     });
 
