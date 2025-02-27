@@ -175,7 +175,8 @@ th {
   transition: 0.3s;
   z-index: 1001;
   box-shadow: 2px 0 5px rgba(0,0,0,0.2);
-  overflow-y: auto; /* Permite rolagem na sidebar se houver muitos botões */
+  overflow-y: auto; /* Permite rolagem apenas na sidebar */
+  max-height: 100vh; /* Limitar altura para rolagem */
 }
 
 .sidebar.active {
@@ -217,6 +218,14 @@ th {
   height: 30px; /* Limitar tamanho do ícone */
   line-height: 30px; /* Centralizar o texto/icon no botão */
   text-align: center;
+}
+
+/* Ícone ☰ dentro da sidebar quando aberta */
+body.logged-in .sidebar.active #menu-toggle {
+  position: absolute; /* Fica dentro da sidebar, no topo inicial */
+  top: 10px;
+  left: 10px;
+  z-index: 1004;
 }
 
 /* Sidebar com apenas ícones após o login */
@@ -263,10 +272,14 @@ body.logged-in #menu-toggle {
   z-index: 1004;
 }
 
-body.logged-in .sidebar.active #menu-toggle {
-  position: absolute; /* Mantém absoluto ao abrir, para não rolar */
-  top: 10px;
-  left: 10px;
+/* Congelar a página principal ao abrir a sidebar */
+body.logged-in .sidebar.active ~ .container {
+  overflow: hidden; /* Desativar rolagem da página principal */
+  height: 100vh; /* Limitar altura para evitar rolagem */
+  position: fixed; /* Fixar a página */
+  width: 100%;
+  top: 0;
+  left: 0;
 }
 
 body.logged-in .sidebar.active .sidebar-item {
@@ -320,6 +333,16 @@ body.logged-in .sidebar.active .sidebar-item span {
     top: 10px;
     left: 10px;
     z-index: 1002;
+  }
+
+  /* Congelar a página principal ao abrir a sidebar no desktop */
+  body.logged-in .sidebar.active ~ .container {
+    overflow: hidden; /* Desativar rolagem da página principal */
+    height: 100vh; /* Limitar altura para evitar rolagem */
+    position: fixed; /* Fixar a página */
+    width: 100%;
+    top: 0;
+    left: 0;
   }
 
   .container {
