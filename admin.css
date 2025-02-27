@@ -222,7 +222,7 @@ body.sidebar-open {
 
 .agendamento-list {
   display: none;
-  padding: 5px; /* Reduzido pra ocupar menos espaço */
+  padding: 5px;
   background: #fff;
   border: 1px solid #ddd;
   border-radius: 5px;
@@ -231,9 +231,9 @@ body.sidebar-open {
 
 .agendamento-item {
   position: relative;
-  padding: 8px 10px; /* Altura reduzida */
+  padding: 8px 10px;
   border-bottom: 1px solid #eee;
-  min-height: 50px; /* Altura mínima reduzida */
+  min-height: 50px;
 }
 
 .agendamento-item:last-child {
@@ -261,10 +261,12 @@ body.sidebar-open {
   background-color: #2196f3;
   padding: 0; /* Sem padding pra azul ficar só no texto */
   font-size: 12px;
-  border-radius: 3px;
   color: white;
   border: none;
-  line-height: 1.2; /* Altura ajustada ao texto */
+  border-radius: 3px;
+  display: inline; /* Tamanho exato do texto */
+  line-height: 1; /* Altura mínima */
+  cursor: pointer;
 }
 
 /* Ajustes para desktop */
