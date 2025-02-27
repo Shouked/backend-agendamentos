@@ -165,6 +165,7 @@
           document.body.classList.remove('logged-out');
           document.body.classList.add('logged-in');
           inicializarFlatpickr();
+          toggleSection('agendamentoSection'); // Abre a seção "Início" automaticamente após login
           await carregarClientes();
         } else {
           alert("E-mail ou senha inválidos! Mensagem do servidor: " + (result.message || ""));
