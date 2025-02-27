@@ -259,14 +259,23 @@
 
     async function carregarAgendamentos() {
       try {
+        console.log('Tentando carregar agendamentos com token:', token);
         const response = await fetch(`${API_URL}/agendamentos`, {
           headers: { Authorization: token },
         });
+        if (!response.ok) {
+          throw new Error(`Erro HTTP: ${response.status}`);
+        }
         const agendamentos = await response.json();
-        console.log('Agendamentos carregados:', agendamentos);
+        console.log('Agendamentos recebidos:', agendamentos);
 
         const lista = document.getElementById('listaAgendamentos');
         lista.innerHTML = '';
+
+        if (!agendamentos || agendamentos.length === 0) {
+          lista.innerHTML = '<tr><td colspan="4">Nenhum agendamento encontrado.</td></tr>';
+          return;
+        }
 
         const groupedByDate = agendamentos.reduce((acc, ag) => {
           const dateKey = ag.data;
@@ -299,7 +308,7 @@
         }
       } catch (error) {
         console.error('Erro ao carregar agendamentos:', error);
-        alert('Erro ao carregar agendamentos. Tente novamente.');
+        alert('Erro ao carregar agendamentos. Tente novamente. Detalhes: ' + error.message);
       }
     }
 
@@ -381,6 +390,10 @@
         console.log('Clientes carregados:', clientes);
         const lista = document.getElementById('listaClientes');
         lista.innerHTML = '';
+        if (!clientes || clientes.length === 0) {
+          lista.innerHTML = '<tr><td colspan="5">Nenhum cliente encontrado.</td></tr>';
+          return;
+        }
         clientes.forEach(cliente => {
           const dataRegistro = cliente.dataCriacao ? new Date(cliente.dataCriacao).toLocaleDateString('pt-BR') : 'Data não disponível';
           const tr = document.createElement('tr');
@@ -395,7 +408,7 @@
         });
       } catch (error) {
         console.error('Erro ao carregar clientes:', error);
-        alert('Erro ao carregar clientes. Tente novamente.');
+        alert('Erro ao carregar clientes. Tente novamente. Detalhes: ' + error.message);
       }
     }
 
