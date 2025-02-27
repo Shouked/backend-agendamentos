@@ -230,12 +230,13 @@ body.logged-in .sidebar.active #menu-toggle {
 
 /* Sidebar com apenas ícones após o login */
 body.logged-in .sidebar {
-  left: 0; /* Aparece automaticamente após login */
+  left: -250px; /* Ocultar sidebar fechada após login por padrão em mobile */
   width: 60px; /* Somente ícones */
   padding: 60px 0 20px; /* Manter o padding-top para descer os ícones */
 }
 
 body.logged-in .sidebar.active {
+  left: 0; /* Expande para mostrar ícones ao abrir */
   width: 250px; /* Expande para mostrar texto ao abrir */
 }
 
@@ -319,15 +320,17 @@ body.logged-in .sidebar.active ~ .container::before {
     left: 0; /* Sempre visível no desktop */
     width: 60px; /* Somente ícones por padrão no desktop */
     padding: 20px 0; /* Ajustar padding para desktop */
-    height: auto; /* Remover altura fixa para ajustar ao conteúdo */
-    position: absolute; /* Mudar para absolute no desktop para evitar sobreposição */
+    height: auto; /* Ajustar altura ao conteúdo */
+    position: absolute; /* Evitar sobreposição no desktop */
     top: 0;
+    z-index: 1000; /* Ajustar z-index para não sobrepor o conteúdo */
   }
 
   .sidebar.active {
     width: 250px; /* Expande para mostrar texto ao abrir */
-    position: fixed; /* Voltar a fixed ao abrir para fixar na lateral */
+    position: fixed; /* Fixar na lateral ao abrir */
     height: 100vh; /* Usar 100% da altura da viewport */
+    z-index: 1001; /* Garantir que fique acima da página */
   }
 
   .sidebar-item {
@@ -384,6 +387,7 @@ body.logged-in .sidebar.active ~ .container::before {
   .container {
     margin-left: 60px; /* Espaço para a sidebar minimizada no desktop */
     position: relative; /* Garantir posicionamento relativo por padrão */
+    overflow: auto; /* Garantir rolagem normal por padrão */
   }
 
   .container.shifted {
