@@ -23,6 +23,10 @@ body.logged-out .sidebar {
   position: relative; /* Para posicionar o ícone corretamente */
 }
 
+#login, #painel {
+  overflow: auto; /* Garantir rolagem normal nas seções de login e painel */
+}
+
 h2 {
   text-align: center;
   color: #d81b60;
