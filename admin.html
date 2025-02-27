@@ -124,6 +124,14 @@
     const API_URL = "https://agendamentos-backend.onrender.com";
     let token = null;
 
+    // Toggle sidebar (simples, sem rolagem complexa)
+    document.getElementById('menu-toggle').addEventListener('click', () => {
+      const sidebar = document.getElementById('sidebar');
+      const painel = document.getElementById('painel');
+      sidebar.classList.toggle('active');
+      painel.classList.toggle('shifted');
+    });
+
     async function login() {
       const loginBtn = document.getElementById('loginBtn');
       loginBtn.disabled = true;
