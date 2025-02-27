@@ -164,7 +164,6 @@
           document.getElementById("painel").style.display = "block";
           document.body.classList.remove('logged-out');
           document.body.classList.add('logged-in');
-          toggleSection('agendamentoSection');
           inicializarFlatpickr();
           await carregarClientes();
         } else {
@@ -274,22 +273,28 @@
 
     async function carregarAgendamentos() {
       try {
+        console.log('Tentando carregar agendamentos com token:', token);
         const response = await fetch(`${API_URL}/agendamentos`, {
           headers: { Authorization: token },
         });
         if (!response.ok) {
-          throw new Error(`Erro HTTP: ${response.status}`);
+          throw new Error(`Erro HTTP: ${response.status} - ${response.statusText}`);
         }
         const agendamentos = await response.json();
+        console.log('Agendamentos recebidos:', agendamentos);
+
         const lista = document.getElementById('listaAgendamentos');
         lista.innerHTML = '';
 
-        if (!agendamentos || agendamentos.length === 0) {
+        if (!Array.isArray(agendamentos) || agendamentos.length === 0) {
           lista.innerHTML = '<p>Nenhum agendamento encontrado.</p>';
           return;
         }
 
-        const groupedByDate = agendamentos.reduce((acc, ag) => {
+        const validAgendamentos = agendamentos.filter(ag => ag._id); // Filtra agendamentos sem _id
+        console.log('Agendamentos válidos após filtro:', validAgendamentos);
+
+        const groupedByDate = validAgendamentos.reduce((acc, ag) => {
           const dateKey = ag.data;
           if (!acc[dateKey]) acc[dateKey] = [];
           acc[dateKey].push(ag);
@@ -331,7 +336,8 @@
         }
       } catch (error) {
         console.error('Erro ao carregar agendamentos:', error);
-        alert('Erro ao carregar agendamentos. Tente novamente. Detalhes: ' + error.message);
+        const lista = document.getElementById('listaAgendamentos');
+        lista.innerHTML = '<p>Erro ao carregar agendamentos. Tente novamente.</p>';
       }
     }
 
@@ -376,6 +382,7 @@
       const agendamentoDados = { procedimento, data, horario, cliente, telefone, email };
 
       try {
+        console.log('Criando agendamento com dados:', agendamentoDados, 'Token:', token);
         const response = await fetch(`${API_URL}/agendamentos`, {
           method: 'POST',
           headers: {
@@ -384,7 +391,11 @@
           },
           body: JSON.stringify(agendamentoDados)
         });
+        if (!response.ok) {
+          throw new Error(`Erro HTTP: ${response.status} - ${response.statusText}`);
+        }
         const result = await response.json();
+        console.log('Resposta do servidor:', result);
         if (result.success) {
           alert("Agendamento criado com sucesso! O cliente receberá uma confirmação por e-mail.");
           document.getElementById('procedimento').value = '';
@@ -393,7 +404,7 @@
           document.getElementById('cliente').value = '';
           document.getElementById('telefone').value = '';
           document.getElementById('emailAgendamento').value = '';
-          toggleSection('agendamentosSection'); // Mudança pra mostrar a lista atualizada
+          toggleSection('agendamentosSection');
           await carregarAgendamentos();
         } else {
           alert(result.message || "Erro ao criar agendamento!");
@@ -410,6 +421,7 @@
           headers: { Authorization: token },
         });
         const clientes = await response.json();
+        console.log('Clientes carregados:', clientes);
         const lista = document.getElementById('listaClientes');
         lista.innerHTML = '';
         if (!clientes || clientes.length === 0) {
