@@ -9,15 +9,6 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"> <!-- Para ícones -->
 </head>
 <body class="logged-out">
-  <button id="menu-toggle">☰</button>
-  <div class="sidebar" id="sidebar">
-    <a href="#" class="sidebar-item" onclick="toggleSection('agendamentosSection')"><i class="fas fa-calendar-alt sidebar-icon"></i> Agenda</a>
-    <a href="#" class="sidebar-item" onclick="toggleSection('clientesSection')"><i class="fas fa-users sidebar-icon"></i> Clientes</a>
-    <a href="#" class="sidebar-item" onclick="toggleSection('cobrançasSection')"><i class="fas fa-money-bill-wave sidebar-icon"></i> Cobranças</a>
-    <a href="#" class="sidebar-item" onclick="toggleSection('relatoriosSection')"><i class="fas fa-chart-bar sidebar-icon"></i> Relatórios</a>
-    <a href="#" class="sidebar-item" onclick="toggleSection('mensagensSection')"><i class="fas fa-envelope sidebar-icon"></i> Mensagens Predefinidas</a>
-  </div>
-
   <div class="container" id="login">
     <h2>Login do Proprietário</h2>
     <input type="email" id="email" placeholder="E-mail" /><br />
@@ -25,6 +16,14 @@
     <button id="loginBtn" onclick="login()">Entrar</button>
   </div>
   <div class="container" id="painel" style="display: none">
+    <button id="menu-toggle">☰</button>
+    <div class="sidebar" id="sidebar">
+      <a href="#" class="sidebar-item" onclick="toggleSection('agendamentosSection')"><i class="fas fa-calendar-alt sidebar-icon"></i> Agenda</a>
+      <a href="#" class="sidebar-item" onclick="toggleSection('clientesSection')"><i class="fas fa-users sidebar-icon"></i> Clientes</a>
+      <a href="#" class="sidebar-item" onclick="toggleSection('cobrançasSection')"><i class="fas fa-money-bill-wave sidebar-icon"></i> Cobranças</a>
+      <a href="#" class="sidebar-item" onclick="toggleSection('relatoriosSection')"><i class="fas fa-chart-bar sidebar-icon"></i> Relatórios</a>
+      <a href="#" class="sidebar-item" onclick="toggleSection('mensagensSection')"><i class="fas fa-envelope sidebar-icon"></i> Mensagens Predefinidas</a>
+    </div>
     <h2>Painel do Proprietário</h2>
 
     <div id="agendamentoSection" class="section">
@@ -169,19 +168,22 @@
       const sections = ['agendamentoSection', 'agendamentosSection', 'clientesSection', 'cobrançasSection', 'relatoriosSection', 'mensagensSection'];
       sections.forEach(id => {
         const section = document.getElementById(id);
-        if (id === sectionId) {
-          section.style.display = section.style.display === 'block' ? 'none' : 'block';
-          if (id === 'agendamentosSection' && section.style.display === 'block') {
-            carregarAgendamentos();
-          } else if (id === 'clientesSection' && section.style.display === 'block') {
-            carregarClientes();
-          } else if (id === 'relatoriosSection' && section.style.display === 'block') {
-            carregarRelatorios();
-          }
-        } else {
-          section.style.display = 'none';
-        }
+        section.style.display = 'none'; // Limpar todas as seções antes de exibir
+        const lista = section.querySelector('tbody') || section.querySelector('div');
+        if (lista) lista.innerHTML = ''; // Limpar conteúdo anterior
       });
+      
+      const section = document.getElementById(sectionId);
+      if (section) {
+        section.style.display = 'block';
+        if (sectionId === 'agendamentosSection') {
+          carregarAgendamentos();
+        } else if (sectionId === 'clientesSection') {
+          carregarClientes();
+        } else if (sectionId === 'relatoriosSection') {
+          carregarRelatorios();
+        }
+      }
       document.getElementById('sidebar').classList.remove('active');
       document.getElementById('painel').classList.remove('shifted');
     }
