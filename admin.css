@@ -196,7 +196,7 @@ th {
   transition: opacity 0.3s;
 }
 
-/* Esconde o ícone ao rolar */
+/* Esconde o ícone ao rolar (apenas em mobile) */
 #menu-toggle.hidden {
   opacity: 0;
   pointer-events: none;
@@ -226,6 +226,12 @@ body.sidebar-open {
 
   #menu-toggle {
     display: block;
+  }
+
+  /* No desktop, o ícone não some ao rolar */
+  #menu-toggle.hidden {
+    opacity: 1; /* Mantém visível */
+    pointer-events: auto; /* Mantém clicável */
   }
 }
 
