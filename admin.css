@@ -3,6 +3,8 @@ body {
   margin: 10px;
   background: linear-gradient(135deg, #f9e6f0, #fce4ec);
   color: #333;
+  margin-left: 0;
+  transition: margin-left 0.3s;
 }
 .container {
   max-width: 100%;
@@ -134,15 +136,86 @@ th {
   background: rgba(0,0,0,0.5);
   z-index: 999;
 }
+
+/* Sidebar Styles */
+.sidebar {
+  height: 100%;
+  width: 250px;
+  position: fixed;
+  top: 0;
+  left: -250px;
+  background-color: #f9e6f0;
+  padding: 20px 0;
+  transition: 0.3s;
+  z-index: 1001;
+  box-shadow: 2px 0 5px rgba(0,0,0,0.2);
+}
+
+.sidebar.active {
+  left: 0;
+}
+
+.sidebar-item {
+  padding: 15px 20px;
+  text-decoration: none;
+  font-size: 16px;
+  color: #333;
+  display: block;
+  transition: 0.2s;
+}
+
+.sidebar-item:hover {
+  background-color: #e91e63;
+  color: white;
+}
+
+.sidebar-icon {
+  margin-right: 10px;
+  font-size: 18px;
+}
+
+#menu-toggle {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  z-index: 1002;
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #d81b60;
+  cursor: pointer;
+  padding: 5px;
+}
+
+.container {
+  margin-left: 0;
+  transition: margin-left 0.3s;
+}
+
+.container.shifted {
+  margin-left: 250px;
+}
+
 @media (max-width: 600px) {
+  #menu-toggle {
+    display: block;
+  }
+  .sidebar {
+    left: -250px;
+  }
+  .sidebar.active {
+    left: 0;
+  }
+  .container {
+    margin-left: 0;
+  }
+  .container.shifted {
+    margin-left: 0; /* Ajustar para mobile */
+  }
   .dashboard-button {
     flex: 1 1 100%;
     max-width: none;
     padding: 12px;
-  }
-  .container {
-    padding: 10px;
-    margin: 5px;
   }
   table, thead, tbody, th, td, tr {
     display: block;
@@ -171,12 +244,10 @@ th {
     font-size: 12px;
     color: #e91e63;
   }
-  /* Para a tabela de agendamentos */
   #agendamentosList td:nth-child(1):before { content: "Selecionar"; }
   #agendamentosList td:nth-child(2):before { content: "Nome"; }
   #agendamentosList td:nth-child(3):before { content: "Procedimento"; }
-  #agendamentsList td:nth-child(4):before { content: "Horário"; }
-  /* Para a tabela de clientes */
+  #agendamentosList td:nth-child(4):before { content: "Horário"; }
   #clientesTable td:nth-child(1):before { content: "Selecionar"; }
   #clientesTable td:nth-child(2):before { content: "Nome"; }
   #clientesTable td:nth-child(3):before { content: "E-mail"; }
