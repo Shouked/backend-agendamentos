@@ -5,12 +5,12 @@ body {
   color: #333;
   margin-left: 0;
   transition: margin-left 0.3s;
-  overflow-x: hidden; /* Evitar rolagem horizontal */
+  overflow-x: hidden;
 }
 
 body.logged-out #menu-toggle,
 body.logged-out .sidebar {
-  display: none; /* Oculta a sidebar e o ícone antes do login */
+  display: none;
 }
 
 .container {
@@ -21,11 +21,11 @@ body.logged-out .sidebar {
   border-radius: 15px;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
   position: relative;
-  overflow: auto; /* Garantir rolagem normal por padrão */
+  overflow: auto;
 }
 
 #login, #painel {
-  overflow: auto; /* Garantir rolagem normal nas seções */
+  overflow: auto;
 }
 
 h2 {
@@ -196,15 +196,65 @@ th {
   transition: opacity 0.3s;
 }
 
-/* Esconde o ícone ao rolar (apenas em mobile) */
 #menu-toggle.hidden {
   opacity: 0;
   pointer-events: none;
 }
 
-/* Congelar o body ao abrir a sidebar */
 body.sidebar-open {
   overflow: hidden;
+}
+
+/* Estilos para o accordion de agendamentos */
+.agendamento-date {
+  cursor: pointer;
+  background-color: #fce4ec;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #d81b60;
+}
+
+.agendamento-date:hover {
+  background-color: #f8bbd0;
+}
+
+.agendamento-list {
+  display: none;
+  padding: 10px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  margin-bottom: 10px;
+}
+
+.agendamento-item {
+  position: relative;
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.agendamento-item:last-child {
+  border-bottom: none;
+}
+
+.agendamento-item input[type="checkbox"] {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.edit-btn {
+  background-color: #2196f3;
+  padding: 5px 10px;
+  font-size: 12px;
+  border-radius: 3px;
+  margin-left: 10px;
+  display: inline-block;
 }
 
 /* Ajustes para desktop */
@@ -228,10 +278,15 @@ body.sidebar-open {
     display: block;
   }
 
-  /* No desktop, o ícone não some ao rolar */
   #menu-toggle.hidden {
-    opacity: 1; /* Mantém visível */
-    pointer-events: auto; /* Mantém clicável */
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .agendamento-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
   }
 }
 
@@ -250,45 +305,11 @@ body.sidebar-open {
     margin-left: 0;
   }
 
-  table, thead, tbody, th, td, tr {
-    display: block;
+  .agendamento-item {
+    padding: 15px 5px;
   }
 
-  thead tr {
-    position: absolute;
-    top: -9999px;
-    left: -9999px;
+  .agendamento-item input[type="checkbox"] {
+    top: 10px;
   }
-
-  tr {
-    margin-bottom: 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-  }
-
-  td {
-    border: none;
-    position: relative;
-    padding-left: 35%;
-    text-align: left;
-  }
-
-  td:before {
-    position: absolute;
-    left: 8px;
-    content: attr(data-label);
-    font-weight: bold;
-    font-size: 12px;
-    color: #e91b60;
-  }
-
-  #agendamentosList td:nth-child(1):before { content: "Selecionar"; }
-  #agendamentosList td:nth-child(2):before { content: "Nome"; }
-  #agendamentosList td:nth-child(3):before { content: "Procedimento"; }
-  #agendamentosList td:nth-child(4):before { content: "Horário"; }
-  #clientesTable td:nth-child(1):before { content: "Selecionar"; }
-  #clientesTable td:nth-child(2):before { content: "Nome"; }
-  #clientesTable td:nth-child(3):before { content: "E-mail"; }
-  #clientesTable td:nth-child(4):before { content: "Telefone"; }
-  #clientesTable td:nth-child(5):before { content: "Data Registro"; }
 }
