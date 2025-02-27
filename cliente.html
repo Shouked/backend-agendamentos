@@ -316,14 +316,28 @@
     }
 
     async function carregarAgendamentosCliente() {
+      console.log('Carregando agendamentos do cliente com token:', tokenCliente);
+      const lista = document.getElementById('listaAgendamentosCliente');
+      lista.innerHTML = ''; // Limpar a lista antes de carregar
       try {
         const response = await fetch(`${API_URL}/clientes/agendamentos`, {
-          headers: { 'Authorization': tokenCliente }
+          headers: { 
+            'Authorization': tokenCliente,
+            'Content-Type': 'application/json'
+          }
         });
+        if (!response.ok) {
+          throw new Error(`Erro HTTP: ${response.status} - ${response.statusText}`);
+        }
         const agendamentos = await response.json();
+        console.log('Agendamentos recebidos:', agendamentos);
+
+        if (!Array.isArray(agendamentos) || agendamentos.length === 0) {
+          lista.innerHTML = '<tr><td colspan="6">Nenhum agendamento encontrado.</td></tr>';
+          return;
+        }
+
         agendamentos.sort((a, b) => new Date(a.data + ' ' + a.horario) - new Date(b.data + ' ' + b.horario));
-        const lista = document.getElementById('listaAgendamentosCliente');
-        lista.innerHTML = '';
         agendamentos.forEach(ag => {
           const [year, month, day] = ag.data.split('-');
           const dataBr = `${day}/${month}/${year}`;
@@ -343,7 +357,7 @@
         });
       } catch (error) {
         console.error('Erro ao carregar agendamentos:', error);
-        alert('Erro ao carregar agendamentos. Tente novamente.');
+        lista.innerHTML = '<tr><td colspan="6">Erro ao carregar agendamentos. Tente novamente.</td></tr>';
       }
     }
 
