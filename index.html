@@ -79,6 +79,7 @@
       try {
         const response = await fetch(`${API_URL}/horarios-disponiveis?data=${dataISO}`);
         const horarios = await response.json();
+        console.log('Horários disponíveis recebidos:', horarios);
         const horarioSelect = document.getElementById('horario');
         horarioSelect.innerHTML = '<option value="">Selecione o horário</option>';
         horarios.forEach(horario => {
@@ -127,15 +128,20 @@
       submitBtn.disabled = true;
       submitBtn.textContent = 'Carregando...';
       try {
+        console.log('Salvando agendamento com token:', tokenCliente, 'Dados:', dados);
         const response = await fetch(`${API_URL}/agendamentos`, {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
-            'Authorization': tokenCliente
+            ...(tokenCliente ? { 'Authorization': tokenCliente } : {})
           },
           body: JSON.stringify(dados)
         });
+        if (!response.ok) {
+          throw new Error(`Erro HTTP: ${response.status} - ${response.statusText}`);
+        }
         const result = await response.json();
+        console.log('Resposta do servidor:', result);
         if (result.success) {
           document.getElementById('agendamentoForm').reset();
           if (!tokenCliente) {
@@ -237,6 +243,7 @@
       if (!tokenCliente) {
         localStorage.setItem('agendamentoPendente', JSON.stringify(agendamentoDados));
         localStorage.setItem('emailPendente', email);
+        console.log('Agendamento pendente salvo:', agendamentoDados);
         window.location.href = `/cliente.html?email=${encodeURIComponent(email)}`;
       } else {
         agendamentoPendente = agendamentoDados;
@@ -249,6 +256,7 @@
         const agendamentoPendente = localStorage.getItem('agendamentoPendente');
         if (agendamentoPendente) {
           const dados = JSON.parse(agendamentoPendente);
+          console.log('Carregando agendamento pendente na carga da página:', dados);
           document.getElementById('procedimento').value = dados.procedimento;
           const [year, month, day] = dados.data.split('-');
           document.getElementById('data').value = `${day}/${month}/${year}`;
