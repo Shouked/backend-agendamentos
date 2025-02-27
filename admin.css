@@ -5,6 +5,7 @@ body {
   color: #333;
   margin-left: 0;
   transition: margin-left 0.3s;
+  overflow-x: hidden; /* Evitar rolagem horizontal */
 }
 
 body.logged-out #menu-toggle,
@@ -333,6 +334,14 @@ body.logged-in .sidebar.active .sidebar-item span {
     top: 10px;
     left: 10px;
     z-index: 1002;
+  }
+
+  /* Ícone ☰ dentro da sidebar quando aberta no desktop */
+  body.logged-in .sidebar.active #menu-toggle {
+    position: absolute; /* Fica dentro da sidebar, no topo inicial */
+    top: 10px;
+    left: 10px;
+    z-index: 1004;
   }
 
   /* Congelar a página principal ao abrir a sidebar no desktop */
