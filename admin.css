@@ -171,10 +171,11 @@ th {
   top: 0;
   left: -250px;
   background-color: #f9e6f0;
-  padding: 20px 0;
+  padding: 60px 0 20px; /* Descer os botões com padding-top */
   transition: 0.3s;
   z-index: 1001;
   box-shadow: 2px 0 5px rgba(0,0,0,0.2);
+  overflow-y: auto; /* Permite rolagem na sidebar se houver muitos botões */
 }
 
 .sidebar.active {
@@ -222,7 +223,7 @@ th {
 body.logged-in .sidebar {
   left: 0; /* Aparece automaticamente após login */
   width: 60px; /* Somente ícones */
-  padding: 20px 0;
+  padding: 60px 0 20px; /* Manter o padding-top para descer os ícones */
 }
 
 body.logged-in .sidebar.active {
@@ -244,6 +245,30 @@ body.logged-in .sidebar-item span {
   display: none; /* Ocultar texto inicialmente */
 }
 
+/* Fixar o ícone ☰ no topo da sidebar durante rolagem */
+body.logged-in .sidebar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 60px; /* Mesma largura da sidebar minimizada */
+  height: 60px; /* Espaço para o ícone ☰ */
+  z-index: 1003;
+}
+
+body.logged-in #menu-toggle {
+  position: absolute; /* Fixo dentro da sidebar minimizada */
+  top: 10px;
+  left: 10px;
+  z-index: 1004;
+}
+
+body.logged-in .sidebar.active #menu-toggle {
+  position: fixed; /* Volta a ser fixo no canto esquerdo ao abrir */
+  top: 10px;
+  left: 10px;
+}
+
 body.logged-in .sidebar.active .sidebar-item {
   justify-content: flex-start; /* Alinhar ícones e texto à esquerda ao abrir */
   font-size: 16px; /* Mostrar texto ao abrir */
@@ -251,6 +276,13 @@ body.logged-in .sidebar.active .sidebar-item {
 
 body.logged-in .sidebar.active .sidebar-item span {
   display: inline; /* Mostrar texto ao abrir */
+}
+
+/* Fixar o ícone ☰ no topo da página durante rolagem */
+#menu-toggle {
+  position: fixed !important; /* Forçar fixo no topo da página */
+  top: 10px !important;
+  left: 10px !important;
 }
 
 .container {
@@ -262,6 +294,56 @@ body.logged-in .sidebar.active .sidebar-item span {
   margin-left: 250px;
 }
 
+/* Ajustes para PC (desktop) */
+@media (min-width: 601px) {
+  .sidebar {
+    left: 0; /* Sempre visível no desktop */
+    width: 60px; /* Somente ícones por padrão no desktop */
+    padding: 20px 0; /* Ajustar padding para desktop */
+  }
+
+  .sidebar.active {
+    width: 250px; /* Expande para mostrar texto ao abrir */
+  }
+
+  .sidebar-item {
+    padding: 15px 10px;
+    justify-content: center; /* Centralizar ícones no desktop */
+    font-size: 0; /* Ocultar texto por padrão */
+  }
+
+  .sidebar-item:hover {
+    background-color: #e91e63;
+    color: white;
+  }
+
+  .sidebar-item span {
+    display: none; /* Ocultar texto inicialmente no desktop */
+  }
+
+  .sidebar.active .sidebar-item {
+    justify-content: flex-start; /* Alinhar ícones e texto à esquerda ao abrir */
+    font-size: 16px; /* Mostrar texto ao abrir */
+  }
+
+  .sidebar.active .sidebar-item span {
+    display: inline; /* Mostrar texto ao abrir */
+  }
+
+  #menu-toggle {
+    display: none; /* Ocultar ícone ☰ no desktop, pois a sidebar é sempre visível */
+  }
+
+  .container {
+    margin-left: 60px; /* Espaço para a sidebar minimizada no desktop */
+  }
+
+  .container.shifted {
+    margin-left: 250px; /* Espaço para a sidebar expandida no desktop */
+  }
+}
+
+/* Ajustes para mobile */
 @media (max-width: 600px) {
   #menu-toggle {
     display: block;
