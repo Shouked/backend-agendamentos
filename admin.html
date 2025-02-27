@@ -18,11 +18,11 @@
   <div class="container" id="painel" style="display: none">
     <button id="menu-toggle">☰</button>
     <div class="sidebar" id="sidebar">
-      <a href="#" class="sidebar-item" onclick="toggleSection('agendamentosSection')"><i class="fas fa-calendar-alt sidebar-icon"></i> Agenda</a>
-      <a href="#" class="sidebar-item" onclick="toggleSection('clientesSection')"><i class="fas fa-users sidebar-icon"></i> Clientes</a>
-      <a href="#" class="sidebar-item" onclick="toggleSection('cobrançasSection')"><i class="fas fa-money-bill-wave sidebar-icon"></i> Cobranças</a>
-      <a href="#" class="sidebar-item" onclick="toggleSection('relatoriosSection')"><i class="fas fa-chart-bar sidebar-icon"></i> Relatórios</a>
-      <a href="#" class="sidebar-item" onclick="toggleSection('mensagensSection')"><i class="fas fa-envelope sidebar-icon"></i> Mensagens Predefinidas</a>
+      <a href="#" class="sidebar-item" onclick="toggleSection('agendamentosSection')"><i class="fas fa-calendar-alt sidebar-icon"></i><span> Agenda</span></a>
+      <a href="#" class="sidebar-item" onclick="toggleSection('clientesSection')"><i class="fas fa-users sidebar-icon"></i><span> Clientes</span></a>
+      <a href="#" class="sidebar-item" onclick="toggleSection('cobrançasSection')"><i class="fas fa-money-bill-wave sidebar-icon"></i><span> Cobranças</span></a>
+      <a href="#" class="sidebar-item" onclick="toggleSection('relatoriosSection')"><i class="fas fa-chart-bar sidebar-icon"></i><span> Relatórios</span></a>
+      <a href="#" class="sidebar-item" onclick="toggleSection('mensagensSection')"><i class="fas fa-envelope sidebar-icon"></i><span> Mensagens Predefinidas</span></a>
     </div>
     <h2>Painel do Proprietário</h2>
 
@@ -484,79 +484,3 @@
             headers: {
               "Content-Type": "application/json",
               Authorization: token,
-            },
-            body: JSON.stringify({ ids: selecionados }),
-          });
-          const result = await response.json();
-          if (result.success) {
-            alert(result.message);
-            await carregarAgendamentos();
-          } else {
-            alert(result.message || "Erro ao excluir agendamentos!");
-          }
-        } catch (error) {
-          console.error('Erro ao excluir agendamentos:', error);
-          alert('Erro ao conectar ao servidor. Tente novamente.');
-        }
-      }
-    }
-
-    function selecionarTodosClientes() {
-      const checkboxes = document.querySelectorAll(".select-cliente");
-      checkboxes.forEach((cb) => (cb.checked = true));
-    }
-
-    async function excluirSelecionadosClientes() {
-      const selecionados = Array.from(
-        document.querySelectorAll(".select-cliente:checked")
-      ).map((cb) => cb.value);
-      if (selecionados.length === 0) {
-        alert("Nenhum cliente selecionado!");
-        return;
-      }
-      if (
-        confirm(
-          `Tem certeza que deseja excluir ${selecionados.length} cliente(s)?`
-        )
-      ) {
-        try {
-          const response = await fetch(`${API_URL}/clientes/muitos`, {
-            method: "DELETE",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: token,
-            },
-            body: JSON.stringify({ ids: selecionados }),
-          });
-          const result = await response.json();
-          if (result.success) {
-            alert(result.message);
-            await carregarClientes();
-          } else {
-            alert(result.message || "Erro ao excluir clientes!");
-          }
-        } catch (error) {
-          console.error('Erro ao excluir clientes:', error);
-          alert('Erro ao conectar ao servidor. Tente novamente.');
-        }
-      }
-    }
-
-    async function carregarRelatorios() {
-      try {
-        const response = await fetch(`${API_URL}/relatorios/agendamentos-por-dia`, {
-          headers: { Authorization: token }
-        });
-        const relatorios = await response.json();
-        const conteudo = document.getElementById('relatoriosConteudo');
-        conteudo.innerHTML = '<h4>Agendamentos por Dia:</h4><ul>' +
-          relatorios.map(r => `<li>Data: ${r._id}, Total: ${r.total}</li>`).join('') +
-          '</ul>';
-      } catch (error) {
-        console.error('Erro ao carregar relatórios:', error);
-        alert('Erro ao carregar relatórios. Tente novamente.');
-      }
-    }
-  </script>
-</body>
-</html>
