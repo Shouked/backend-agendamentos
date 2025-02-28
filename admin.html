@@ -11,8 +11,8 @@
 <body class="logged-out">
   <div class="container" id="login">
     <h2>Login do Proprietário</h2>
-    <input type="email" id="email" placeholder="E-mail" /><br />
-    <input type="password" id="senha" placeholder="Senha" /><br />
+    <input type="email" id="email" placeholder="E-mail" autocomplete="off" /><br />
+    <input type="password" id="senha" placeholder="Senha" autocomplete="new-password" /><br />
     <button id="loginBtn" onclick="login()">Entrar</button>
   </div>
   <div class="container" id="painel" style="display: none">
@@ -405,7 +405,7 @@
           document.getElementById('horario').innerHTML = '<option value="">Selecione o horário</option>';
           document.getElementById('cliente').value = '';
           document.getElementById('telefone').value = '';
-          emailInput.value = ''; // Limpa o campo explicitamente
+          emailInput.value = '';
           toggleSection('agendamentosSection');
           await carregarAgendamentos();
         } else {
