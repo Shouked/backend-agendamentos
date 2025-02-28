@@ -20,7 +20,7 @@ body {
 
 /* Centralizar o container como nos outros arquivos */
 .container {
-  max-width: clamp(300px, 90%, 900px); /* Ajustado para desktop */
+  max-width: clamp(300px, 90%, 900px); /* Ajustado para desktop, mantendo responsividade */
   margin: clamp(10px, 2vw, 20px) auto; /* Centralizado com margens dinâmicas */
   padding: clamp(15px, 3vw, 25px);
   background: white;
@@ -37,12 +37,12 @@ h2 {
 
 input, select, button {
   width: 100%;
-  padding: 12px;
+  padding: 12px; /* Mantido fixo como no seu arquivo */
   margin: 10px 0;
   border: 1px solid #e91e63;
   border-radius: 5px;
   box-sizing: border-box;
-  font-size: 16px;
+  font-size: 16px; /* Mantido fixo como no seu arquivo */
 }
 
 button {
@@ -129,6 +129,7 @@ th {
   display: flex;
   justify-content: space-between;
   margin-bottom: 15px;
+  flex-wrap: wrap; /* Adicionado para mobile, mantendo desktop intacto */
 }
 
 .bulk-delete-btn {
@@ -244,6 +245,10 @@ th {
   }
   th, td {
     min-width: 100px;
+  }
+  .action-buttons button {
+    width: 48%; /* Divide botões em mobile */
+    margin: 5px 0;
   }
 }
 
