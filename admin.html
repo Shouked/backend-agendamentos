@@ -122,7 +122,8 @@
     let token = localStorage.getItem('tokenProprietario');
     let isApagando = false;
 
-    document.getElementById('menu-toggle').addEventListener('click', () => {
+    document.getElementById('menu-toggle').addEventListener('click', (e) => {
+      e.preventDefault(); // Impede propagação desnecessária
       const sidebar = document.getElementById('sidebar');
       const body = document.body;
       const overlay = document.getElementById('overlay');
@@ -131,13 +132,15 @@
       overlay.style.display = sidebar.classList.contains('active') ? 'block' : 'none';
     });
 
-    // Ocultar sidebar ao clicar fora
-    document.getElementById('overlay').addEventListener('click', () => {
-      const sidebar = document.getElementById('sidebar');
-      const body = document.body;
-      sidebar.classList.remove('active');
-      body.classList.remove('sidebar-open');
-      document.getElementById('overlay').style.display = 'none';
+    // Ocultar sidebar ao clicar fora, mas permitir cliques na sidebar
+    document.getElementById('overlay').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('overlay')) { // Só fecha se clicar no overlay, não na sidebar
+        const sidebar = document.getElementById('sidebar');
+        const body = document.body;
+        sidebar.classList.remove('active');
+        body.classList.remove('sidebar-open');
+        document.getElementById('overlay').style.display = 'none';
+      }
     });
 
     window.addEventListener('scroll', () => {
