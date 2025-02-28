@@ -12,13 +12,10 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh; /* Garante centralização vertical */
-  width: 100%;
 }
 
 .logged-in {
   display: block;
-  position: relative; /* Garante que o conteúdo fique sobre o fundo */
 }
 
 /* Centralizar o container como nos outros arquivos */
@@ -30,17 +27,6 @@ body {
   border-radius: 10px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   position: relative;
-  z-index: 1; /* Garante que fique acima do overlay */
-}
-
-.main-content {
-  margin-left: 250px; /* Espaço para a sidebar em desktop */
-  padding-top: 60px; /* Espaço para o botão fixo */
-  transition: margin-left 0.3s ease;
-}
-
-.logged-in.sidebar-open .main-content {
-  margin-left: 0; /* Ajusta quando sidebar está aberta em mobile */
 }
 
 h2 {
@@ -143,7 +129,6 @@ th {
   display: flex;
   justify-content: space-between;
   margin-bottom: 15px;
-  flex-wrap: wrap; /* Mantido para mobile */
 }
 
 .bulk-delete-btn {
@@ -170,8 +155,7 @@ th {
   background: #fff;
   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
   transition: left 0.3s ease;
-  z-index: 1001; /* Aumentado para sobrepor o overlay */
-  overflow-y: auto; /* Permite rolagem se necessário */
+  z-index: 1000;
 }
 
 .sidebar.active {
@@ -186,7 +170,6 @@ th {
   text-decoration: none;
   border-bottom: 1px solid #f0f0f0;
   transition: background-color 0.3s ease;
-  z-index: 1002; /* Garante que os itens da sidebar fiquem acessíveis */
 }
 
 .sidebar-item:hover {
@@ -199,26 +182,26 @@ th {
 }
 
 #menu-toggle {
-  position: sticky; /* Fixo no topo da sidebar */
-  top: 0;
-  left: 0;
-  background: transparent; /* Remove fundo vermelho */
-  color: #d81b60; /* Cor do ícone */
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  background-color: #e91e63;
+  color: white;
   border: none;
   padding: 10px;
   font-size: 18px;
   cursor: pointer;
   z-index: 1100;
-  width: 40px; /* Limita o tamanho do botão */
-  height: 40px; /* Limita o tamanho do botão */
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  border-radius: 5px;
   transition: opacity 0.3s ease;
 }
 
 #menu-toggle.hidden {
   opacity: 0;
+}
+
+.sidebar-open #menu-toggle {
+  left: 260px;
 }
 
 .overlay {
@@ -228,13 +211,8 @@ th {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.1); /* Escurecimento mais leve */
-  z-index: 1000; /* Menor que a sidebar para não bloquear */
-  pointer-events: none; /* Desativa cliques no overlay por padrão */
-}
-
-.sidebar-open .overlay {
-  pointer-events: auto; /* Ativa cliques no overlay apenas quando a sidebar está aberta */
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
 }
 
 .modal {
@@ -260,10 +238,6 @@ th {
     margin: 10px;
     padding: 15px;
   }
-  .main-content {
-    margin-left: 0; /* Remove margem em mobile */
-    padding-top: 10px; /* Ajusta padding em mobile */
-  }
   table {
     display: block;
     overflow-x: auto;
@@ -271,18 +245,10 @@ th {
   th, td {
     min-width: 100px;
   }
-  .action-buttons button {
-    width: 48%; /* Divide botões em mobile */
-    margin: 5px 0;
-  }
 }
 
 @media (min-width: 601px) {
   .sidebar-open {
     margin-left: 250px;
-  }
-  .main-content {
-    margin-left: 250px; /* Mantém margem para sidebar em desktop */
-    padding-top: 60px; /* Espaço para o botão fixo */
   }
 }
