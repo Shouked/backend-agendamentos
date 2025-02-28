@@ -19,10 +19,10 @@
   </div>
   <div class="container" id="registro" style="display: none;">
     <h2>Registrar-se</h2>
-    <input type="text" id="nomeRegistro" placeholder="Nome completo" required oninput="formatarNome(this);" autocomplete="off"><br>
+    <input type="text" id="nomeRegistro" placeholder="Nome completo" required oninput="formatarNome(this);" autocomplete="nope"><br>
     <input type="email" id="emailRegistro" placeholder="E-mail" required oninput="this.value = this.value.toLowerCase();" autocomplete="off"><br>
     <input type="password" id="senhaRegistro" placeholder="Senha" required autocomplete="new-password"><br>
-    <input type="tel" id="telefoneRegistro" placeholder="Telefone (ex.: (11) 98765-4321)" required oninput="mascararTelefone(this);" autocomplete="off"><br>
+    <input type="tel" id="telefoneRegistro" placeholder="Telefone (ex.: (11) 98765-4321)" required oninput="mascararTelefone(this);" autocomplete="new-telephone"><br>
     <button onclick="registrar()">Registrar</button>
     <p>Já tem conta? <span class="link" onclick="mostrarLogin()">Faça login</span></p>
   </div>
@@ -82,6 +82,9 @@
       document.getElementById('mensagemErro').innerHTML = '';
       fecharModal();
       preencherEmailLogin();
+      // Limpa os campos ao mostrar a tela de login
+      document.getElementById('emailLogin').value = '';
+      document.getElementById('senhaLogin').value = '';
     }
 
     function mostrarRegistro() {
@@ -94,6 +97,9 @@
       if (emailPendente) {
         document.getElementById('emailRegistro').value = emailPendente;
       }
+      // Limpa os campos ao mostrar a tela de registro
+      document.getElementById('nomeRegistro').value = '';
+      document.getElementById('telefoneRegistro').value = '';
     }
 
     function mostrarEsqueciSenha() {
@@ -102,6 +108,7 @@
       document.getElementById('esqueciSenha').style.display = 'block';
       document.getElementById('painelCliente').style.display = 'none';
       fecharModal();
+      document.getElementById('emailEsqueci').value = ''; // Limpa o campo
     }
 
     function mostrarModal(id) {
