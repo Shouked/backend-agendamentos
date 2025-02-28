@@ -293,20 +293,26 @@ body.sidebar-open {
 /* Desktop */
 @media (min-width: 601px) {
   .container {
-    max-width: 75rem; /* 1200px */
-    margin: 0 auto 0 15.625rem; /* Espaço para sidebar fixa */
+    max-width: 50rem; /* 800px - largura máxima ajustada para centralizar */
+    margin: 2rem auto; /* Centraliza com margens superior e inferior */
+    padding: 2rem; /* Mais espaço interno no desktop */
   }
 
   header {
-    margin-left: 15.625rem; /* Alinha com a sidebar fixa */
+    margin: 0; /* Remove o deslocamento à esquerda no desktop */
+    padding: 1rem 0; /* Ajusta o padding para melhor espaçamento */
   }
 
   .sidebar {
-    left: 0;
+    left: -15.625rem; /* Sidebar recolhida por padrão no desktop */
+  }
+
+  .sidebar.active {
+    left: 0; /* Aparece apenas com toggle, se desejado */
   }
 
   #menu-toggle {
-    display: none; /* Menu fixo no desktop */
+    display: block; /* Mantém o toggle visível, mas pode ser ajustado */
   }
 
   .agendamento-item {
