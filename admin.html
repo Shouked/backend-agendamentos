@@ -44,7 +44,7 @@
       <span id="erroHorario" class="erro"></span>
       <input type="text" id="cliente" placeholder="Nome do cliente" required oninput="formatarNome(this);" autocomplete="nope">
       <span id="erroCliente" class="erro"></span>
-      <input type="tel" id="telefone" placeholder="Telefone (ex.: (11) 98765-4321)" required oninput="mascararTelefone(this);" autocomplete="new-telephone">
+      <input type="tel" id="telefone" placeholder="Telefone (ex.: (11) 98765-4321)" required oninput="mascararTelefone(this, event);" onkeydown="verificarApagamento(this, event);" autocomplete="new-telephone">
       <span id="erroTelefone" class="erro"></span>
       <input type="email" id="emailAgendamento" placeholder="E-mail do cliente" oninput="this.value = this.value.toLowerCase();" autocomplete="off">
       <span id="erroEmail" class="erro"></span>
@@ -119,6 +119,7 @@
   <script>
     const API_URL = "https://agendamentos-backend.onrender.com";
     let token = null;
+    let isApagando = false; // Flag pra rastrear se o usuário está apagando
 
     document.getElementById('menu-toggle').addEventListener('click', () => {
       const sidebar = document.getElementById('sidebar');
@@ -268,23 +269,35 @@
       input.value = value.replace(/\b\w/g, char => char.toUpperCase());
     }
 
-    function mascararTelefone(input) {
+    function verificarApagamento(input, event) {
+      // Detecta se o usuário está apagando com Backspace ou Delete
+      if (event.key === 'Backspace' || event.key === 'Delete') {
+        isApagando = true;
+      } else {
+        isApagando = false;
+      }
+    }
+
+    function mascararTelefone(input, event) {
       let value = input.value.replace(/\D/g, ''); // Remove caracteres não numéricos
       if (value.length === 0) {
         input.value = ''; // Permite apagar tudo
         return;
       }
-      // Aplica a máscara apenas após um pequeno atraso pra evitar travamento
-      setTimeout(() => {
-        if (value.length > 11) value = value.slice(0, 11);
-        if (value.length <= 10) {
-          if (value.length > 2) input.value = `(${value.slice(0, 2)}) ${value.slice(2, 6)}-${value.slice(6)}`;
-          else if (value.length > 0) input.value = `(${value}`;
-        } else {
-          if (value.length > 2) input.value = `(${value.slice(0, 2)}) ${value.slice(2, 7)}-${value.slice(7)}`;
-          else if (value.length > 0) input.value = `(${value}`;
-        }
-      }, 10); // Atraso de 10ms pra dar tempo ao navegador
+      // Se estiver apagando, não aplica a máscara imediatamente
+      if (isApagando) {
+        input.value = value; // Mantém apenas os dígitos enquanto apaga
+        return;
+      }
+      // Aplica a máscara apenas quando não está apagando
+      if (value.length > 11) value = value.slice(0, 11);
+      if (value.length <= 10) {
+        if (value.length > 2) input.value = `(${value.slice(0, 2)}) ${value.slice(2, 6)}-${value.slice(6)}`;
+        else if (value.length > 0) input.value = `(${value}`;
+      } else {
+        if (value.length > 2) input.value = `(${value.slice(0, 2)}) ${value.slice(2, 7)}-${value.slice(7)}`;
+        else if (value.length > 0) input.value = `(${value}`;
+      }
     }
 
     async function carregarAgendamentos() {
