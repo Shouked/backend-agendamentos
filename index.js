@@ -64,7 +64,7 @@ const autenticarTokenProprietario = (req, res, next) => {
   if (!token) return res.status(401).json({ success: false, message: 'Token não fornecido' });
 
   jwt.verify(token, JWT_SECRET, (err, usuario) => {
-    if (err) return res.status(403).json({ success: false, message: 'Token inválido' });
+    if (err) return res.status(403).json({ success: false, message: 'Token inválido', error: err.message });
     req.usuario = usuario;
     next();
   });
@@ -75,7 +75,7 @@ const autenticarTokenCliente = (req, res, next) => {
   if (!token) return res.status(401).json({ success: false, message: 'Token não fornecido' });
 
   jwt.verify(token, JWT_SECRET, (err, cliente) => {
-    if (err) return res.status(403).json({ success: false, message: 'Token inválido' });
+    if (err) return res.status(403).json({ success: false, message: 'Token inválido', error: err.message });
     req.cliente = cliente;
     next();
   });
@@ -192,7 +192,6 @@ app.post('/clientes/esqueci-senha', async (req, res) => {
   }
 });
 
-// Novo endpoint para perfil do cliente
 app.get('/clientes/perfil', autenticarTokenCliente, async (req, res) => {
   try {
     const cliente = await Cliente.findOne({ email: req.cliente.email }, 'nome email telefone');
@@ -206,14 +205,14 @@ app.get('/clientes/perfil', autenticarTokenCliente, async (req, res) => {
   }
 });
 
-app.post('/agendamentos', async (req, res) => {
+app.post('/agendaments', async (req, res) => {
   const token = req.headers['authorization'];
   let decoded = null;
   if (token) {
     try {
       decoded = jwt.verify(token, JWT_SECRET);
     } catch (err) {
-      return res.status(403).json({ success: false, message: 'Token inválido' });
+      return res.status(403).json({ success: false, message: 'Token inválido', error: err.message });
     }
   }
 
@@ -223,7 +222,6 @@ app.post('/agendamentos', async (req, res) => {
     return res.status(400).json({ success: false, message: 'Procedimento inválido!' });
   }
 
-  // Se o usuário está autenticado, usa os dados do token
   if (decoded && decoded.tipo === 'cliente') {
     const clienteDoc = await Cliente.findOne({ email: decoded.email });
     if (clienteDoc) {
