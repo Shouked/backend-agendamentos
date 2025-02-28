@@ -25,11 +25,11 @@
         <option value="">Selecione o horário</option>
       </select>
       <span id="erroHorario" class="erro" aria-live="polite"></span>
-      <input type="text" id="cliente" placeholder="Seu nome" required oninput="formatarNome(this);" aria-label="Digite seu nome">
+      <input type="text" id="cliente" placeholder="Seu nome" required oninput="formatarNome(this);" aria-label="Digite seu nome" autocomplete="off">
       <span id="erroCliente" class="erro" aria-live="polite"></span>
-      <input type="tel" id="telefone" placeholder="Seu telefone (ex.: (11) 98765-4321)" required oninput="mascararTelefone(this);" aria-label="Digite seu telefone">
+      <input type="tel" id="telefone" placeholder="Seu telefone (ex.: (11) 98765-4321)" required oninput="mascararTelefone(this);" aria-label="Digite seu telefone" autocomplete="off">
       <span id="erroTelefone" class="erro" aria-live="polite"></span>
-      <input type="email" id="email" placeholder="Seu e-mail" required oninput="this.value = this.value.toLowerCase();" aria-label="Digite seu e-mail">
+      <input type="email" id="email" placeholder="Seu e-mail" required oninput="this.value = this.value.toLowerCase();" aria-label="Digite seu e-mail" autocomplete="off">
       <span id="erroEmail" class="erro" aria-live="polite"></span>
       <button type="submit" id="submitBtn">Agendar</button>
       <span id="mensagemSucesso" class="sucesso" aria-live="polite"></span>
