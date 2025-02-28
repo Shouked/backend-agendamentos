@@ -211,15 +211,22 @@ app.post('/agendamentos', async (req, res) => {
   if (token) {
     try {
       decoded = jwt.verify(token, JWT_SECRET);
+      console.log('Token decodificado:', decoded);
     } catch (err) {
       return res.status(403).json({ success: false, message: 'Token inválido', error: err.message });
     }
   }
 
   let { procedimento, data, horario, cliente, telefone, email } = req.body;
+  console.log('Dados recebidos no backend:', { procedimento, data, horario, cliente, telefone, email });
+
   const procedimentosValidos = ['Extensão de Cílios', 'Lábios', 'Sobrancelha'];
   if (!procedimentosValidos.includes(procedimento)) {
     return res.status(400).json({ success: false, message: 'Procedimento inválido!' });
+  }
+
+  if (!data || !horario || !cliente || !telefone) {
+    return res.status(400).json({ success: false, message: 'Campos obrigatórios faltando!' });
   }
 
   if (decoded && decoded.tipo === 'cliente') {
@@ -231,15 +238,16 @@ app.post('/agendamentos', async (req, res) => {
     } else {
       return res.status(404).json({ success: false, message: 'Cliente autenticado não encontrado!' });
     }
-  } else if (!cliente || !telefone || !email) {
-    return res.status(400).json({ success: false, message: 'Nome, telefone e e-mail são obrigatórios para usuários não autenticados!' });
+  } else if (!email) {
+    email = ''; // Email é opcional para proprietário
   } else {
     cliente = cliente.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
     email = email.toLowerCase();
   }
 
   try {
-    const dataISO = new Date(data).toISOString().split('T')[0]; // Garante formato ISO correto
+    const dataISO = new Date(data).toISOString().split('T')[0];
+    console.log('Data convertida para ISO:', dataISO);
     const existente = await Agendamento.findOne({ data: dataISO, horario });
     if (existente) {
       return res.status(400).json({ success: false, message: 'Este horário já está ocupado neste dia!' });
@@ -247,7 +255,8 @@ app.post('/agendamentos', async (req, res) => {
 
     let clienteDoc = await Cliente.findOne({ telefone });
     if (!clienteDoc && !decoded) {
-      if (!email || !email.includes('@')) {
+      console.log('Criando novo cliente pois não autenticado:', { cliente, telefone, email });
+      if (email && !email.includes('@')) {
         return res.status(400).json({ success: false, message: 'Forneça um e-mail válido com "@" para novos clientes!' });
       }
       clienteDoc = new Cliente({
@@ -258,7 +267,7 @@ app.post('/agendamentos', async (req, res) => {
       });
       await clienteDoc.save();
       console.log('Novo cliente criado:', clienteDoc);
-    } else if (!decoded) {
+    } else if (!decoded && clienteDoc) {
       email = clienteDoc.email;
     }
 
@@ -266,7 +275,7 @@ app.post('/agendamentos', async (req, res) => {
     if (decoded && decoded.tipo === 'cliente') {
       const clienteAutenticado = await Cliente.findOne({ email: decoded.email });
       if (clienteAutenticado) clienteId = clienteAutenticado._id;
-    } else if (decoded && decoded.tipo === 'proprietario') {
+    } else if (decoded && decoded.tipo === 'proprietario' && clienteDoc) {
       clienteId = clienteDoc._id;
     }
 
@@ -280,6 +289,7 @@ app.post('/agendamentos', async (req, res) => {
       clienteId,
       dataCriacao: new Date()
     });
+    console.log('Salvando novo agendamento:', novoAgendamento);
     const savedAgendamento = await novoAgendamento.save();
     console.log('Agendamento salvo no MongoDB:', savedAgendamento);
 
@@ -303,8 +313,8 @@ app.post('/agendamentos', async (req, res) => {
 
     res.status(201).json({ success: true, message: 'Agendamento criado com sucesso!', agendamento: savedAgendamento });
   } catch (error) {
-    console.error('Erro ao criar agendamento:', error);
-    res.status(500).json({ success: false, message: 'Erro interno ao criar agendamento' });
+    console.error('Erro ao criar agendamento:', error.stack);
+    res.status(500).json({ success: false, message: 'Erro interno ao criar agendamento', error: error.message });
   }
 });
 
