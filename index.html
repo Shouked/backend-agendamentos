@@ -25,16 +25,18 @@
         <option value="">Selecione o horário</option>
       </select>
       <span id="erroHorario" class="erro" aria-live="polite"></span>
-      <input type="text" id="cliente" placeholder="Seu nome" required oninput="formatarNome(this);" aria-label="Digite seu nome" autocomplete="nope">
-      <span id="erroCliente" class="erro" aria-live="polite"></span>
-      <input type="tel" id="telefone" placeholder="Seu telefone (ex.: (11) 98765-4321)" required oninput="mascararTelefone(this, event);" onkeydown="verificarApagamento(this, event);" aria-label="Digite seu telefone" autocomplete="new-telephone">
-      <span id="erroTelefone" class="erro" aria-live="polite"></span>
-      <input type="email" id="email" placeholder="Seu e-mail" required oninput="this.value = this.value.toLowerCase();" aria-label="Digite seu e-mail" autocomplete="off">
-      <span id="erroEmail" class="erro" aria-live="polite"></span>
+      <div id="camposUsuario" style="display: none;">
+        <input type="text" id="cliente" placeholder="Seu nome" required oninput="formatarNome(this);" aria-label="Digite seu nome" autocomplete="nope">
+        <span id="erroCliente" class="erro" aria-live="polite"></span>
+        <input type="tel" id="telefone" placeholder="Seu telefone (ex.: (11) 98765-4321)" required oninput="mascararTelefone(this, event);" onkeydown="verificarApagamento(this, event);" aria-label="Digite seu telefone" autocomplete="new-telephone">
+        <span id="erroTelefone" class="erro" aria-live="polite"></span>
+        <input type="email" id="email" placeholder="Seu e-mail" required oninput="this.value = this.value.toLowerCase();" aria-label="Digite seu e-mail" autocomplete="off">
+        <span id="erroEmail" class="erro" aria-live="polite"></span>
+      </div>
       <button type="submit" id="submitBtn">Agendar</button>
       <span id="mensagemSucesso" class="sucesso" aria-live="polite"></span>
     </form>
-    <a href="/cliente.html"><button class="meus-agendamentos-btn">Meus Agendamentos</button></a>
+    <a href="/cliente.html" class="meus-agendamentos-link"><button class="meus-agendamentos-btn">Meus Agendamentos</button></a>
   </div>
 
   <div class="overlay" id="overlay"></div>
@@ -48,7 +50,6 @@
   </div>
   <div class="modal" id="modalSucesso">
     <div id="mensagemSucessoModal"></div>
-    <button onclick="fecharModalSucesso()">Fechar</button>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
@@ -131,12 +132,11 @@
       document.getElementById('mensagemSucessoModal').textContent = mensagem;
       document.getElementById('overlay').style.display = 'block';
       document.getElementById('modalSucesso').style.display = 'block';
-    }
-
-    function fecharModalSucesso() {
-      document.getElementById('overlay').style.display = 'none';
-      document.getElementById('modalSucesso').style.display = 'none';
-      window.location.href = '/cliente.html';
+      setTimeout(() => {
+        document.getElementById('overlay').style.display = 'none';
+        document.getElementById('modalSucesso').style.display = 'none';
+        window.location.href = '/cliente.html';
+      }, 3000); // Fecha após 3 segundos
     }
 
     async function salvarAgendamento(dados) {
@@ -163,7 +163,7 @@
           if (!tokenCliente) {
             document.getElementById('mensagemSucesso').textContent = "Agendamento criado com sucesso! Você receberá uma confirmação por e-mail.";
           } else {
-            mostrarModalSucesso("Agendamento criado com sucesso! Clique em 'Fechar' para ver seus agendamentos.");
+            mostrarModalSucesso("Agendamento criado com sucesso!");
           }
         } else {
           document.getElementById('erroHorario').textContent = result.message || "Erro ao criar agendamento!";
@@ -218,9 +218,7 @@
       const procedimento = document.getElementById('procedimento').value;
       const dataBr = document.getElementById('data').value;
       const horario = document.getElementById('horario').value;
-      const cliente = document.getElementById('cliente').value;
-      const telefone = document.getElementById('telefone').value.replace(/\D/g, '');
-      const email = document.getElementById('email').value;
+      let cliente, telefone, email;
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
       if (!procedimento) {
@@ -235,26 +233,33 @@
         document.getElementById('erroHorario').textContent = "Selecione um horário!";
         return;
       }
-      if (!cliente) {
-        document.getElementById('erroCliente').textContent = "Digite seu nome!";
-        return;
-      }
-      if (!telefone || telefone.length < 10) {
-        document.getElementById('erroTelefone').textContent = "Digite um telefone válido (10 ou 11 dígitos)!";
-        return;
-      }
-      if (!email) {
-        document.getElementById('erroEmail').textContent = "Digite seu e-mail!";
-        return;
-      }
-      if (!emailRegex.test(email)) {
-        document.getElementById('erroEmail').textContent = "Digite um e-mail válido (ex.: nome@dominio.com)!";
-        return;
+
+      if (!tokenCliente) {
+        cliente = document.getElementById('cliente').value;
+        telefone = document.getElementById('telefone').value.replace(/\D/g, '');
+        email = document.getElementById('email').value;
+
+        if (!cliente) {
+          document.getElementById('erroCliente').textContent = "Digite seu nome!";
+          return;
+        }
+        if (!telefone || telefone.length < 10) {
+          document.getElementById('erroTelefone').textContent = "Digite um telefone válido (10 ou 11 dígitos)!";
+          return;
+        }
+        if (!email) {
+          document.getElementById('erroEmail').textContent = "Digite seu e-mail!";
+          return;
+        }
+        if (!emailRegex.test(email)) {
+          document.getElementById('erroEmail').textContent = "Digite um e-mail válido (ex.: nome@dominio.com)!";
+          return;
+        }
       }
 
       const [day, month, year] = dataBr.split('/');
       const data = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-      const agendamentoDados = { procedimento, data, horario, cliente, telefone, email };
+      const agendamentoDados = { procedimento, data, horario, ...(tokenCliente ? {} : { cliente, telefone, email }) };
 
       if (!tokenCliente) {
         localStorage.setItem('agendamentoPendente', JSON.stringify(agendamentoDados));
@@ -268,24 +273,13 @@
     });
 
     window.addEventListener('load', async () => {
-      document.getElementById('cliente').value = '';
-      document.getElementById('telefone').value = '';
-      document.getElementById('email').value = '';
-
       if (tokenCliente) {
-        const agendamentoPendente = localStorage.getItem('agendamentoPendente');
-        if (agendamentoPendente) {
-          const dados = JSON.parse(agendamentoPendente);
-          console.log('Carregando agendamento pendente na carga da página:', dados);
-          document.getElementById('procedimento').value = dados.procedimento;
-          const [year, month, day] = dados.data.split('-');
-          document.getElementById('data').value = `${day}/${month}/${year}`;
-          await carregarHorariosDisponiveis(`${day}/${month}/${year}`);
-          document.getElementById('horario').value = dados.horario;
-          document.getElementById('cliente').value = dados.cliente;
-          document.getElementById('telefone').value = dados.telefone;
-          document.getElementById('email').value = dados.email;
-        }
+        document.getElementById('camposUsuario').style.display = 'none';
+      } else {
+        document.getElementById('camposUsuario').style.display = 'block';
+        document.getElementById('cliente').value = '';
+        document.getElementById('telefone').value = '';
+        document.getElementById('email').value = '';
       }
     });
   </script>
