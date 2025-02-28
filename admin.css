@@ -160,7 +160,6 @@ th {
   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
   transition: left 0.3s ease;
   z-index: 1000;
-  display: none; /* Escondido por padrão até o login */
 }
 
 .sidebar.active {
@@ -199,15 +198,14 @@ th {
   z-index: 1100;
   border-radius: 5px;
   transition: opacity 0.3s ease;
-  display: none; /* Escondido até o login */
 }
 
 #menu-toggle.hidden {
   opacity: 0;
 }
 
-.logged-in #sidebar, .logged-in #menu-toggle {
-  display: block; /* Mostra sidebar e botão após login */
+.logged-in #menu-toggle {
+  display: block; /* Garante que o botão aparece após login */
 }
 
 .sidebar-open #menu-toggle {
