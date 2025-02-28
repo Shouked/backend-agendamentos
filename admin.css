@@ -30,7 +30,7 @@ body {
   border-radius: 10px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   position: relative;
-  z-index: 1; /* Garante que fique acima do overlay */
+  z-index: 1;
 }
 
 .main-content {
@@ -170,7 +170,7 @@ th {
   background: #fff;
   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
   transition: left 0.3s ease;
-  z-index: 1001; /* Aumentado para sobrepor o overlay */
+  z-index: 1001; /* Garante visibilidade sobre o conteúdo */
   overflow-y: auto; /* Permite rolagem se necessário */
 }
 
@@ -219,22 +219,6 @@ th {
 
 #menu-toggle.hidden {
   opacity: 0;
-}
-
-.overlay {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.1); /* Escurecimento mais leve */
-  z-index: 1000; /* Menor que a sidebar para não bloquear */
-  pointer-events: none; /* Desativa cliques no overlay por padrão */
-}
-
-.sidebar-open .overlay {
-  pointer-events: auto; /* Ativa cliques no overlay apenas quando a sidebar está aberta */
 }
 
 .modal {
