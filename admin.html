@@ -98,7 +98,7 @@
     </div>
   </div>
 
-  <div class="overlay" id="overlay"></div>
+  <div class="overlay" id="overlay"></div> <!-- Overlay para bloquear a página ao abrir a sidebar -->
   <div class="modal" id="editModal">
     <h3>Editar Agendamento</h3>
     <input type="hidden" id="editId">
@@ -125,8 +125,19 @@
     document.getElementById('menu-toggle').addEventListener('click', () => {
       const sidebar = document.getElementById('sidebar');
       const body = document.body;
+      const overlay = document.getElementById('overlay');
       sidebar.classList.toggle('active');
       body.classList.toggle('sidebar-open');
+      overlay.style.display = sidebar.classList.contains('active') ? 'block' : 'none';
+    });
+
+    // Ocultar sidebar ao clicar fora
+    document.getElementById('overlay').addEventListener('click', () => {
+      const sidebar = document.getElementById('sidebar');
+      const body = document.body;
+      sidebar.classList.remove('active');
+      body.classList.remove('sidebar-open');
+      document.getElementById('overlay').style.display = 'none';
     });
 
     window.addEventListener('scroll', () => {
@@ -219,6 +230,7 @@
       }
       document.getElementById('sidebar').classList.remove('active');
       document.body.classList.remove('sidebar-open');
+      document.getElementById('overlay').style.display = 'none'; // Fecha overlay ao trocar seção
     }
 
     function inicializarFlatpickr() {
