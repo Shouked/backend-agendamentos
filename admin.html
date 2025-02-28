@@ -16,8 +16,8 @@
     <button id="loginBtn" onclick="login()">Entrar</button>
   </div>
   <div class="container" id="painel" style="display: none">
-    <button id="menu-toggle">☰</button>
     <div class="sidebar" id="sidebar">
+      <button id="menu-toggle" class="sidebar-toggle">☰</button>
       <a href="#" class="sidebar-item" onclick="toggleSection('agendamentoSection')"><i class="fas fa-home sidebar-icon"></i><span>Início</span></a>
       <a href="#" class="sidebar-item" onclick="toggleSection('agendamentosSection')"><i class="fas fa-calendar-alt sidebar-icon"></i><span>Agenda</span></a>
       <a href="#" class="sidebar-item" onclick="toggleSection('clientesSection')"><i class="fas fa-users sidebar-icon"></i><span>Clientes</span></a>
@@ -26,75 +26,77 @@
       <a href="#" class="sidebar-item" onclick="toggleSection('mensagensSection')"><i class="fas fa-envelope sidebar-icon"></i><span>Mensagens Predefinidas</span></a>
       <a href="#" class="sidebar-item" onclick="logoutProprietario()"><i class="fas fa-sign-out-alt sidebar-icon"></i><span>Sair</span></a>
     </div>
-    <h2>Painel do Proprietário</h2>
+    <div class="main-content">
+      <h2>Painel do Proprietário</h2>
 
-    <div id="agendamentoSection" class="section">
-      <h3>Criar Novo Agendamento</h3>
-      <select id="procedimento" required>
-        <option value="">Escolha o procedimento</option>
-        <option value="Extensão de Cílios">Extensão de Cílios</option>
-        <option value="Lábios">Lábios</option>
-        <option value="Sobrancelha">Sobrancelha</option>
-      </select>
-      <span id="erroProcedimento" class="erro"></span>
-      <input type="text" id="data" placeholder="Selecione a data" required>
-      <span id="erroData" class="erro"></span>
-      <select id="horario" required>
-        <option value="">Selecione o horário</option>
-      </select>
-      <span id="erroHorario" class="erro"></span>
-      <input type="text" id="cliente" placeholder="Nome do cliente" required oninput="formatarNome(this);" autocomplete="nope">
-      <span id="erroCliente" class="erro"></span>
-      <input type="tel" id="telefone" placeholder="Telefone (ex.: (11) 98765-4321)" required oninput="mascararTelefone(this, event);" onkeydown="verificarApagamento(this, event);" autocomplete="new-telephone">
-      <span id="erroTelefone" class="erro"></span>
-      <input type="email" id="emailAgendamento" placeholder="E-mail do cliente" oninput="this.value = this.value.toLowerCase();" autocomplete="off">
-      <span id="erroEmail" class="erro"></span>
-      <button onclick="criarAgendamento()">Criar Agendamento</button>
-    </div>
-
-    <div id="agendamentosSection" class="section">
-      <h3>Lista de Agendamentos</h3>
-      <div class="action-buttons">
-        <button onclick="selecionarTodosAgendamentos()">Selecionar Todos</button>
-        <button class="bulk-delete-btn" onclick="excluirSelecionadosAgendamentos()">Excluir Selecionados</button>
+      <div id="agendamentoSection" class="section">
+        <h3>Criar Novo Agendamento</h3>
+        <select id="procedimento" required>
+          <option value="">Escolha o procedimento</option>
+          <option value="Extensão de Cílios">Extensão de Cílios</option>
+          <option value="Lábios">Lábios</option>
+          <option value="Sobrancelha">Sobrancelha</option>
+        </select>
+        <span id="erroProcedimento" class="erro"></span>
+        <input type="text" id="data" placeholder="Selecione a data" required>
+        <span id="erroData" class="erro"></span>
+        <select id="horario" required>
+          <option value="">Selecione o horário</option>
+        </select>
+        <span id="erroHorario" class="erro"></span>
+        <input type="text" id="cliente" placeholder="Nome do cliente" required oninput="formatarNome(this);" autocomplete="nope">
+        <span id="erroCliente" class="erro"></span>
+        <input type="tel" id="telefone" placeholder="Telefone (ex.: (11) 98765-4321)" required oninput="mascararTelefone(this, event);" onkeydown="verificarApagamento(this, event);" autocomplete="new-telephone">
+        <span id="erroTelefone" class="erro"></span>
+        <input type="email" id="emailAgendamento" placeholder="E-mail do cliente" oninput="this.value = this.value.toLowerCase();" autocomplete="off">
+        <span id="erroEmail" class="erro"></span>
+        <button onclick="criarAgendamento()">Criar Agendamento</button>
       </div>
-      <div id="listaAgendamentos"></div>
-    </div>
 
-    <div id="clientesSection" class="section">
-      <h3>Clientes Registrados</h3>
-      <div class="action-buttons">
-        <button onclick="selecionarTodosClientes()">Selecionar Todos</button>
-        <button class="bulk-delete-btn" onclick="excluirSelecionadosClientes()">Excluir Selecionados</button>
+      <div id="agendamentosSection" class="section">
+        <h3>Lista de Agendamentos</h3>
+        <div class="action-buttons">
+          <button onclick="selecionarTodosAgendamentos()">Selecionar Todos</button>
+          <button class="bulk-delete-btn" onclick="excluirSelecionadosAgendamentos()">Excluir Selecionados</button>
+        </div>
+        <div id="listaAgendamentos"></div>
       </div>
-      <table id="clientesTable">
-        <thead>
-          <tr>
-            <th>Selecionar</th>
-            <th>Nome</th>
-            <th>E-mail</th>
-            <th>Telefone</th>
-            <th>Data Registro</th>
-          </tr>
-        </thead>
-        <tbody id="listaClientes"></tbody>
-      </table>
-    </div>
 
-    <div id="cobrançasSection" class="section" style="display: none;">
-      <h3>Cobranças</h3>
-      <p>Funcionalidade em desenvolvimento. Em breve, você poderá gerenciar cobranças aqui.</p>
-    </div>
+      <div id="clientesSection" class="section">
+        <h3>Clientes Registrados</h3>
+        <div class="action-buttons">
+          <button onclick="selecionarTodosClientes()">Selecionar Todos</button>
+          <button class="bulk-delete-btn" onclick="excluirSelecionadosClientes()">Excluir Selecionados</button>
+        </div>
+        <table id="clientesTable">
+          <thead>
+            <tr>
+              <th>Selecionar</th>
+              <th>Nome</th>
+              <th>E-mail</th>
+              <th>Telefone</th>
+              <th>Data Registro</th>
+            </tr>
+          </thead>
+          <tbody id="listaClientes"></tbody>
+        </table>
+      </div>
 
-    <div id="relatoriosSection" class="section" style="display: none;">
-      <h3>Relatórios</h3>
-      <div id="relatoriosConteudo"></div>
-      <button onclick="carregarRelatorios()">Carregar Relatórios</button>
-    </div>
+      <div id="cobrançasSection" class="section" style="display: none;">
+        <h3>Cobranças</h3>
+        <p>Funcionalidade em desenvolvimento. Em breve, você poderá gerenciar cobranças aqui.</p>
+      </div>
 
-    <div id="mensagensSection" class="section" style="display: none;">
-      <h3>Mensagens Predefinidas</h3>
-      <p>Funcionalidade em desenvolvimento. Em breve, você poderá enviar mensagens automáticas.</p>
+      <div id="relatoriosSection" class="section" style="display: none;">
+        <h3>Relatórios</h3>
+        <div id="relatoriosConteudo"></div>
+        <button onclick="carregarRelatorios()">Carregar Relatórios</button>
+      </div>
+
+      <div id="mensagensSection" class="section" style="display: none;">
+        <h3>Mensagens Predefinidas</h3>
+        <p>Funcionalidade em desenvolvimento. Em breve, você poderá enviar mensagens automáticas.</p>
+      </div>
     </div>
   </div>
 
@@ -143,6 +145,7 @@
       }
     });
 
+    // Esconder botão ☰ ao rolar, mas mantê-lo fixo no topo quando no início
     window.addEventListener('scroll', () => {
       const menuToggle = document.getElementById('menu-toggle');
       const isMobile = window.matchMedia("(max-width: 600px)").matches;
@@ -153,7 +156,7 @@
           menuToggle.classList.remove('hidden');
         }
       } else {
-        menuToggle.classList.remove('hidden');
+        menuToggle.classList.remove('hidden'); // Mantém visível em desktop
       }
     });
 
