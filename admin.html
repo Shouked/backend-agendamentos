@@ -145,6 +145,9 @@
     </main>
   </div>
 
+  <!-- Overlay para fechar sidebar -->
+  <div class="overlay" id="sidebar-overlay"></div>
+
   <!-- Modal -->
   <div class="overlay" id="overlay"></div>
   <div class="modal" id="editModal" role="dialog" aria-labelledby="editModalTitle">
@@ -180,28 +183,42 @@
     let token = null;
     let isApagando = false;
 
-    // Adicionando listener para o formulário de login
+    // Listener para o formulário de login
     document.getElementById('loginForm').addEventListener('submit', (event) => {
       event.preventDefault();
       login();
     });
 
-    document.getElementById('menu-toggle').addEventListener('click', () => {
-      const sidebar = document.getElementById('sidebar');
-      const body = document.body;
+    // Toggle da sidebar
+    const menuToggle = document.getElementById('menu-toggle');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebar-overlay');
+    const body = document.body;
+
+    menuToggle.addEventListener('click', () => {
       sidebar.classList.toggle('active');
       body.classList.toggle('sidebar-open');
+      sidebarOverlay.style.display = sidebar.classList.contains('active') ? 'block' : 'none';
+      // Move o botão para dentro da sidebar quando aberta
+      if (sidebar.classList.contains('active')) {
+        sidebar.insertBefore(menuToggle, sidebar.firstChild);
+      } else {
+        document.querySelector('header').prepend(menuToggle);
+      }
+    });
+
+    // Fecha a sidebar ao clicar no overlay
+    sidebarOverlay.addEventListener('click', () => {
+      sidebar.classList.remove('active');
+      body.classList.remove('sidebar-open');
+      sidebarOverlay.style.display = 'none';
+      document.querySelector('header').prepend(menuToggle); // Volta o botão para o header
     });
 
     window.addEventListener('scroll', () => {
-      const menuToggle = document.getElementById('menu-toggle');
       const isMobile = window.matchMedia("(max-width: 600px)").matches;
-      if (isMobile) {
-        if (window.scrollY > 50) {
-          menuToggle.classList.add('hidden');
-        } else {
-          menuToggle.classList.remove('hidden');
-        }
+      if (isMobile && !sidebar.classList.contains('active')) {
+        menuToggle.classList.toggle('hidden', window.scrollY > 50);
       }
     });
 
@@ -269,8 +286,10 @@
           carregarRelatorios();
         }
       }
-      document.getElementById('sidebar').classList.remove('active');
-      document.body.classList.remove('sidebar-open');
+      sidebar.classList.remove('active');
+      body.classList.remove('sidebar-open');
+      sidebarOverlay.style.display = 'none';
+      document.querySelector('header').prepend(menuToggle); // Volta o botão para o header
     }
 
     function inicializarFlatpickr() {
