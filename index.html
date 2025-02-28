@@ -57,6 +57,7 @@
     let tokenCliente = localStorage.getItem('tokenCliente');
     let agendamentoPendente = null;
     let isApagando = false;
+    let dadosUsuario = null;
 
     flatpickr("#data", {
       minDate: "today",
@@ -145,24 +146,27 @@
           });
           const result = await response.json();
           if (result.success) {
-            document.getElementById('cliente').value = result.cliente.nome;
+            dadosUsuario = result.cliente;
+            document.getElementById('cliente').value = dadosUsuario.nome;
             document.getElementById('cliente').setAttribute('readonly', 'true');
             document.getElementById('cliente').removeAttribute('required');
-            document.getElementById('telefone').value = result.cliente.telefone;
+            document.getElementById('telefone').value = dadosUsuario.telefone;
             document.getElementById('telefone').setAttribute('readonly', 'true');
             document.getElementById('telefone').removeAttribute('required');
-            document.getElementById('email').value = result.cliente.email;
+            document.getElementById('email').value = dadosUsuario.email;
             document.getElementById('email').setAttribute('readonly', 'true');
             document.getElementById('email').removeAttribute('required');
           } else {
             console.error('Erro ao carregar dados do usuário:', result.message);
             localStorage.removeItem('tokenCliente');
             tokenCliente = null;
+            dadosUsuario = null;
           }
         } catch (error) {
           console.error('Erro ao buscar perfil:', error);
           localStorage.removeItem('tokenCliente');
           tokenCliente = null;
+          dadosUsuario = null;
         }
       }
     }
@@ -172,6 +176,11 @@
       submitBtn.disabled = true;
       submitBtn.textContent = 'Carregando...';
       try {
+        if (tokenCliente && dadosUsuario) {
+          dados.cliente = dadosUsuario.nome;
+          dados.telefone = dadosUsuario.telefone;
+          dados.email = dadosUsuario.email;
+        }
         console.log('Salvando agendamento com token:', tokenCliente?.substring(0, 20) + '...', 'Dados:', dados);
         const headers = { 'Content-Type': 'application/json' };
         if (tokenCliente) headers['Authorization'] = tokenCliente;
@@ -288,7 +297,9 @@
         procedimento, 
         data: dataISO, 
         horario, 
-        ...(tokenCliente ? {} : { cliente, telefone, email })
+        cliente, 
+        telefone, 
+        email 
       };
 
       if (!tokenCliente) {
