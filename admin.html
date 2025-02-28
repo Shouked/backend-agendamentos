@@ -16,8 +16,8 @@
     <button id="loginBtn" onclick="login()">Entrar</button>
   </div>
   <div class="container" id="painel" style="display: none">
+    <button id="menu-toggle">☰</button>
     <div class="sidebar" id="sidebar">
-      <button id="menu-toggle" class="sidebar-toggle">☰</button>
       <a href="#" class="sidebar-item" onclick="toggleSection('agendamentoSection')"><i class="fas fa-home sidebar-icon"></i><span>Início</span></a>
       <a href="#" class="sidebar-item" onclick="toggleSection('agendamentosSection')"><i class="fas fa-calendar-alt sidebar-icon"></i><span>Agenda</span></a>
       <a href="#" class="sidebar-item" onclick="toggleSection('clientesSection')"><i class="fas fa-users sidebar-icon"></i><span>Clientes</span></a>
@@ -26,80 +26,79 @@
       <a href="#" class="sidebar-item" onclick="toggleSection('mensagensSection')"><i class="fas fa-envelope sidebar-icon"></i><span>Mensagens Predefinidas</span></a>
       <a href="#" class="sidebar-item" onclick="logoutProprietario()"><i class="fas fa-sign-out-alt sidebar-icon"></i><span>Sair</span></a>
     </div>
-    <div class="main-content">
-      <h2>Painel do Proprietário</h2>
+    <h2>Painel do Proprietário</h2>
 
-      <div id="agendamentoSection" class="section">
-        <h3>Criar Novo Agendamento</h3>
-        <select id="procedimento" required>
-          <option value="">Escolha o procedimento</option>
-          <option value="Extensão de Cílios">Extensão de Cílios</option>
-          <option value="Lábios">Lábios</option>
-          <option value="Sobrancelha">Sobrancelha</option>
-        </select>
-        <span id="erroProcedimento" class="erro"></span>
-        <input type="text" id="data" placeholder="Selecione a data" required>
-        <span id="erroData" class="erro"></span>
-        <select id="horario" required>
-          <option value="">Selecione o horário</option>
-        </select>
-        <span id="erroHorario" class="erro"></span>
-        <input type="text" id="cliente" placeholder="Nome do cliente" required oninput="formatarNome(this);" autocomplete="nope">
-        <span id="erroCliente" class="erro"></span>
-        <input type="tel" id="telefone" placeholder="Telefone (ex.: (11) 98765-4321)" required oninput="mascararTelefone(this, event);" onkeydown="verificarApagamento(this, event);" autocomplete="new-telephone">
-        <span id="erroTelefone" class="erro"></span>
-        <input type="email" id="emailAgendamento" placeholder="E-mail do cliente" oninput="this.value = this.value.toLowerCase();" autocomplete="off">
-        <span id="erroEmail" class="erro"></span>
-        <button onclick="criarAgendamento()">Criar Agendamento</button>
-      </div>
+    <div id="agendamentoSection" class="section">
+      <h3>Criar Novo Agendamento</h3>
+      <select id="procedimento" required>
+        <option value="">Escolha o procedimento</option>
+        <option value="Extensão de Cílios">Extensão de Cílios</option>
+        <option value="Lábios">Lábios</option>
+        <option value="Sobrancelha">Sobrancelha</option>
+      </select>
+      <span id="erroProcedimento" class="erro"></span>
+      <input type="text" id="data" placeholder="Selecione a data" required>
+      <span id="erroData" class="erro"></span>
+      <select id="horario" required>
+        <option value="">Selecione o horário</option>
+      </select>
+      <span id="erroHorario" class="erro"></span>
+      <input type="text" id="cliente" placeholder="Nome do cliente" required oninput="formatarNome(this);" autocomplete="nope">
+      <span id="erroCliente" class="erro"></span>
+      <input type="tel" id="telefone" placeholder="Telefone (ex.: (11) 98765-4321)" required oninput="mascararTelefone(this, event);" onkeydown="verificarApagamento(this, event);" autocomplete="new-telephone">
+      <span id="erroTelefone" class="erro"></span>
+      <input type="email" id="emailAgendamento" placeholder="E-mail do cliente" oninput="this.value = this.value.toLowerCase();" autocomplete="off">
+      <span id="erroEmail" class="erro"></span>
+      <button onclick="criarAgendamento()">Criar Agendamento</button>
+    </div>
 
-      <div id="agendamentosSection" class="section">
-        <h3>Lista de Agendamentos</h3>
-        <div class="action-buttons">
-          <button onclick="selecionarTodosAgendamentos()">Selecionar Todos</button>
-          <button class="bulk-delete-btn" onclick="excluirSelecionadosAgendamentos()">Excluir Selecionados</button>
-        </div>
-        <div id="listaAgendamentos"></div>
+    <div id="agendamentosSection" class="section">
+      <h3>Lista de Agendamentos</h3>
+      <div class="action-buttons">
+        <button onclick="selecionarTodosAgendamentos()">Selecionar Todos</button>
+        <button class="bulk-delete-btn" onclick="excluirSelecionadosAgendamentos()">Excluir Selecionados</button>
       </div>
+      <div id="listaAgendamentos"></div>
+    </div>
 
-      <div id="clientesSection" class="section">
-        <h3>Clientes Registrados</h3>
-        <div class="action-buttons">
-          <button onclick="selecionarTodosClientes()">Selecionar Todos</button>
-          <button class="bulk-delete-btn" onclick="excluirSelecionadosClientes()">Excluir Selecionados</button>
-        </div>
-        <table id="clientesTable">
-          <thead>
-            <tr>
-              <th>Selecionar</th>
-              <th>Nome</th>
-              <th>E-mail</th>
-              <th>Telefone</th>
-              <th>Data Registro</th>
-            </tr>
-          </thead>
-          <tbody id="listaClientes"></tbody>
-        </table>
+    <div id="clientesSection" class="section">
+      <h3>Clientes Registrados</h3>
+      <div class="action-buttons">
+        <button onclick="selecionarTodosClientes()">Selecionar Todos</button>
+        <button class="bulk-delete-btn" onclick="excluirSelecionadosClientes()">Excluir Selecionados</button>
       </div>
+      <table id="clientesTable">
+        <thead>
+          <tr>
+            <th>Selecionar</th>
+            <th>Nome</th>
+            <th>E-mail</th>
+            <th>Telefone</th>
+            <th>Data Registro</th>
+          </tr>
+        </thead>
+        <tbody id="listaClientes"></tbody>
+      </table>
+    </div>
 
-      <div id="cobrançasSection" class="section" style="display: none;">
-        <h3>Cobranças</h3>
-        <p>Funcionalidade em desenvolvimento. Em breve, você poderá gerenciar cobranças aqui.</p>
-      </div>
+    <div id="cobrançasSection" class="section" style="display: none;">
+      <h3>Cobranças</h3>
+      <p>Funcionalidade em desenvolvimento. Em breve, você poderá gerenciar cobranças aqui.</p>
+    </div>
 
-      <div id="relatoriosSection" class="section" style="display: none;">
-        <h3>Relatórios</h3>
-        <div id="relatoriosConteudo"></div>
-        <button onclick="carregarRelatorios()">Carregar Relatórios</button>
-      </div>
+    <div id="relatoriosSection" class="section" style="display: none;">
+      <h3>Relatórios</h3>
+      <div id="relatoriosConteudo"></div>
+      <button onclick="carregarRelatorios()">Carregar Relatórios</button>
+    </div>
 
-      <div id="mensagensSection" class="section" style="display: none;">
-        <h3>Mensagens Predefinidas</h3>
-        <p>Funcionalidade em desenvolvimento. Em breve, você poderá enviar mensagens automáticas.</p>
-      </div>
+    <div id="mensagensSection" class="section" style="display: none;">
+      <h3>Mensagens Predefinidas</h3>
+      <p>Funcionalidade em desenvolvimento. Em breve, você poderá enviar mensagens automáticas.</p>
     </div>
   </div>
 
+  <div class="overlay" id="overlay"></div>
   <div class="modal" id="editModal">
     <h3>Editar Agendamento</h3>
     <input type="hidden" id="editId">
@@ -123,25 +122,13 @@
     let token = localStorage.getItem('tokenProprietario');
     let isApagando = false;
 
-    document.getElementById('menu-toggle').addEventListener('click', (e) => {
-      e.preventDefault(); // Impede propagação desnecessária
+    document.getElementById('menu-toggle').addEventListener('click', () => {
       const sidebar = document.getElementById('sidebar');
       const body = document.body;
       sidebar.classList.toggle('active');
       body.classList.toggle('sidebar-open');
     });
 
-    // Fechar sidebar ao clicar fora dela (no main-content ou body)
-    document.querySelector('.main-content').addEventListener('click', (e) => {
-      const sidebar = document.getElementById('sidebar');
-      const body = document.body;
-      if (sidebar.classList.contains('active') && !sidebar.contains(e.target)) {
-        sidebar.classList.remove('active');
-        body.classList.remove('sidebar-open');
-      }
-    });
-
-    // Esconder botão ☰ ao rolar em mobile, mas mantê-lo fixo no topo
     window.addEventListener('scroll', () => {
       const menuToggle = document.getElementById('menu-toggle');
       const isMobile = window.matchMedia("(max-width: 600px)").matches;
@@ -152,17 +139,12 @@
           menuToggle.classList.remove('hidden');
         }
       } else {
-        menuToggle.classList.remove('hidden'); // Mantém visível em desktop
+        menuToggle.classList.remove('hidden');
       }
     });
 
     async function login() {
       const loginBtn = document.getElementById('loginBtn');
-      if (!loginBtn) {
-        console.error('Botão de login não encontrado!');
-        alert('Erro: Botão de login não encontrado. Por favor, recarregue a página.');
-        return;
-      }
       loginBtn.disabled = true;
       loginBtn.textContent = 'Carregando...';
 
@@ -347,7 +329,7 @@
         console.log('Agendamentos válidos após filtro:', validAgendamentos);
 
         const groupedByDate = validAgendamentos.reduce((acc, ag) => {
-          const dateKey = ag.data; // Formato YYYY-MM-DD
+          const dateKey = ag.data;
           if (!acc[dateKey]) acc[dateKey] = [];
           acc[dateKey].push(ag);
           return acc;
@@ -355,10 +337,9 @@
 
         for (const date in groupedByDate) {
           const agendamentosDoDia = groupedByDate[date];
-          const [year, month, day] = date.split('-');
-          const dateObj = new Date(`${year}-${month}-${day}T00:00:00`); // Força meia-noite no fuso local
+          const dateObj = new Date(date);
           const diaSemana = dateObj.toLocaleDateString('pt-BR', { weekday: 'long' });
-          const dataBr = `${day}/${month}/${year}`;
+          const dataBr = dateObj.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
           const dateDiv = document.createElement('div');
           dateDiv.className = 'agendamento-date';
@@ -475,31 +456,14 @@
           headers: { Authorization: token },
         });
         const clientes = await response.json();
-        console.log('Clientes recebidos:', clientes);
-
+        console.log('Clientes carregados:', clientes);
         const lista = document.getElementById('listaClientes');
         lista.innerHTML = '';
-
-        if (!clientes || (Array.isArray(clientes) && clientes.length === 0)) {
+        if (!clientes || clientes.length === 0) {
           lista.innerHTML = '<tr><td colspan="5">Nenhum cliente encontrado.</td></tr>';
           return;
         }
-
-        // Verifica se clientes é um array ou um objeto
-        let clientesArray = [];
-        if (Array.isArray(clientes)) {
-          clientesArray = clientes;
-        } else if (clientes.data && Array.isArray(clientes.data)) { // Caso o backend retorne { data: [...] }
-          clientesArray = clientes.data;
-        } else if (clientes.results && Array.isArray(clientes.results)) { // Caso o backend retorne { results: [...] }
-          clientesArray = clientes.results;
-        } else {
-          console.error('Formato de clientes inesperado:', clientes);
-          lista.innerHTML = '<tr><td colspan="5">Erro ao carregar clientes. Formato inesperado.</td></tr>';
-          return;
-        }
-
-        clientesArray.forEach(cliente => {
+        clientes.forEach(cliente => {
           const dataRegistro = cliente.dataCriacao ? new Date(cliente.dataCriacao).toLocaleDateString('pt-BR') : 'Data não disponível';
           const tr = document.createElement('tr');
           tr.innerHTML = `
@@ -513,13 +477,13 @@
         });
       } catch (error) {
         console.error('Erro ao carregar clientes:', error);
-        const lista = document.getElementById('listaClientes');
-        lista.innerHTML = '<tr><td colspan="5">Erro ao carregar clientes. Tente novamente.</td></tr>';
+        alert('Erro ao carregar clientes. Tente novamente. Detalhes: ' + error.message);
       }
     }
 
     function abrirModalEditar(id) {
       document.getElementById('editId').value = id;
+      document.getElementById('overlay').style.display = 'block';
       document.getElementById('editModal').style.display = 'block';
     }
 
@@ -557,6 +521,7 @@
     }
 
     function fecharModal() {
+      document.getElementById('overlay').style.display = 'none';
       document.getElementById('editModal').style.display = 'none';
     }
 
@@ -642,4 +607,37 @@
       }
     }
 
-    async function carregar
+    async function carregarRelatorios() {
+      try {
+        const response = await fetch(`${API_URL}/relatorios/agendamentos-por-dia`, {
+          headers: { Authorization: token },
+        });
+        const relatorios = await response.json();
+        const conteudo = document.getElementById('relatoriosConteudo');
+        conteudo.innerHTML = '<h4>Agendamentos por Dia</h4>';
+        if (relatorios.length === 0) {
+          conteudo.innerHTML += '<p>Nenhum dado disponível.</p>';
+          return;
+        }
+        relatorios.forEach(rel => {
+          const dataBr = new Date(rel._id).toLocaleDateString('pt-BR');
+          conteudo.innerHTML += `<p>Data: ${dataBr} - Total: ${rel.total}</p>`;
+        });
+      } catch (error) {
+        console.error('Erro ao carregar relatórios:', error);
+        document.getElementById('relatoriosConteudo').innerHTML = '<p>Erro ao carregar relatórios.</p>';
+      }
+    }
+
+    if (token) {
+      document.getElementById('login').style.display = 'none';
+      document.getElementById('painel').style.display = 'block';
+      document.body.classList.remove('logged-out');
+      document.body.classList.add('logged-in');
+      inicializarFlatpickr();
+      toggleSection('agendamentoSection');
+      carregarClientes();
+    }
+  </script>
+</body>
+</html>
