@@ -12,7 +12,6 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
 }
 
 .logged-in {
@@ -38,12 +37,12 @@ h2 {
 
 input, select, button {
   width: 100%;
-  padding: clamp(10px, 2vw, 12px);
+  padding: 12px;
   margin: 10px 0;
   border: 1px solid #e91e63;
   border-radius: 5px;
   box-sizing: border-box;
-  font-size: clamp(14px, 2.5vw, 16px);
+  font-size: 16px;
 }
 
 button {
@@ -53,7 +52,6 @@ button {
   cursor: pointer;
   font-weight: bold;
   transition: background-color 0.3s ease;
-  padding: clamp(10px, 2vw, 12px);
 }
 
 button:disabled {
@@ -104,7 +102,6 @@ button:hover:not(:disabled) {
   padding: 5px 10px;
   border-radius: 5px;
   cursor: pointer;
-  font-size: 14px;
 }
 
 .edit-btn:hover {
@@ -132,7 +129,6 @@ th {
   display: flex;
   justify-content: space-between;
   margin-bottom: 15px;
-  flex-wrap: wrap; /* Permite quebra em mobile */
 }
 
 .bulk-delete-btn {
@@ -145,7 +141,7 @@ th {
 
 .erro {
   color: red;
-  font-size: clamp(10px, 2vw, 12px);
+  font-size: 12px;
   display: block;
   margin-top: -5px;
 }
@@ -204,10 +200,6 @@ th {
   opacity: 0;
 }
 
-.logged-in #menu-toggle {
-  display: block; /* Garante que o botão aparece após login */
-}
-
 .sidebar-open #menu-toggle {
   left: 260px;
 }
@@ -253,21 +245,10 @@ th {
   th, td {
     min-width: 100px;
   }
-  .action-buttons button {
-    width: 48%; /* Divide botões em mobile */
-    margin: 5px 0;
-  }
 }
 
 @media (min-width: 601px) {
   .sidebar-open {
     margin-left: 250px;
-  }
-  .container {
-    margin: clamp(10px, 2vw, 20px) auto;
-    padding: clamp(15px, 3vw, 25px);
-  }
-  .action-buttons button {
-    width: auto; /* Volta ao normal em desktop */
   }
 }
