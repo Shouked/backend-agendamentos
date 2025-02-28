@@ -64,7 +64,7 @@
       dateFormat: "d/m/Y",
       disable: [
         function(date) {
-          return date.getDay() === 0;
+          return date.getDay() === 0; // Bloqueia domingos
         }
       ],
       locale: "pt",
@@ -222,9 +222,9 @@
         <p><strong>Procedimento:</strong> ${dados.procedimento}</p>
         <p><strong>Data:</strong> ${dataDisplay}</p>
         <p><strong>Horário:</strong> ${dados.horario}</p>
-        <p><strong>Cliente:</strong> ${dados.cliente}</p>
-        <p><strong>Telefone:</strong> ${dados.telefone}</p>
-        <p><strong>E-mail:</strong> ${dados.email}</p>
+        <p><strong>Cliente:</strong> ${dados.cliente || 'Não informado'}</p>
+        <p><strong>Telefone:</strong> ${dados.telefone || 'Não informado'}</p>
+        <p><strong>E-mail:</strong> ${dados.email || 'Não informado'}</p>
       `;
       document.getElementById('overlay').style.display = 'block';
       document.getElementById('modalConfirmar').style.display = 'block';
@@ -297,9 +297,9 @@
         procedimento, 
         data: dataISO, 
         horario, 
-        cliente, 
-        telefone, 
-        email 
+        cliente: tokenCliente ? dadosUsuario?.nome : cliente,
+        telefone: tokenCliente ? dadosUsuario?.telefone : telefone,
+        email: tokenCliente ? dadosUsuario?.email : email 
       };
 
       if (!tokenCliente) {
