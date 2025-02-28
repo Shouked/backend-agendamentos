@@ -34,9 +34,7 @@
       <button type="submit" id="submitBtn">Agendar</button>
       <span id="mensagemSucesso" class="sucesso" aria-live="polite"></span>
     </form>
-    <div style="text-align: center; margin-top: 20px;">
-      <a href="/cliente.html"><button style="background-color: #e91e63; color: white; padding: 12px; border: none; border-radius: 5px; cursor: pointer;">Meus Agendamentos</button></a>
-    </div>
+    <a href="/cliente.html"><button class="meus-agendamentos-btn">Meus Agendamentos</button></a>
   </div>
 
   <div class="overlay" id="overlay"></div>
@@ -50,6 +48,7 @@
   </div>
   <div class="modal" id="modalSucesso">
     <div id="mensagemSucessoModal"></div>
+    <button onclick="fecharModalSucesso()">Fechar</button> <!-- Botão para fechar manualmente -->
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
@@ -58,7 +57,7 @@
     const API_URL = 'https://agendamentos-backend.onrender.com';
     let tokenCliente = localStorage.getItem('tokenCliente');
     let agendamentoPendente = null;
-    let isApagando = false; // Flag pra rastrear se o usuário está apagando
+    let isApagando = false;
 
     flatpickr("#data", {
       minDate: "today",
@@ -101,7 +100,6 @@
     }
 
     function verificarApagamento(input, event) {
-      // Detecta se o usuário está apagando com Backspace ou Delete
       if (event.key === 'Backspace' || event.key === 'Delete') {
         isApagando = true;
       } else {
@@ -110,17 +108,15 @@
     }
 
     function mascararTelefone(input, event) {
-      let value = input.value.replace(/\D/g, ''); // Remove caracteres não numéricos
+      let value = input.value.replace(/\D/g, '');
       if (value.length === 0) {
-        input.value = ''; // Permite apagar tudo
+        input.value = '';
         return;
       }
-      // Se estiver apagando, não aplica a máscara imediatamente
       if (isApagando) {
-        input.value = value; // Mantém apenas os dígitos enquanto apaga
+        input.value = value;
         return;
       }
-      // Aplica a máscara apenas quando não está apagando
       if (value.length > 11) value = value.slice(0, 11);
       if (value.length <= 10) {
         if (value.length > 2) input.value = `(${value.slice(0, 2)}) ${value.slice(2, 6)}-${value.slice(6)}`;
@@ -135,11 +131,13 @@
       document.getElementById('mensagemSucessoModal').textContent = mensagem;
       document.getElementById('overlay').style.display = 'block';
       document.getElementById('modalSucesso').style.display = 'block';
-      setTimeout(() => {
-        document.getElementById('overlay').style.display = 'none';
-        document.getElementById('modalSucesso').style.display = 'none';
-        window.location.href = '/cliente.html';
-      }, 3000);
+      // Removi o timeout automático para dar controle ao usuário com o botão "Fechar"
+    }
+
+    function fecharModalSucesso() {
+      document.getElementById('overlay').style.display = 'none';
+      document.getElementById('modalSucesso').style.display = 'none';
+      window.location.href = '/cliente.html';
     }
 
     async function salvarAgendamento(dados) {
@@ -166,7 +164,7 @@
           if (!tokenCliente) {
             document.getElementById('mensagemSucesso').textContent = "Agendamento criado com sucesso! Você receberá uma confirmação por e-mail.";
           } else {
-            mostrarModalSucesso("Agendamento criado com sucesso! Redirecionando para seus agendamentos...");
+            mostrarModalSucesso("Agendamento criado com sucesso! Clique em 'Fechar' para ver seus agendamentos.");
           }
         } else {
           document.getElementById('erroHorario').textContent = result.message || "Erro ao criar agendamento!";
@@ -271,7 +269,6 @@
     });
 
     window.addEventListener('load', async () => {
-      // Limpa os campos ao carregar a página
       document.getElementById('cliente').value = '';
       document.getElementById('telefone').value = '';
       document.getElementById('email').value = '';
