@@ -631,14 +631,48 @@
       }
     }
 
-    if (token) {
-      document.getElementById('login').style.display = 'none';
-      document.getElementById('painel').style.display = 'block';
-      document.body.classList.remove('logged-out');
-      document.body.classList.add('logged-in');
-      inicializarFlatpickr();
-      toggleSection('agendamentoSection');
-      carregarClientes();
+    // Verifica o token ao carregar, mas só exibe o painel se o token for válido
+    window.addEventListener('load', () => {
+      if (!token) {
+        document.getElementById('login').style.display = 'block';
+        document.getElementById('painel').style.display = 'none';
+        document.body.classList.add('logged-out');
+        document.body.classList.remove('logged-in');
+      } else {
+        loginWithStoredToken();
+      }
+    });
+
+    async function loginWithStoredToken() {
+      try {
+        const response = await fetch(`${API_URL}/agendamentos`, { // Testa o token com uma requisição
+          headers: { Authorization: token }
+        });
+        if (response.ok) {
+          document.getElementById('login').style.display = 'none';
+          document.getElementById('painel').style.display = 'block';
+          document.body.classList.remove('logged-out');
+          document.body.classList.add('logged-in');
+          inicializarFlatpickr();
+          toggleSection('agendamentoSection');
+          await carregarClientes();
+        } else {
+          localStorage.removeItem('tokenProprietario');
+          token = null;
+          document.getElementById('login').style.display = 'block';
+          document.getElementById('painel').style.display = 'none';
+          document.body.classList.add('logged-out');
+          document.body.classList.remove('logged-in');
+        }
+      } catch (error) {
+        console.error('Token inválido ou expirado:', error);
+        localStorage.removeItem('tokenProprietario');
+        token = null;
+        document.getElementById('login').style.display = 'block';
+        document.getElementById('painel').style.display = 'none';
+        document.body.classList.add('logged-out');
+        document.body.classList.remove('logged-in');
+      }
     }
   </script>
 </body>
