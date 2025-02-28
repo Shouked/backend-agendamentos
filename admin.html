@@ -329,7 +329,7 @@
         console.log('Agendamentos válidos após filtro:', validAgendamentos);
 
         const groupedByDate = validAgendamentos.reduce((acc, ag) => {
-          const dateKey = ag.data;
+          const dateKey = ag.data; // Formato YYYY-MM-DD
           if (!acc[dateKey]) acc[dateKey] = [];
           acc[dateKey].push(ag);
           return acc;
@@ -337,9 +337,10 @@
 
         for (const date in groupedByDate) {
           const agendamentosDoDia = groupedByDate[date];
-          const dateObj = new Date(date);
+          const [year, month, day] = date.split('-');
+          const dateObj = new Date(`${year}-${month}-${day}T00:00:00`); // Força meia-noite no fuso local
           const diaSemana = dateObj.toLocaleDateString('pt-BR', { weekday: 'long' });
-          const dataBr = dateObj.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+          const dataBr = `${day}/${month}/${year}`;
 
           const dateDiv = document.createElement('div');
           dateDiv.className = 'agendamento-date';
@@ -620,7 +621,8 @@
           return;
         }
         relatorios.forEach(rel => {
-          const dataBr = new Date(rel._id).toLocaleDateString('pt-BR');
+          const [year, month, day] = rel._id.split('-');
+          const dataBr = `${day}/${month}/${year}`;
           conteudo.innerHTML += `<p>Data: ${dataBr} - Total: ${rel.total}</p>`;
         });
       } catch (error) {
