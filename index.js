@@ -192,6 +192,20 @@ app.post('/clientes/esqueci-senha', async (req, res) => {
   }
 });
 
+// Novo endpoint para perfil do cliente
+app.get('/clientes/perfil', autenticarTokenCliente, async (req, res) => {
+  try {
+    const cliente = await Cliente.findOne({ email: req.cliente.email }, 'nome email telefone');
+    if (!cliente) {
+      return res.status(404).json({ success: false, message: 'Cliente não encontrado' });
+    }
+    res.json({ success: true, cliente });
+  } catch (error) {
+    console.error('Erro ao buscar perfil do cliente:', error);
+    res.status(500).json({ success: false, message: 'Erro interno ao buscar perfil' });
+  }
+});
+
 app.post('/agendamentos', async (req, res) => {
   const token = req.headers['authorization'];
   let decoded = null;
@@ -209,19 +223,27 @@ app.post('/agendamentos', async (req, res) => {
     return res.status(400).json({ success: false, message: 'Procedimento inválido!' });
   }
 
-  cliente = cliente.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
-  email = email ? email.toLowerCase() : '';
+  // Se o usuário está autenticado, usa os dados do token
+  if (decoded && decoded.tipo === 'cliente') {
+    const clienteDoc = await Cliente.findOne({ email: decoded.email });
+    if (clienteDoc) {
+      cliente = clienteDoc.nome;
+      telefone = clienteDoc.telefone;
+      email = clienteDoc.email;
+    }
+  } else {
+    cliente = cliente.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
+    email = email ? email.toLowerCase() : '';
+  }
 
   try {
-    // Verifica se o horário está ocupado
     const existente = await Agendamento.findOne({ data, horario });
     if (existente) {
       return res.status(400).json({ success: false, message: 'Este horário já está ocupado neste dia!' });
     }
 
-    // Busca ou cria um cliente
     let clienteDoc = await Cliente.findOne({ telefone });
-    if (!clienteDoc) {
+    if (!clienteDoc && !decoded) {
       if (!email || !email.includes('@')) {
         return res.status(400).json({ success: false, message: 'Forneça um e-mail válido com "@" para novos clientes!' });
       }
@@ -233,20 +255,18 @@ app.post('/agendamentos', async (req, res) => {
       });
       await clienteDoc.save();
       console.log('Novo cliente criado:', clienteDoc);
-    } else {
-      email = clienteDoc.email; // Usa o email do cliente existente
+    } else if (!decoded) {
+      email = clienteDoc.email;
     }
 
-    // Define o clienteId
     let clienteId = null;
     if (decoded && decoded.tipo === 'cliente') {
       const clienteAutenticado = await Cliente.findOne({ email: decoded.email });
       if (clienteAutenticado) clienteId = clienteAutenticado._id;
     } else if (decoded && decoded.tipo === 'proprietario') {
-      clienteId = clienteDoc._id; // Associa o clienteId ao cliente encontrado ou criado
+      clienteId = clienteDoc._id;
     }
 
-    // Cria o agendamento
     const novoAgendamento = new Agendamento({ 
       procedimento, 
       data, 
@@ -260,7 +280,6 @@ app.post('/agendamentos', async (req, res) => {
     const savedAgendamento = await novoAgendamento.save();
     console.log('Agendamento salvo no MongoDB:', savedAgendamento);
 
-    // Envia e-mails
     const msgProprietario = {
       to: 'kingshowk23@gmail.com',
       from: 'iagofonseca1992@hotmail.com',
