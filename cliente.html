@@ -128,7 +128,11 @@
     }
 
     function mascararTelefone(input) {
-      let value = input.value.replace(/\D/g, '');
+      let value = input.value.replace(/\D/g, ''); // Remove caracteres não numéricos
+      if (value.length === 0) {
+        input.value = ''; // Permite apagar tudo
+        return;
+      }
       if (value.length > 11) value = value.slice(0, 11);
       if (value.length <= 10) {
         if (value.length > 2) value = `(${value.slice(0, 2)}) ${value.slice(2, 6)}-${value.slice(6)}`;
