@@ -132,7 +132,13 @@ button:hover:not(:disabled) {
   font-size: clamp(14px, 2.5vw, 16px);
 }
 
-/* Botão "Meus Agendamentos" fora do formulário */
+.meus-agendamentos-link {
+  text-decoration: none; /* Remove sublinhado do link */
+  display: block;
+  margin: 20px auto 0;
+  width: clamp(200px, 50%, 300px);
+}
+
 .meus-agendamentos-btn {
   background-color: #e91e63;
   color: white;
@@ -141,9 +147,7 @@ button:hover:not(:disabled) {
   border-radius: 5px;
   cursor: pointer;
   font-weight: bold;
-  display: block;
-  margin: 20px auto 0;
-  width: clamp(200px, 50%, 300px);
+  width: 100%;
 }
 
 .meus-agendamentos-btn:hover:not(:disabled) {
