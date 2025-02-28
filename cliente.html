@@ -10,8 +10,8 @@
 <body>
   <div class="container" id="login">
     <h2>Login do Cliente</h2>
-    <input type="email" id="emailLogin" placeholder="E-mail" required oninput="this.value = this.value.toLowerCase();"><br>
-    <input type="password" id="senhaLogin" placeholder="Senha" required><br>
+    <input type="email" id="emailLogin" placeholder="E-mail" required oninput="this.value = this.value.toLowerCase();" autocomplete="off"><br>
+    <input type="password" id="senhaLogin" placeholder="Senha" required autocomplete="new-password"><br>
     <button id="loginBtn" onclick="loginCliente()">Entrar</button>
     <p id="mensagemErro" style="color: red;"></p>
     <p>Não tem conta? <span class="link" onclick="mostrarRegistro()">Registre-se</span></p>
@@ -19,16 +19,16 @@
   </div>
   <div class="container" id="registro" style="display: none;">
     <h2>Registrar-se</h2>
-    <input type="text" id="nomeRegistro" placeholder="Nome completo" required oninput="formatarNome(this);"><br>
-    <input type="email" id="emailRegistro" placeholder="E-mail" required oninput="this.value = this.value.toLowerCase();"><br>
-    <input type="password" id="senhaRegistro" placeholder="Senha" required><br>
-    <input type="tel" id="telefoneRegistro" placeholder="Telefone (ex.: (11) 98765-4321)" required oninput="mascararTelefone(this);"><br>
+    <input type="text" id="nomeRegistro" placeholder="Nome completo" required oninput="formatarNome(this);" autocomplete="off"><br>
+    <input type="email" id="emailRegistro" placeholder="E-mail" required oninput="this.value = this.value.toLowerCase();" autocomplete="off"><br>
+    <input type="password" id="senhaRegistro" placeholder="Senha" required autocomplete="new-password"><br>
+    <input type="tel" id="telefoneRegistro" placeholder="Telefone (ex.: (11) 98765-4321)" required oninput="mascararTelefone(this);" autocomplete="off"><br>
     <button onclick="registrar()">Registrar</button>
     <p>Já tem conta? <span class="link" onclick="mostrarLogin()">Faça login</span></p>
   </div>
   <div class="container" id="esqueciSenha" style="display: none;">
     <h2>Esqueci Minha Senha</h2>
-    <input type="email" id="emailEsqueci" placeholder="Digite seu e-mail" required oninput="this.value = this.value.toLowerCase();"><br>
+    <input type="email" id="emailEsqueci" placeholder="Digite seu e-mail" required oninput="this.value = this.value.toLowerCase();" autocomplete="off"><br>
     <button onclick="esqueciSenha()">Enviar</button>
     <p><span class="link" onclick="mostrarLogin()">Voltar ao login</span></p>
   </div>
@@ -330,7 +330,7 @@
     async function carregarAgendamentosCliente() {
       console.log('Carregando agendamentos do cliente com token:', tokenCliente);
       const lista = document.getElementById('listaAgendamentosCliente');
-      lista.innerHTML = ''; // Limpar a lista antes de carregar
+      lista.innerHTML = '';
       try {
         const response = await fetch(`${API_URL}/clientes/agendamentos`, {
           headers: { 
