@@ -133,15 +133,17 @@
         input.value = ''; // Permite apagar tudo
         return;
       }
-      if (value.length > 11) value = value.slice(0, 11);
-      if (value.length <= 10) {
-        if (value.length > 2) value = `(${value.slice(0, 2)}) ${value.slice(2, 6)}-${value.slice(6)}`;
-        else if (value.length > 0) value = `(${value}`;
-      } else {
-        if (value.length > 2) value = `(${value.slice(0, 2)}) ${value.slice(2, 7)}-${value.slice(7)}`;
-        else if (value.length > 0) value = `(${value}`;
-      }
-      input.value = value;
+      // Aplica a máscara apenas após um pequeno atraso pra evitar travamento
+      setTimeout(() => {
+        if (value.length > 11) value = value.slice(0, 11);
+        if (value.length <= 10) {
+          if (value.length > 2) input.value = `(${value.slice(0, 2)}) ${value.slice(2, 6)}-${value.slice(6)}`;
+          else if (value.length > 0) input.value = `(${value}`;
+        } else {
+          if (value.length > 2) input.value = `(${value.slice(0, 2)}) ${value.slice(2, 7)}-${value.slice(7)}`;
+          else if (value.length > 0) input.value = `(${value}`;
+        }
+      }, 10); // Atraso de 10ms pra dar tempo ao navegador
     }
 
     function preencherEmailLogin() {
