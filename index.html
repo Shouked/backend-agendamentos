@@ -48,7 +48,7 @@
   </div>
   <div class="modal" id="modalSucesso">
     <div id="mensagemSucessoModal"></div>
-    <button onclick="fecharModalSucesso()">Fechar</button> <!-- Botão para fechar manualmente -->
+    <button onclick="fecharModalSucesso()">Fechar</button>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
@@ -58,6 +58,11 @@
     let tokenCliente = localStorage.getItem('tokenCliente');
     let agendamentoPendente = null;
     let isApagando = false;
+
+    // Limpa o token para testar sem autenticação (temporário)
+    // Remova esta linha após confirmar que o erro 403 está resolvido
+    localStorage.removeItem('tokenCliente');
+    tokenCliente = null;
 
     flatpickr("#data", {
       minDate: "today",
@@ -131,7 +136,6 @@
       document.getElementById('mensagemSucessoModal').textContent = mensagem;
       document.getElementById('overlay').style.display = 'block';
       document.getElementById('modalSucesso').style.display = 'block';
-      // Removi o timeout automático para dar controle ao usuário com o botão "Fechar"
     }
 
     function fecharModalSucesso() {
@@ -148,16 +152,16 @@
         console.log('Salvando agendamento com token:', tokenCliente, 'Dados:', dados);
         const headers = { 'Content-Type': 'application/json' };
         if (tokenCliente) headers['Authorization'] = tokenCliente;
-        
+
         const response = await fetch(`${API_URL}/agendamentos`, {
           method: 'POST',
           headers: headers,
           body: JSON.stringify(dados)
         });
+        const result = await response.json(); // Obtém a resposta mesmo com erro
         if (!response.ok) {
-          throw new Error(`Erro HTTP: ${response.status} - ${response.statusText}`);
+          throw new Error(`Erro HTTP: ${response.status} - ${result.message || 'Sem mensagem do servidor'}`);
         }
-        const result = await response.json();
         console.log('Resposta do servidor:', result);
         if (result.success) {
           document.getElementById('agendamentoForm').reset();
@@ -171,7 +175,7 @@
         }
       } catch (error) {
         console.error('Erro ao salvar agendamento:', error);
-        document.getElementById('erroHorario').textContent = 'Erro ao conectar ao servidor. Tente novamente.';
+        document.getElementById('erroHorario').textContent = error.message || 'Erro ao conectar ao servidor. Tente novamente.';
       } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = 'Agendar';
