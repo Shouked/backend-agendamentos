@@ -12,6 +12,8 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+  height: 100vh; /* Garante que o login fique centralizado verticalmente */
+  width: 100%;
 }
 
 .logged-in {
@@ -20,7 +22,7 @@ body {
 
 /* Centralizar o container como nos outros arquivos */
 .container {
-  max-width: clamp(300px, 90%, 900px); /* Ajustado para desktop, mantendo responsividade */
+  max-width: clamp(300px, 90%, 900px); /* Ajustado para desktop */
   margin: clamp(10px, 2vw, 20px) auto; /* Centralizado com margens dinâmicas */
   padding: clamp(15px, 3vw, 25px);
   background: white;
@@ -37,12 +39,12 @@ h2 {
 
 input, select, button {
   width: 100%;
-  padding: 12px; /* Mantido fixo como no seu arquivo */
+  padding: 12px;
   margin: 10px 0;
   border: 1px solid #e91e63;
   border-radius: 5px;
   box-sizing: border-box;
-  font-size: 16px; /* Mantido fixo como no seu arquivo */
+  font-size: 16px;
 }
 
 button {
@@ -129,7 +131,7 @@ th {
   display: flex;
   justify-content: space-between;
   margin-bottom: 15px;
-  flex-wrap: wrap; /* Adicionado para mobile, mantendo desktop intacto */
+  flex-wrap: wrap; /* Mantido para mobile */
 }
 
 .bulk-delete-btn {
@@ -156,7 +158,7 @@ th {
   background: #fff;
   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
   transition: left 0.3s ease;
-  z-index: 1000;
+  z-index: 1001; /* Aumentado para sobrepor o overlay */
 }
 
 .sidebar.active {
@@ -213,7 +215,7 @@ th {
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.5);
-  z-index: 999;
+  z-index: 1000; /* Menor que a sidebar para não sobrepor */
 }
 
 .modal {
