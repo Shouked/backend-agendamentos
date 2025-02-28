@@ -42,9 +42,9 @@
         <option value="">Selecione o horário</option>
       </select>
       <span id="erroHorario" class="erro"></span>
-      <input type="text" id="cliente" placeholder="Nome do cliente" required oninput="formatarNome(this);" autocomplete="off">
+      <input type="text" id="cliente" placeholder="Nome do cliente" required oninput="formatarNome(this);" autocomplete="nope">
       <span id="erroCliente" class="erro"></span>
-      <input type="tel" id="telefone" placeholder="Telefone (ex.: (11) 98765-4321)" required oninput="mascararTelefone(this);" autocomplete="off">
+      <input type="tel" id="telefone" placeholder="Telefone (ex.: (11) 98765-4321)" required oninput="mascararTelefone(this);" autocomplete="new-telephone">
       <span id="erroTelefone" class="erro"></span>
       <input type="email" id="emailAgendamento" placeholder="E-mail do cliente" oninput="this.value = this.value.toLowerCase();" autocomplete="off">
       <span id="erroEmail" class="erro"></span>
@@ -167,6 +167,10 @@
           inicializarFlatpickr();
           toggleSection('agendamentoSection');
           await carregarClientes();
+          // Limpa os campos após o login pra evitar autofill
+          document.getElementById('cliente').value = '';
+          document.getElementById('telefone').value = '';
+          document.getElementById('emailAgendamento').value = '';
         } else {
           alert("E-mail ou senha inválidos! Mensagem do servidor: " + (result.message || ""));
         }
@@ -191,7 +195,12 @@
       const section = document.getElementById(sectionId);
       if (section) {
         section.style.display = 'block';
-        if (sectionId === 'agendamentosSection') {
+        if (sectionId === 'agendamentoSection') {
+          // Limpa os campos ao abrir a seção de agendamento
+          document.getElementById('cliente').value = '';
+          document.getElementById('telefone').value = '';
+          document.getElementById('emailAgendamento').value = '';
+        } else if (sectionId === 'agendamentosSection') {
           carregarAgendamentos();
         } else if (sectionId === 'clientesSection') {
           carregarClientes();
