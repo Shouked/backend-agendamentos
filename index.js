@@ -205,7 +205,7 @@ app.get('/clientes/perfil', autenticarTokenCliente, async (req, res) => {
   }
 });
 
-app.post('/agendaments', async (req, res) => {
+app.post('/agendamentos', async (req, res) => {
   const token = req.headers['authorization'];
   let decoded = null;
   if (token) {
@@ -228,14 +228,19 @@ app.post('/agendaments', async (req, res) => {
       cliente = clienteDoc.nome;
       telefone = clienteDoc.telefone;
       email = clienteDoc.email;
+    } else {
+      return res.status(404).json({ success: false, message: 'Cliente autenticado não encontrado!' });
     }
+  } else if (!cliente || !telefone || !email) {
+    return res.status(400).json({ success: false, message: 'Nome, telefone e e-mail são obrigatórios para usuários não autenticados!' });
   } else {
     cliente = cliente.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
-    email = email ? email.toLowerCase() : '';
+    email = email.toLowerCase();
   }
 
   try {
-    const existente = await Agendamento.findOne({ data, horario });
+    const dataISO = new Date(data).toISOString().split('T')[0]; // Garante formato ISO correto
+    const existente = await Agendamento.findOne({ data: dataISO, horario });
     if (existente) {
       return res.status(400).json({ success: false, message: 'Este horário já está ocupado neste dia!' });
     }
@@ -267,7 +272,7 @@ app.post('/agendaments', async (req, res) => {
 
     const novoAgendamento = new Agendamento({ 
       procedimento, 
-      data, 
+      data: dataISO,
       horario, 
       cliente, 
       telefone, 
@@ -282,7 +287,7 @@ app.post('/agendaments', async (req, res) => {
       to: 'kingshowk23@gmail.com',
       from: 'iagofonseca1992@hotmail.com',
       subject: 'Novo Agendamento Criado',
-      text: `Um novo agendamento foi feito!\n\nProcedimento: ${procedimento}\nData: ${data}\nHorário: ${horario}\nCliente: ${cliente}\nTelefone: ${telefone}\nE-mail: ${email}\nCriado em: ${savedAgendamento.dataCriacao}`
+      text: `Um novo agendamento foi feito!\n\nProcedimento: ${procedimento}\nData: ${dataISO}\nHorário: ${horario}\nCliente: ${cliente}\nTelefone: ${telefone}\nE-mail: ${email}\nCriado em: ${savedAgendamento.dataCriacao}`
     };
     await sgMail.send(msgProprietario).catch(err => console.error('Erro ao enviar e-mail ao proprietário:', err));
 
@@ -291,7 +296,7 @@ app.post('/agendaments', async (req, res) => {
         to: email,
         from: 'iagofonseca1992@hotmail.com',
         subject: 'Confirmação de Agendamento',
-        text: `Seu agendamento foi confirmado!\n\nProcedimento: ${procedimento}\nData: ${data}\nHorário: ${horario}\nEstamos ansiosos para atendê-lo(a)!`
+        text: `Seu agendamento foi confirmado!\n\nProcedimento: ${procedimento}\nData: ${dataISO}\nHorário: ${horario}\nEstamos ansiosos para atendê-lo(a)!`
       };
       await sgMail.send(msgCliente).catch(err => console.error('Erro ao enviar e-mail ao cliente:', err));
     }
@@ -326,7 +331,8 @@ app.get('/clientes/agendamentos', autenticarTokenCliente, async (req, res) => {
 app.get('/horarios-disponiveis', async (req, res) => {
   const { data } = req.query;
   try {
-    const agendamentos = await Agendamento.find({ data });
+    const dataISO = new Date(data).toISOString().split('T')[0];
+    const agendamentos = await Agendamento.find({ data: dataISO });
     const todosHorarios = [
       "08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00"
     ];
@@ -398,12 +404,13 @@ app.put('/agendamentos/:id', autenticarTokenProprietario, async (req, res) => {
   cliente = cliente.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
 
   try {
-    const existente = await Agendamento.findOne({ data, horario, _id: { $ne: id } });
+    const dataISO = new Date(data).toISOString().split('T')[0];
+    const existente = await Agendamento.findOne({ data: dataISO, horario, _id: { $ne: id } });
     if (existente) {
       return res.status(400).json({ success: false, message: 'Este horário já está ocupado neste dia!' });
     }
 
-    const updated = await Agendamento.findByIdAndUpdate(id, { procedimento, data, horario, cliente, telefone, email }, { new: true });
+    const updated = await Agendamento.findByIdAndUpdate(id, { procedimento, data: dataISO, horario, cliente, telefone, email }, { new: true });
     if (updated) {
       res.json({ success: true, message: 'Agendamento atualizado com sucesso!', agendamento: updated });
     } else {
@@ -430,10 +437,12 @@ app.put('/clientes/agendamentos/:id', autenticarTokenCliente, async (req, res) =
     }
 
     if (data && horario) {
-      const existente = await Agendamento.findOne({ data, horario, _id: { $ne: id } });
+      const dataISO = new Date(data).toISOString().split('T')[0];
+      const existente = await Agendamento.findOne({ data: dataISO, horario, _id: { $ne: id } });
       if (existente) {
         return res.status(400).json({ success: false, message: 'Este horário já está ocupado neste dia!' });
       }
+      data = dataISO;
     }
 
     const updated = await Agendamento.findByIdAndUpdate(id, { procedimento, data, horario }, { new: true });
