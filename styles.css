@@ -1,14 +1,14 @@
 body {
   font-family: 'Arial', sans-serif;
-  margin: clamp(10px, 2vw, 20px); /* Ajusta margem dinamicamente */
+  margin: clamp(10px, 2vw, 20px);
   background-color: #f9e6f0;
   color: #333;
 }
 
 .form-container {
-  max-width: clamp(300px, 90%, 600px); /* Min 300px, max 600px, 90% entre eles */
+  max-width: clamp(300px, 90%, 600px);
   margin: 0 auto;
-  padding: clamp(15px, 3vw, 25px); /* Padding ajustável */
+  padding: clamp(15px, 3vw, 25px);
   background: white;
   border-radius: 10px;
   box-shadow: 0 4px 15px rgba(0,0,0,0.1);
@@ -18,7 +18,7 @@ h2 {
   text-align: center;
   color: #d81b60;
   margin-bottom: 20px;
-  font-size: clamp(1.5rem, 5vw, 2rem); /* Tamanho de fonte responsivo */
+  font-size: clamp(1.5rem, 5vw, 2rem);
 }
 
 p {
@@ -30,7 +30,7 @@ p {
 
 select, input, button {
   width: 100%;
-  padding: clamp(10px, 2vw, 15px); /* Padding ajustável */
+  padding: clamp(10px, 2vw, 15px);
   margin: 10px 0;
   border: 1px solid #e91e63;
   border-radius: 5px;
@@ -39,7 +39,7 @@ select, input, button {
 }
 
 select:focus, input:focus, button:focus {
-  outline: 2px solid #e91e63; /* Melhora acessibilidade */
+  outline: 2px solid #e91e63;
   outline-offset: 2px;
 }
 
@@ -86,9 +86,9 @@ button:hover:not(:disabled) {
   border-radius: 10px;
   box-shadow: 0 4px 15px rgba(0,0,0,0.3);
   z-index: 1000;
-  width: clamp(280px, 90%, 400px); /* Ajuste dinâmico */
-  max-height: 80vh; /* Limita altura */
-  overflow-y: auto; /* Rolagem se necessário */
+  width: clamp(280px, 90%, 400px);
+  max-height: 80vh;
+  overflow-y: auto;
 }
 
 .overlay {
@@ -116,7 +116,7 @@ button:hover:not(:disabled) {
 .confirmacao-botoes {
   display: flex;
   justify-content: space-between;
-  gap: 10px; /* Espaçamento consistente */
+  gap: 10px;
 }
 
 .confirmacao-botoes button {
@@ -132,24 +132,42 @@ button:hover:not(:disabled) {
   font-size: clamp(14px, 2.5vw, 16px);
 }
 
+/* Botão "Meus Agendamentos" fora do formulário */
+.meus-agendamentos-btn {
+  background-color: #e91e63;
+  color: white;
+  padding: clamp(10px, 2vw, 12px);
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  display: block;
+  margin: 20px auto 0;
+  width: clamp(200px, 50%, 300px);
+}
+
+.meus-agendamentos-btn:hover:not(:disabled) {
+  background-color: #c2185b;
+}
+
 /* Breakpoints refinados */
-@media (max-width: 480px) { /* Telas pequenas (ex.: iPhone SE) */
+@media (max-width: 480px) {
   .form-container {
     padding: 10px;
   }
   select, input, button {
     padding: 12px;
-    font-size: 16px; /* Prioriza legibilidade em mobile */
+    font-size: 16px;
   }
 }
 
-@media (min-width: 481px) and (max-width: 768px) { /* Tablets */
+@media (min-width: 481px) and (max-width: 768px) {
   .form-container {
     max-width: 500px;
   }
 }
 
-@media (min-width: 769px) { /* Desktop */
+@media (min-width: 769px) {
   .form-container {
     max-width: 600px;
   }
