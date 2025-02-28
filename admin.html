@@ -12,7 +12,7 @@
   <!-- Login -->
   <div class="container" id="login">
     <h2>Login do Proprietário</h2>
-    <form id="loginForm" onsubmit="event.preventDefault(); login();">
+    <form id="loginForm">
       <div class="form-group">
         <input type="email" id="email" placeholder="E-mail" autocomplete="off" required />
       </div>
@@ -176,10 +176,15 @@
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script src="https://npmcdn.com/flatpickr/dist/l10n/pt.js"></script>
   <script>
-    /* O JavaScript permanece o mesmo por enquanto, mas sugiro movê-lo para um arquivo separado depois */
     const API_URL = "https://agendamentos-backend.onrender.com";
     let token = null;
     let isApagando = false;
+
+    // Adicionando listener para o formulário de login
+    document.getElementById('loginForm').addEventListener('submit', (event) => {
+      event.preventDefault();
+      login();
+    });
 
     document.getElementById('menu-toggle').addEventListener('click', () => {
       const sidebar = document.getElementById('sidebar');
@@ -200,7 +205,479 @@
       }
     });
 
-    /* O restante do JavaScript continua igual */
+    async function login() {
+      const loginBtn = document.getElementById("loginBtn");
+      loginBtn.disabled = true;
+      loginBtn.textContent = 'Carregando...';
+
+      const email = document.getElementById("email").value;
+      const senha = document.getElementById("senha").value;
+      try {
+        const response = await fetch(`${API_URL}/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, senha }),
+        });
+        if (!response.ok) {
+          throw new Error(`Erro HTTP: ${response.status} - ${response.statusText}`);
+        }
+        const result = await response.json();
+        if (result.success) {
+          token = result.token;
+          document.getElementById("login").style.display = "none";
+          document.getElementById("painel").style.display = "block";
+          document.body.classList.remove('logged-out');
+          document.body.classList.add('logged-in');
+          inicializarFlatpickr();
+          toggleSection('agendamentoSection');
+          await carregarClientes();
+          document.getElementById('email').value = '';
+          document.getElementById('senha').value = '';
+        } else {
+          alert("E-mail ou senha inválidos! Mensagem do servidor: " + (result.message || ""));
+        }
+      } catch (error) {
+        console.error('Erro ao fazer login:', error);
+        alert('Erro ao conectar ao servidor. Tente novamente. Detalhes: ' + error.message);
+      } finally {
+        loginBtn.disabled = false;
+        loginBtn.textContent = 'Entrar';
+      }
+    }
+
+    function toggleSection(sectionId) {
+      const sections = ['agendamentoSection', 'agendamentosSection', 'clientesSection', 'cobrançasSection', 'relatoriosSection', 'mensagensSection'];
+      sections.forEach(id => {
+        const section = document.getElementById(id);
+        section.style.display = 'none';
+        const lista = section.querySelector('tbody') || section.querySelector('#listaAgendamentos');
+        if (lista) lista.innerHTML = '';
+      });
+      
+      const section = document.getElementById(sectionId);
+      if (section) {
+        section.style.display = 'block';
+        if (sectionId === 'agendamentoSection') {
+          document.getElementById('cliente').value = '';
+          document.getElementById('telefone').value = '';
+          document.getElementById('emailAgendamento').value = '';
+        } else if (sectionId === 'agendamentosSection') {
+          carregarAgendamentos();
+        } else if (sectionId === 'clientesSection') {
+          carregarClientes();
+        } else if (sectionId === 'relatoriosSection') {
+          carregarRelatorios();
+        }
+      }
+      document.getElementById('sidebar').classList.remove('active');
+      document.body.classList.remove('sidebar-open');
+    }
+
+    function inicializarFlatpickr() {
+      flatpickr("#data", {
+        minDate: "today",
+        dateFormat: "d/m/Y",
+        disable: [
+          function(date) {
+            return date.getDay() === 0;
+          }
+        ],
+        locale: "pt",
+        onChange: async function(selectedDates, dateStr) {
+          await carregarHorariosDisponiveis(dateStr, 'horario');
+        }
+      });
+      flatpickr("#editData", {
+        minDate: "today",
+        dateFormat: "d/m/Y",
+        disable: [
+          function(date) {
+            return date.getDay() === 0;
+          }
+        ],
+        locale: "pt",
+        onChange: async function(selectedDates, dateStr) {
+          await carregarHorariosDisponiveis(dateStr, 'editHorario');
+        }
+      });
+    }
+
+    async function carregarHorariosDisponiveis(data, selectId) {
+      const [day, month, year] = data.split('/');
+      const dataISO = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+      try {
+        const response = await fetch(`${API_URL}/horarios-disponiveis?data=${dataISO}`, {
+          headers: { Authorization: token }
+        });
+        const horarios = await response.json();
+        const horarioSelect = document.getElementById(selectId);
+        horarioSelect.innerHTML = '<option value="">Selecione o horário</option>';
+        horarios.forEach(horario => {
+          const option = document.createElement('option');
+          option.value = horario;
+          option.textContent = horario;
+          horarioSelect.appendChild(option);
+        });
+      } catch (error) {
+        console.error('Erro ao carregar horários:', error);
+        alert('Erro ao carregar horários. Tente novamente.');
+      }
+    }
+
+    function formatarNome(input) {
+      let value = input.value.toLowerCase();
+      input.value = value.replace(/\b\w/g, char => char.toUpperCase());
+    }
+
+    function verificarApagamento(input, event) {
+      if (event.key === 'Backspace' || event.key === 'Delete') {
+        isApagando = true;
+      } else {
+        isApagando = false;
+      }
+    }
+
+    function mascararTelefone(input, event) {
+      let value = input.value.replace(/\D/g, '');
+      if (value.length === 0) {
+        input.value = '';
+        return;
+      }
+      if (isApagando) {
+        input.value = value;
+        return;
+      }
+      if (value.length > 11) value = value.slice(0, 11);
+      if (value.length <= 10) {
+        if (value.length > 2) input.value = `(${value.slice(0, 2)}) ${value.slice(2, 6)}-${value.slice(6)}`;
+        else if (value.length > 0) input.value = `(${value}`;
+      } else {
+        if (value.length > 2) input.value = `(${value.slice(0, 2)}) ${value.slice(2, 7)}-${value.slice(7)}`;
+        else if (value.length > 0) input.value = `(${value}`;
+      }
+    }
+
+    async function carregarAgendamentos() {
+      try {
+        console.log('Tentando carregar agendamentos com token:', token);
+        const response = await fetch(`${API_URL}/agendamentos`, {
+          headers: { Authorization: token },
+        });
+        if (!response.ok) {
+          throw new Error(`Erro HTTP: ${response.status} - ${response.statusText}`);
+        }
+        const agendamentos = await response.json();
+        console.log('Agendamentos recebidos:', agendamentos);
+
+        const lista = document.getElementById('listaAgendamentos');
+        lista.innerHTML = '';
+
+        if (!Array.isArray(agendamentos) || agendamentos.length === 0) {
+          lista.innerHTML = '<p>Nenhum agendamento encontrado.</p>';
+          return;
+        }
+
+        const validAgendamentos = agendamentos.filter(ag => ag._id);
+        console.log('Agendamentos válidos após filtro:', validAgendamentos);
+
+        const groupedByDate = validAgendamentos.reduce((acc, ag) => {
+          const dateKey = ag.data;
+          if (!acc[dateKey]) acc[dateKey] = [];
+          acc[dateKey].push(ag);
+          return acc;
+        }, {});
+
+        for (const date in groupedByDate) {
+          const agendamentosDoDia = groupedByDate[date];
+          const dateObj = new Date(date);
+          const diaSemana = dateObj.toLocaleDateString('pt-BR', { weekday: 'long' });
+          const dataBr = dateObj.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+          const dateDiv = document.createElement('div');
+          dateDiv.className = 'agendamento-date';
+          dateDiv.textContent = `${diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1)} - ${dataBr}`;
+          
+          const listDiv = document.createElement('div');
+          listDiv.className = 'agendamento-list';
+
+          agendamentosDoDia.forEach(ag => {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'agendamento-item';
+            itemDiv.innerHTML = `
+              <input type="checkbox" class="select-agendamento" value="${ag._id}">
+              <span>${ag.cliente}</span>
+              <span>${ag.procedimento}</span>
+              <span>${ag.horario}</span>
+              <button class="edit-btn" onclick="abrirModalEditar('${ag._id}')">Editar</button>
+            `;
+            listDiv.appendChild(itemDiv);
+          });
+
+          dateDiv.addEventListener('click', () => {
+            listDiv.style.display = listDiv.style.display === 'block' ? 'none' : 'block';
+          });
+
+          lista.appendChild(dateDiv);
+          lista.appendChild(listDiv);
+        }
+      } catch (error) {
+        console.error('Erro ao carregar agendamentos:', error);
+        const lista = document.getElementById('listaAgendamentos');
+        lista.innerHTML = '<p>Erro ao carregar agendamentos. Tente novamente.</p>';
+      }
+    }
+
+    async function criarAgendamento() {
+      document.getElementById('erroProcedimento').textContent = '';
+      document.getElementById('erroData').textContent = '';
+      document.getElementById('erroHorario').textContent = '';
+      document.getElementById('erroCliente').textContent = '';
+      document.getElementById('erroTelefone').textContent = '';
+      document.getElementById('erroEmail').textContent = '';
+
+      const procedimento = document.getElementById('procedimento').value;
+      const dataBr = document.getElementById('data').value;
+      const horario = document.getElementById('horario').value;
+      const cliente = document.getElementById('cliente').value;
+      const telefone = document.getElementById('telefone').value.replace(/\D/g, '');
+      const emailInput = document.getElementById('emailAgendamento');
+      let email = emailInput.value;
+
+      if (!procedimento) {
+        document.getElementById('erroProcedimento').textContent = "Escolha um procedimento!";
+        return;
+      }
+      if (!dataBr) {
+        document.getElementById('erroData').textContent = "Selecione uma data!";
+        return;
+      }
+      if (!horario) {
+        document.getElementById('erroHorario').textContent = "Selecione um horário!";
+        return;
+      }
+      if (!cliente) {
+        document.getElementById('erroCliente').textContent = "Digite o nome do cliente!";
+        return;
+      }
+      if (!telefone || telefone.length < 10) {
+        document.getElementById('erroTelefone').textContent = "Digite um telefone válido (10 ou 11 dígitos)!";
+        return;
+      }
+
+      const [day, month, year] = dataBr.split('/');
+      const data = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+      const agendamentoDados = { procedimento, data, horario, cliente, telefone, email };
+
+      try {
+        console.log('Criando agendamento com dados:', agendamentoDados, 'Token:', token);
+        const response = await fetch(`${API_URL}/agendamentos`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': token
+          },
+          body: JSON.stringify(agendamentoDados)
+        });
+        if (!response.ok) {
+          throw new Error(`Erro HTTP: ${response.status} - ${response.statusText}`);
+        }
+        const result = await response.json();
+        console.log('Resposta do servidor:', result);
+        if (result.success) {
+          alert("Agendamento criado com sucesso! O cliente receberá uma confirmação por e-mail.");
+          document.getElementById('procedimento').value = '';
+          document.getElementById('data').value = '';
+          document.getElementById('horario').innerHTML = '<option value="">Selecione o horário</option>';
+          document.getElementById('cliente').value = '';
+          document.getElementById('telefone').value = '';
+          emailInput.value = '';
+          toggleSection('agendamentosSection');
+          await carregarAgendamentos();
+        } else {
+          alert(result.message || "Erro ao criar agendamento!");
+        }
+      } catch (error) {
+        console.error('Erro ao criar agendamento:', error);
+        alert('Erro ao conectar ao servidor. Tente novamente.');
+      }
+    }
+
+    async function carregarClientes() {
+      try {
+        const response = await fetch(`${API_URL}/clientes`, {
+          headers: { Authorization: token },
+        });
+        const clientes = await response.json();
+        console.log('Clientes carregados:', clientes);
+        const lista = document.getElementById('listaClientes');
+        lista.innerHTML = '';
+        if (!clientes || clientes.length === 0) {
+          lista.innerHTML = '<tr><td colspan="5">Nenhum cliente encontrado.</td></tr>';
+          return;
+        }
+        clientes.forEach(cliente => {
+          const dataRegistro = cliente.dataCriacao ? new Date(cliente.dataCriacao).toLocaleDateString('pt-BR') : 'Data não disponível';
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td data-label="Selecionar"><input type="checkbox" class="select-cliente" value="${cliente._id}"></td>
+            <td data-label="Nome">${cliente.nome}</td>
+            <td data-label="E-mail">${cliente.email}</td>
+            <td data-label="Telefone">${cliente.telefone}</td>
+            <td data-label="Data Registro">${dataRegistro}</td>
+          `;
+          lista.appendChild(tr);
+        });
+      } catch (error) {
+        console.error('Erro ao carregar clientes:', error);
+        alert('Erro ao carregar clientes. Tente novamente. Detalhes: ' + error.message);
+      }
+    }
+
+    function abrirModalEditar(id) {
+      document.getElementById('editId').value = id;
+      document.getElementById('overlay').style.display = 'block';
+      document.getElementById('editModal').style.display = 'block';
+    }
+
+    async function salvarEdicao() {
+      const id = document.getElementById('editId').value;
+      const procedimento = document.getElementById('editProcedimento').value;
+      const dataBr = document.getElementById('editData').value;
+      const horario = document.getElementById('editHorario').value;
+
+      const body = { procedimento };
+      if (dataBr && horario) {
+        const [day, month, year] = dataBr.split('/');
+        const data = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+        body.data = data;
+        body.horario = horario;
+      }
+
+      try {
+        const response = await fetch(`${API_URL}/agendamentos/${id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': token
+          },
+          body: JSON.stringify(body)
+        });
+        const result = await response.json();
+        if (result.success) {
+          alert('Agendamento atualizado com sucesso!');
+          fecharModal();
+          await carregarAgendamentos();
+        } else {
+          alert(result.message || 'Erro ao atualizar!');
+        }
+      } catch (error) {
+        console.error('Erro ao salvar edição:', error);
+        alert('Erro ao conectar ao servidor. Tente novamente.');
+      }
+    }
+
+    function fecharModal() {
+      document.getElementById('overlay').style.display = 'none';
+      document.getElementById('editModal').style.display = 'none';
+    }
+
+    function selecionarTodosAgendamentos() {
+      const checkboxes = document.querySelectorAll(".select-agendamento");
+      checkboxes.forEach((cb) => (cb.checked = true));
+    }
+
+    async function excluirSelecionadosAgendamentos() {
+      const selecionados = Array.from(
+        document.querySelectorAll(".select-agendamento:checked")
+      ).map((cb) => cb.value);
+      if (selecionados.length === 0) {
+        alert("Nenhum agendamento selecionado!");
+        return;
+      }
+      if (
+        confirm(
+          `Tem certeza que deseja excluir ${selecionados.length} agendamento(s)?`
+        )
+      ) {
+        try {
+          const response = await fetch(`${API_URL}/agendamentos/muitos`, {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: token,
+            },
+            body: JSON.stringify({ ids: selecionados }),
+          });
+          const result = await response.json();
+          if (result.success) {
+            alert(result.message);
+            await carregarAgendamentos();
+          } else {
+            alert(result.message || "Erro ao excluir agendamentos!");
+          }
+        } catch (error) {
+          console.error('Erro ao excluir agendamentos:', error);
+          alert('Erro ao conectar ao servidor. Tente novamente.');
+        }
+      }
+    }
+
+    function selecionarTodosClientes() {
+      const checkboxes = document.querySelectorAll(".select-cliente");
+      checkboxes.forEach((cb) => (cb.checked = true));
+    }
+
+    async function excluirSelecionadosClientes() {
+      const selecionados = Array.from(
+        document.querySelectorAll(".select-cliente:checked")
+      ).map((cb) => cb.value);
+      if (selecionados.length === 0) {
+        alert("Nenhum cliente selecionado!");
+        return;
+      }
+      if (
+        confirm(
+          `Tem certeza que deseja excluir ${selecionados.length} cliente(s)?`
+        )
+      ) {
+        try {
+          const response = await fetch(`${API_URL}/clientes/muitos`, {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: token,
+            },
+            body: JSON.stringify({ ids: selecionados }),
+          });
+          const result = await response.json();
+          if (result.success) {
+            alert(result.message);
+            await carregarClientes();
+          } else {
+            alert(result.message || "Erro ao excluir clientes!");
+          }
+        } catch (error) {
+          console.error('Erro ao excluir clientes:', error);
+          alert('Erro ao conectar ao servidor. Tente novamente.');
+        }
+      }
+    }
+
+    async function carregarRelatorios() {
+      try {
+        const response = await fetch(`${API_URL}/relatorios/agendamentos-por-dia`, {
+          headers: { Authorization: token }
+        });
+        const relatorios = await response.json();
+        const conteudo = document.getElementById('relatoriosConteudo');
+        conteudo.innerHTML = '<h4>Agendamentos por Dia:</h4><ul>' +
+          relatorios.map(r => `<li>Data: ${r._id}, Total: ${r.total}</li>`).join('') +
+          '</ul>';
+      } catch (error) {
+        console.error('Erro ao carregar relatórios:', error);
+        alert('Erro ao carregar relatórios. Tente novamente.');
+      }
+    }
   </script>
 </body>
 </html>
