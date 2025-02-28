@@ -25,9 +25,9 @@
         <option value="">Selecione o horário</option>
       </select>
       <span id="erroHorario" class="erro" aria-live="polite"></span>
-      <input type="text" id="cliente" placeholder="Seu nome" required oninput="formatarNome(this);" aria-label="Digite seu nome" autocomplete="off">
+      <input type="text" id="cliente" placeholder="Seu nome" required oninput="formatarNome(this);" aria-label="Digite seu nome" autocomplete="nope">
       <span id="erroCliente" class="erro" aria-live="polite"></span>
-      <input type="tel" id="telefone" placeholder="Seu telefone (ex.: (11) 98765-4321)" required oninput="mascararTelefone(this);" aria-label="Digite seu telefone" autocomplete="off">
+      <input type="tel" id="telefone" placeholder="Seu telefone (ex.: (11) 98765-4321)" required oninput="mascararTelefone(this);" aria-label="Digite seu telefone" autocomplete="new-telephone">
       <span id="erroTelefone" class="erro" aria-live="polite"></span>
       <input type="email" id="email" placeholder="Seu e-mail" required oninput="this.value = this.value.toLowerCase();" aria-label="Digite seu e-mail" autocomplete="off">
       <span id="erroEmail" class="erro" aria-live="polite"></span>
@@ -252,6 +252,11 @@
     });
 
     window.addEventListener('load', async () => {
+      // Limpa os campos ao carregar a página
+      document.getElementById('cliente').value = '';
+      document.getElementById('telefone').value = '';
+      document.getElementById('email').value = '';
+
       if (tokenCliente) {
         const agendamentoPendente = localStorage.getItem('agendamentoPendente');
         if (agendamentoPendente) {
