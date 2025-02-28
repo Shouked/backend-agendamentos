@@ -161,6 +161,7 @@ th {
   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
   transition: left 0.3s ease;
   z-index: 1001; /* Aumentado para sobrepor o overlay */
+  overflow-y: auto; /* Permite rolagem se necessário */
 }
 
 .sidebar.active {
@@ -175,6 +176,7 @@ th {
   text-decoration: none;
   border-bottom: 1px solid #f0f0f0;
   transition: background-color 0.3s ease;
+  z-index: 1002; /* Garante que os itens da sidebar fiquem acessíveis */
 }
 
 .sidebar-item:hover {
@@ -198,6 +200,11 @@ th {
   cursor: pointer;
   z-index: 1100;
   border-radius: 5px;
+  width: 40px; /* Limita o tamanho do botão */
+  height: 40px; /* Limita o tamanho do botão */
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: opacity 0.3s ease;
 }
 
@@ -217,7 +224,12 @@ th {
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.5);
-  z-index: 1000; /* Menor que a sidebar para não sobrepor */
+  z-index: 1000; /* Menor que a sidebar para não bloquear */
+  pointer-events: none; /* Desativa cliques no overlay, exceto para fechar */
+}
+
+.sidebar-open .overlay {
+  pointer-events: auto; /* Ativa cliques no overlay apenas quando a sidebar está aberta */
 }
 
 .modal {
