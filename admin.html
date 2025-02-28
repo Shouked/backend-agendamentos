@@ -1,256 +1,86 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Painel do Proprietário</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agendamento Estética</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-  <link rel="stylesheet" href="admin.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
 </head>
-<body class="logged-out">
-  <div class="container" id="login">
-    <h2>Login do Proprietário</h2>
-    <input type="email" id="email" placeholder="E-mail" autocomplete="off" /><br />
-    <input type="password" id="senha" placeholder="Senha" autocomplete="new-password" /><br />
-    <button id="loginBtn" onclick="login()">Entrar</button>
-  </div>
-  <div class="container" id="painel" style="display: none">
-    <button id="menu-toggle">☰</button>
-    <div class="sidebar" id="sidebar">
-      <a href="#" class="sidebar-item" onclick="toggleSection('agendamentoSection')"><i class="fas fa-home sidebar-icon"></i><span>Início</span></a>
-      <a href="#" class="sidebar-item" onclick="toggleSection('agendamentosSection')"><i class="fas fa-calendar-alt sidebar-icon"></i><span>Agenda</span></a>
-      <a href="#" class="sidebar-item" onclick="toggleSection('clientesSection')"><i class="fas fa-users sidebar-icon"></i><span>Clientes</span></a>
-      <a href="#" class="sidebar-item" onclick="toggleSection('cobrançasSection')"><i class="fas fa-money-bill-wave sidebar-icon"></i><span>Cobranças</span></a>
-      <a href="#" class="sidebar-item" onclick="toggleSection('relatoriosSection')"><i class="fas fa-chart-bar sidebar-icon"></i><span>Relatórios</span></a>
-      <a href="#" class="sidebar-item" onclick="toggleSection('mensagensSection')"><i class="fas fa-envelope sidebar-icon"></i><span>Mensagens Predefinidas</span></a>
-    </div>
-    <h2>Painel do Proprietário</h2>
-
-    <div id="agendamentoSection" class="section">
-      <h3>Criar Novo Agendamento</h3>
-      <select id="procedimento" required>
+<body>
+  <div class="form-container">
+    <h2>Agendar Procedimento</h2>
+    <p>Atendimento de segunda a sábado, das 8h às 19h. Dúvidas? Ligue 11 94070-5013</p>
+    <form id="agendamentoForm">
+      <select id="procedimento" required aria-label="Escolha o procedimento">
         <option value="">Escolha o procedimento</option>
         <option value="Extensão de Cílios">Extensão de Cílios</option>
         <option value="Lábios">Lábios</option>
         <option value="Sobrancelha">Sobrancelha</option>
       </select>
-      <span id="erroProcedimento" class="erro"></span>
-      <input type="text" id="data" placeholder="Selecione a data" required>
-      <span id="erroData" class="erro"></span>
-      <select id="horario" required>
+      <span id="erroProcedimento" class="erro" aria-live="polite"></span>
+      <input type="text" id="data" placeholder="Selecione a data" required aria-label="Selecione a data">
+      <span id="erroData" class="erro" aria-live="polite"></span>
+      <select id="horario" required aria-label="Selecione o horário">
         <option value="">Selecione o horário</option>
       </select>
-      <span id="erroHorario" class="erro"></span>
-      <input type="text" id="cliente" placeholder="Nome do cliente" required oninput="formatarNome(this);" autocomplete="nope">
-      <span id="erroCliente" class="erro"></span>
-      <input type="tel" id="telefone" placeholder="Telefone (ex.: (11) 98765-4321)" required oninput="mascararTelefone(this, event);" onkeydown="verificarApagamento(this, event);" autocomplete="new-telephone">
-      <span id="erroTelefone" class="erro"></span>
-      <input type="email" id="emailAgendamento" placeholder="E-mail do cliente" oninput="this.value = this.value.toLowerCase();" autocomplete="off">
-      <span id="erroEmail" class="erro"></span>
-      <button onclick="criarAgendamento()">Criar Agendamento</button>
-    </div>
-
-    <div id="agendamentosSection" class="section">
-      <h3>Lista de Agendamentos</h3>
-      <div class="action-buttons">
-        <button onclick="selecionarTodosAgendamentos()">Selecionar Todos</button>
-        <button class="bulk-delete-btn" onclick="excluirSelecionadosAgendamentos()">Excluir Selecionados</button>
-      </div>
-      <div id="listaAgendamentos"></div>
-    </div>
-
-    <div id="clientesSection" class="section">
-      <h3>Clientes Registrados</h3>
-      <div class="action-buttons">
-        <button onclick="selecionarTodosClientes()">Selecionar Todos</button>
-        <button class="bulk-delete-btn" onclick="excluirSelecionadosClientes()">Excluir Selecionados</button>
-      </div>
-      <table id="clientesTable">
-        <thead>
-          <tr>
-            <th>Selecionar</th>
-            <th>Nome</th>
-            <th>E-mail</th>
-            <th>Telefone</th>
-            <th>Data Registro</th>
-          </tr>
-        </thead>
-        <tbody id="listaClientes"></tbody>
-      </table>
-    </div>
-
-    <div id="cobrançasSection" class="section" style="display: none;">
-      <h3>Cobranças</h3>
-      <p>Funcionalidade em desenvolvimento. Em breve, você poderá gerenciar cobranças aqui.</p>
-    </div>
-
-    <div id="relatoriosSection" class="section" style="display: none;">
-      <h3>Relatórios</h3>
-      <div id="relatoriosConteudo"></div>
-      <button onclick="carregarRelatorios()">Carregar Relatórios</button>
-    </div>
-
-    <div id="mensagensSection" class="section" style="display: none;">
-      <h3>Mensagens Predefinidas</h3>
-      <p>Funcionalidade em desenvolvimento. Em breve, você poderá enviar mensagens automáticas.</p>
-    </div>
+      <span id="erroHorario" class="erro" aria-live="polite"></span>
+      <input type="text" id="cliente" placeholder="Seu nome" oninput="formatarNome(this);" aria-label="Digite seu nome" autocomplete="nope">
+      <span id="erroCliente" class="erro" aria-live="polite"></span>
+      <input type="tel" id="telefone" placeholder="Seu telefone (ex.: (11) 98765-4321)" oninput="mascararTelefone(this, event);" onkeydown="verificarApagamento(this, event);" aria-label="Digite seu telefone" autocomplete="new-telephone">
+      <span id="erroTelefone" class="erro" aria-live="polite"></span>
+      <input type="email" id="email" placeholder="Seu e-mail" oninput="this.value = this.value.toLowerCase();" aria-label="Digite seu e-mail" autocomplete="off">
+      <span id="erroEmail" class="erro" aria-live="polite"></span>
+      <button type="submit" id="submitBtn">Agendar</button>
+      <span id="mensagemSucesso" class="sucesso" aria-live="polite"></span>
+    </form>
+    <a href="/cliente.html" class="meus-agendamentos-link"><button class="meus-agendamentos-btn">Meus Agendamentos</button></a>
   </div>
 
   <div class="overlay" id="overlay"></div>
-  <div class="modal" id="editModal">
-    <h3>Editar Agendamento</h3>
-    <input type="hidden" id="editId">
-    <select id="editProcedimento">
-      <option value="Extensão de Cílios">Extensão de Cílios</option>
-      <option value="Lábios">Lábios</option>
-      <option value="Sobrancelha">Sobrancelha</option>
-    </select>
-    <input type="text" id="editData" placeholder="Selecione a data">
-    <select id="editHorario">
-      <option value="">Selecione o horário</option>
-    </select>
-    <button onclick="salvarEdicao()">Salvar</button>
-    <button onclick="fecharModal()">Cancelar</button>
+  <div class="modal" id="modalConfirmar">
+    <h3>Confirmar Agendamento</h3>
+    <div class="confirmacao-dados" id="mensagemConfirmacao" aria-live="polite"></div>
+    <div class="confirmacao-botoes">
+      <button onclick="salvarAgendamentoConfirmado()">Confirmar</button>
+      <button onclick="fecharModal()">Cancelar</button>
+    </div>
+  </div>
+  <div class="modal" id="modalSucesso">
+    <div id="mensagemSucessoModal"></div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script src="https://npmcdn.com/flatpickr/dist/l10n/pt.js"></script>
   <script>
-    const API_URL = "https://agendamentos-backend.onrender.com";
-    let token = null;
-    let isApagando = false; // Flag pra rastrear se o usuário está apagando
+    const API_URL = 'https://agendamentos-backend.onrender.com';
+    let tokenCliente = localStorage.getItem('tokenCliente');
+    let agendamentoPendente = null;
+    let isApagando = false;
+    let dadosUsuario = null;
 
-    document.getElementById('menu-toggle').addEventListener('click', () => {
-      const sidebar = document.getElementById('sidebar');
-      const body = document.body;
-      sidebar.classList.toggle('active');
-      body.classList.toggle('sidebar-open');
-    });
-
-    window.addEventListener('scroll', () => {
-      const menuToggle = document.getElementById('menu-toggle');
-      const isMobile = window.matchMedia("(max-width: 600px)").matches;
-      if (isMobile) {
-        if (window.scrollY > 50) {
-          menuToggle.classList.add('hidden');
-        } else {
-          menuToggle.classList.remove('hidden');
+    flatpickr("#data", {
+      minDate: "today",
+      dateFormat: "d/m/Y",
+      disable: [
+        function(date) {
+          return date.getDay() === 0; // Bloqueia domingos
         }
-      } else {
-        menuToggle.classList.remove('hidden');
+      ],
+      locale: "pt",
+      onChange: async function(selectedDates, dateStr) {
+        await carregarHorariosDisponiveis(dateStr);
       }
     });
 
-    async function login() {
-      const loginBtn = document.getElementById('loginBtn');
-      loginBtn.disabled = true;
-      loginBtn.textContent = 'Carregando...';
-
-      const email = document.getElementById("email").value;
-      const senha = document.getElementById("senha").value;
-      try {
-        const response = await fetch(`${API_URL}/login`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, senha }),
-        });
-        if (!response.ok) {
-          throw new Error(`Erro HTTP: ${response.status} - ${response.statusText}`);
-        }
-        const result = await response.json();
-        if (result.success) {
-          token = result.token;
-          document.getElementById("login").style.display = "none";
-          document.getElementById("painel").style.display = "block";
-          document.body.classList.remove('logged-out');
-          document.body.classList.add('logged-in');
-          inicializarFlatpickr();
-          toggleSection('agendamentoSection');
-          await carregarClientes();
-          // Limpa os campos após o login pra evitar autofill
-          document.getElementById('cliente').value = '';
-          document.getElementById('telefone').value = '';
-          document.getElementById('emailAgendamento').value = '';
-        } else {
-          alert("E-mail ou senha inválidos! Mensagem do servidor: " + (result.message || ""));
-        }
-      } catch (error) {
-        console.error('Erro ao fazer login:', error);
-        alert('Erro ao conectar ao servidor. Tente novamente. Detalhes: ' + error.message);
-      } finally {
-        loginBtn.disabled = false;
-        loginBtn.textContent = 'Entrar';
-      }
-    }
-
-    function toggleSection(sectionId) {
-      const sections = ['agendamentoSection', 'agendamentosSection', 'clientesSection', 'cobrançasSection', 'relatoriosSection', 'mensagensSection'];
-      sections.forEach(id => {
-        const section = document.getElementById(id);
-        section.style.display = 'none';
-        const lista = section.querySelector('tbody') || section.querySelector('#listaAgendamentos');
-        if (lista) lista.innerHTML = '';
-      });
-      
-      const section = document.getElementById(sectionId);
-      if (section) {
-        section.style.display = 'block';
-        if (sectionId === 'agendamentoSection') {
-          // Limpa os campos ao abrir a seção de agendamento
-          document.getElementById('cliente').value = '';
-          document.getElementById('telefone').value = '';
-          document.getElementById('emailAgendamento').value = '';
-        } else if (sectionId === 'agendamentosSection') {
-          carregarAgendamentos();
-        } else if (sectionId === 'clientesSection') {
-          carregarClientes();
-        } else if (sectionId === 'relatoriosSection') {
-          carregarRelatorios();
-        }
-      }
-      document.getElementById('sidebar').classList.remove('active');
-      document.body.classList.remove('sidebar-open');
-    }
-
-    function inicializarFlatpickr() {
-      flatpickr("#data", {
-        minDate: "today",
-        dateFormat: "d/m/Y",
-        disable: [
-          function(date) {
-            return date.getDay() === 0;
-          }
-        ],
-        locale: "pt",
-        onChange: async function(selectedDates, dateStr) {
-          await carregarHorariosDisponiveis(dateStr, 'horario');
-        }
-      });
-      flatpickr("#editData", {
-        minDate: "today",
-        dateFormat: "d/m/Y",
-        disable: [
-          function(date) {
-            return date.getDay() === 0;
-          }
-        ],
-        locale: "pt",
-        onChange: async function(selectedDates, dateStr) {
-          await carregarHorariosDisponiveis(dateStr, 'editHorario');
-        }
-      });
-    }
-
-    async function carregarHorariosDisponiveis(data, selectId) {
+    async function carregarHorariosDisponiveis(data) {
       const [day, month, year] = data.split('/');
       const dataISO = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
       try {
-        const response = await fetch(`${API_URL}/horarios-disponiveis?data=${dataISO}`, {
-          headers: { Authorization: token }
-        });
+        const response = await fetch(`${API_URL}/horarios-disponiveis?data=${dataISO}`);
         const horarios = await response.json();
-        const horarioSelect = document.getElementById(selectId);
+        console.log('Horários disponíveis recebidos:', horarios);
+        const horarioSelect = document.getElementById('horario');
         horarioSelect.innerHTML = '<option value="">Selecione o horário</option>';
         horarios.forEach(horario => {
           const option = document.createElement('option');
@@ -260,7 +90,7 @@
         });
       } catch (error) {
         console.error('Erro ao carregar horários:', error);
-        alert('Erro ao carregar horários. Tente novamente.');
+        alert('Erro ao carregar horários disponíveis.');
       }
     }
 
@@ -270,7 +100,6 @@
     }
 
     function verificarApagamento(input, event) {
-      // Detecta se o usuário está apagando com Backspace ou Delete
       if (event.key === 'Backspace' || event.key === 'Delete') {
         isApagando = true;
       } else {
@@ -279,17 +108,15 @@
     }
 
     function mascararTelefone(input, event) {
-      let value = input.value.replace(/\D/g, ''); // Remove caracteres não numéricos
+      let value = input.value.replace(/\D/g, '');
       if (value.length === 0) {
-        input.value = ''; // Permite apagar tudo
+        input.value = '';
         return;
       }
-      // Se estiver apagando, não aplica a máscara imediatamente
       if (isApagando) {
-        input.value = value; // Mantém apenas os dígitos enquanto apaga
+        input.value = value;
         return;
       }
-      // Aplica a máscara apenas quando não está apagando
       if (value.length > 11) value = value.slice(0, 11);
       if (value.length <= 10) {
         if (value.length > 2) input.value = `(${value.slice(0, 2)}) ${value.slice(2, 6)}-${value.slice(6)}`;
@@ -300,77 +127,124 @@
       }
     }
 
-    async function carregarAgendamentos() {
-      try {
-        console.log('Tentando carregar agendamentos com token:', token);
-        const response = await fetch(`${API_URL}/agendamentos`, {
-          headers: { Authorization: token },
-        });
-        if (!response.ok) {
-          throw new Error(`Erro HTTP: ${response.status} - ${response.statusText}`);
-        }
-        const agendamentos = await response.json();
-        console.log('Agendamentos recebidos:', agendamentos);
+    function mostrarModalSucesso(mensagem) {
+      document.getElementById('mensagemSucessoModal').textContent = mensagem;
+      document.getElementById('overlay').style.display = 'block';
+      document.getElementById('modalSucesso').style.display = 'block';
+      setTimeout(() => {
+        document.getElementById('overlay').style.display = 'none';
+        document.getElementById('modalSucesso').style.display = 'none';
+        window.location.href = '/cliente.html';
+      }, 3000);
+    }
 
-        const lista = document.getElementById('listaAgendamentos');
-        lista.innerHTML = '';
-
-        if (!Array.isArray(agendamentos) || agendamentos.length === 0) {
-          lista.innerHTML = '<p>Nenhum agendamento encontrado.</p>';
-          return;
-        }
-
-        const validAgendamentos = agendamentos.filter(ag => ag._id);
-        console.log('Agendamentos válidos após filtro:', validAgendamentos);
-
-        const groupedByDate = validAgendamentos.reduce((acc, ag) => {
-          const dateKey = ag.data;
-          if (!acc[dateKey]) acc[dateKey] = [];
-          acc[dateKey].push(ag);
-          return acc;
-        }, {});
-
-        for (const date in groupedByDate) {
-          const agendamentosDoDia = groupedByDate[date];
-          const dateObj = new Date(date);
-          const diaSemana = dateObj.toLocaleDateString('pt-BR', { weekday: 'long' });
-          const dataBr = dateObj.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
-
-          const dateDiv = document.createElement('div');
-          dateDiv.className = 'agendamento-date';
-          dateDiv.textContent = `${diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1)} - ${dataBr}`;
-          
-          const listDiv = document.createElement('div');
-          listDiv.className = 'agendamento-list';
-
-          agendamentosDoDia.forEach(ag => {
-            const itemDiv = document.createElement('div');
-            itemDiv.className = 'agendamento-item';
-            itemDiv.innerHTML = `
-              <input type="checkbox" class="select-agendamento" value="${ag._id}">
-              <span>${ag.cliente}</span>
-              <span>${ag.procedimento}</span>
-              <span>${ag.horario}</span>
-              <button class="edit-btn" onclick="abrirModalEditar('${ag._id}')">Editar</button>
-            `;
-            listDiv.appendChild(itemDiv);
+    async function carregarDadosUsuario() {
+      if (tokenCliente) {
+        try {
+          const response = await fetch(`${API_URL}/clientes/perfil`, {
+            headers: { 'Authorization': tokenCliente }
           });
-
-          dateDiv.addEventListener('click', () => {
-            listDiv.style.display = listDiv.style.display === 'block' ? 'none' : 'block';
-          });
-
-          lista.appendChild(dateDiv);
-          lista.appendChild(listDiv);
+          const result = await response.json();
+          if (result.success) {
+            dadosUsuario = result.cliente;
+            document.getElementById('cliente').value = dadosUsuario.nome;
+            document.getElementById('cliente').setAttribute('readonly', 'true');
+            document.getElementById('cliente').removeAttribute('required');
+            document.getElementById('telefone').value = dadosUsuario.telefone;
+            document.getElementById('telefone').setAttribute('readonly', 'true');
+            document.getElementById('telefone').removeAttribute('required');
+            document.getElementById('email').value = dadosUsuario.email;
+            document.getElementById('email').setAttribute('readonly', 'true');
+            document.getElementById('email').removeAttribute('required');
+          } else {
+            console.error('Erro ao carregar dados do usuário:', result.message);
+            localStorage.removeItem('tokenCliente');
+            tokenCliente = null;
+            dadosUsuario = null;
+          }
+        } catch (error) {
+          console.error('Erro ao buscar perfil:', error);
+          localStorage.removeItem('tokenCliente');
+          tokenCliente = null;
+          dadosUsuario = null;
         }
-      } catch (error) {
-        console.error('Erro ao carregar agendamentos:', error);
-        const lista = document.getElementById('listaAgendamentos');
-        lista.innerHTML = '<p>Erro ao carregar agendamentos. Tente novamente.</p>';
       }
     }
 
-    async function criarAgendamento() {
+    async function salvarAgendamento(dados) {
+      const submitBtn = document.getElementById('submitBtn');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Carregando...';
+      try {
+        if (tokenCliente && dadosUsuario) {
+          dados.cliente = dadosUsuario.nome;
+          dados.telefone = dadosUsuario.telefone;
+          dados.email = dadosUsuario.email;
+        }
+        console.log('Salvando agendamento com token:', tokenCliente?.substring(0, 20) + '...', 'Dados:', dados);
+        const headers = { 'Content-Type': 'application/json' };
+        if (tokenCliente) headers['Authorization'] = tokenCliente;
+
+        const response = await fetch(`${API_URL}/agendamentos`, {
+          method: 'POST',
+          headers: headers,
+          body: JSON.stringify(dados)
+        });
+        const result = await response.json();
+        console.log('Resposta completa do servidor:', result);
+        if (!response.ok) {
+          throw new Error(`Erro HTTP: ${response.status} - ${result.message || 'Sem mensagem do servidor'}`);
+        }
+        if (result.success) {
+          document.getElementById('agendamentoForm').reset();
+          if (!tokenCliente) {
+            document.getElementById('mensagemSucesso').textContent = "Agendamento criado com sucesso! Você receberá uma confirmação por e-mail.";
+          } else {
+            mostrarModalSucesso("Agendamento criado com sucesso!");
+          }
+        } else {
+          document.getElementById('erroHorario').textContent = result.message || "Erro ao criar agendamento!";
+        }
+      } catch (error) {
+        console.error('Erro ao salvar agendamento:', error);
+        document.getElementById('erroHorario').textContent = error.message || 'Erro ao conectar ao servidor. Tente novamente.';
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Agendar';
+      }
+    }
+
+    function mostrarModalConfirmacao(dados) {
+      const [day, month, year] = dados.data.split('-');
+      const dataDisplay = `${day}/${month}/${year}`;
+      document.getElementById('mensagemConfirmacao').innerHTML = `
+        <p>Por favor, confirme os dados do seu agendamento:</p>
+        <p><strong>Procedimento:</strong> ${dados.procedimento}</p>
+        <p><strong>Data:</strong> ${dataDisplay}</p>
+        <p><strong>Horário:</strong> ${dados.horario}</p>
+        <p><strong>Cliente:</strong> ${dados.cliente || 'Não informado'}</p>
+        <p><strong>Telefone:</strong> ${dados.telefone || 'Não informado'}</p>
+        <p><strong>E-mail:</strong> ${dados.email || 'Não informado'}</p>
+      `;
+      document.getElementById('overlay').style.display = 'block';
+      document.getElementById('modalConfirmar').style.display = 'block';
+    }
+
+    function fecharModal() {
+      document.getElementById('overlay').style.display = 'none';
+      document.getElementById('modalConfirmar').style.display = 'none';
+    }
+
+    async function salvarAgendamentoConfirmado() {
+      if (agendamentoPendente) {
+        await salvarAgendamento(agendamentoPendente);
+        agendamentoPendente = null;
+        fecharModal();
+      }
+    }
+
+    document.getElementById('agendamentoForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
       document.getElementById('erroProcedimento').textContent = '';
       document.getElementById('erroData').textContent = '';
       document.getElementById('erroHorario').textContent = '';
@@ -381,10 +255,10 @@
       const procedimento = document.getElementById('procedimento').value;
       const dataBr = document.getElementById('data').value;
       const horario = document.getElementById('horario').value;
-      const cliente = document.getElementById('cliente').value;
-      const telefone = document.getElementById('telefone').value.replace(/\D/g, '');
-      const emailInput = document.getElementById('emailAgendamento');
-      let email = emailInput.value;
+      let cliente = document.getElementById('cliente').value;
+      let telefone = document.getElementById('telefone').value.replace(/\D/g, '');
+      let email = document.getElementById('email').value;
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
       if (!procedimento) {
         document.getElementById('erroProcedimento').textContent = "Escolha um procedimento!";
@@ -398,229 +272,58 @@
         document.getElementById('erroHorario').textContent = "Selecione um horário!";
         return;
       }
-      if (!cliente) {
-        document.getElementById('erroCliente').textContent = "Digite o nome do cliente!";
-        return;
-      }
-      if (!telefone || telefone.length < 10) {
-        document.getElementById('erroTelefone').textContent = "Digite um telefone válido (10 ou 11 dígitos)!";
-        return;
+      if (!tokenCliente) {
+        if (!cliente) {
+          document.getElementById('erroCliente').textContent = "Digite seu nome!";
+          return;
+        }
+        if (!telefone || telefone.length < 10) {
+          document.getElementById('erroTelefone').textContent = "Digite um telefone válido (10 ou 11 dígitos)!";
+          return;
+        }
+        if (!email) {
+          document.getElementById('erroEmail').textContent = "Digite seu e-mail!";
+          return;
+        }
+        if (!emailRegex.test(email)) {
+          document.getElementById('erroEmail').textContent = "Digite um e-mail válido (ex.: nome@dominio.com)!";
+          return;
+        }
       }
 
       const [day, month, year] = dataBr.split('/');
-      const data = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-      const agendamentoDados = { procedimento, data, horario, cliente, telefone, email };
+      const dataISO = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+      const agendamentoDados = { 
+        procedimento, 
+        data: dataISO, 
+        horario, 
+        cliente: tokenCliente ? dadosUsuario?.nome : cliente,
+        telefone: tokenCliente ? dadosUsuario?.telefone : telefone,
+        email: tokenCliente ? dadosUsuario?.email : email 
+      };
 
-      try {
-        console.log('Criando agendamento com dados:', agendamentoDados, 'Token:', token);
-        const response = await fetch(`${API_URL}/agendamentos`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': token
-          },
-          body: JSON.stringify(agendamentoDados)
-        });
-        if (!response.ok) {
-          throw new Error(`Erro HTTP: ${response.status} - ${response.statusText}`);
-        }
-        const result = await response.json();
-        console.log('Resposta do servidor:', result);
-        if (result.success) {
-          alert("Agendamento criado com sucesso! O cliente receberá uma confirmação por e-mail.");
-          document.getElementById('procedimento').value = '';
-          document.getElementById('data').value = '';
-          document.getElementById('horario').innerHTML = '<option value="">Selecione o horário</option>';
-          document.getElementById('cliente').value = '';
-          document.getElementById('telefone').value = '';
-          emailInput.value = '';
-          toggleSection('agendamentosSection');
-          await carregarAgendamentos();
-        } else {
-          alert(result.message || "Erro ao criar agendamento!");
-        }
-      } catch (error) {
-        console.error('Erro ao criar agendamento:', error);
-        alert('Erro ao conectar ao servidor. Tente novamente.');
+      if (!tokenCliente) {
+        localStorage.setItem('agendamentoPendente', JSON.stringify(agendamentoDados));
+        localStorage.setItem('emailPendente', email);
+        console.log('Agendamento pendente salvo:', agendamentoDados);
+        window.location.href = `/cliente.html?email=${encodeURIComponent(email)}`;
+      } else {
+        agendamentoPendente = agendamentoDados;
+        mostrarModalConfirmacao(agendamentoDados);
       }
-    }
+    });
 
-    async function carregarClientes() {
-      try {
-        const response = await fetch(`${API_URL}/clientes`, {
-          headers: { Authorization: token },
-        });
-        const clientes = await response.json();
-        console.log('Clientes carregados:', clientes);
-        const lista = document.getElementById('listaClientes');
-        lista.innerHTML = '';
-        if (!clientes || clientes.length === 0) {
-          lista.innerHTML = '<tr><td colspan="5">Nenhum cliente encontrado.</td></tr>';
-          return;
-        }
-        clientes.forEach(cliente => {
-          const dataRegistro = cliente.dataCriacao ? new Date(cliente.dataCriacao).toLocaleDateString('pt-BR') : 'Data não disponível';
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td data-label="Selecionar"><input type="checkbox" class="select-cliente" value="${cliente._id}"></td>
-            <td data-label="Nome">${cliente.nome}</td>
-            <td data-label="E-mail">${cliente.email}</td>
-            <td data-label="Telefone">${cliente.telefone}</td>
-            <td data-label="Data Registro">${dataRegistro}</td>
-          `;
-          lista.appendChild(tr);
-        });
-      } catch (error) {
-        console.error('Erro ao carregar clientes:', error);
-        alert('Erro ao carregar clientes. Tente novamente. Detalhes: ' + error.message);
+    window.addEventListener('load', async () => {
+      if (!tokenCliente) {
+        document.getElementById('cliente').value = '';
+        document.getElementById('telefone').value = '';
+        document.getElementById('email').value = '';
+        document.getElementById('cliente').setAttribute('required', 'true');
+        document.getElementById('telefone').setAttribute('required', 'true');
+        document.getElementById('email').setAttribute('required', 'true');
       }
-    }
-
-    function abrirModalEditar(id) {
-      document.getElementById('editId').value = id;
-      document.getElementById('overlay').style.display = 'block';
-      document.getElementById('editModal').style.display = 'block';
-    }
-
-    async function salvarEdicao() {
-      const id = document.getElementById('editId').value;
-      const procedimento = document.getElementById('editProcedimento').value;
-      const dataBr = document.getElementById('editData').value;
-      const horario = document.getElementById('editHorario').value;
-
-      const body = { procedimento };
-      if (dataBr && horario) {
-        const [day, month, year] = dataBr.split('/');
-        const data = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-        body.data = data;
-        body.horario = horario;
-      }
-
-      try {
-        const response = await fetch(`${API_URL}/agendamentos/${id}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': token
-          },
-          body: JSON.stringify(body)
-        });
-        const result = await response.json();
-        if (result.success) {
-          alert('Agendamento atualizado com sucesso!');
-          fecharModal();
-          await carregarAgendamentos();
-        } else {
-          alert(result.message || 'Erro ao atualizar!');
-        }
-      } catch (error) {
-        console.error('Erro ao salvar edição:', error);
-        alert('Erro ao conectar ao servidor. Tente novamente.');
-      }
-    }
-
-    function fecharModal() {
-      document.getElementById('overlay').style.display = 'none';
-      document.getElementById('editModal').style.display = 'none';
-    }
-
-    function selecionarTodosAgendamentos() {
-      const checkboxes = document.querySelectorAll(".select-agendamento");
-      checkboxes.forEach((cb) => (cb.checked = true));
-    }
-
-    async function excluirSelecionadosAgendamentos() {
-      const selecionados = Array.from(
-        document.querySelectorAll(".select-agendamento:checked")
-      ).map((cb) => cb.value);
-      if (selecionados.length === 0) {
-        alert("Nenhum agendamento selecionado!");
-        return;
-      }
-      if (
-        confirm(
-          `Tem certeza que deseja excluir ${selecionados.length} agendamento(s)?`
-        )
-      ) {
-        try {
-          const response = await fetch(`${API_URL}/agendamentos/muitos`, {
-            method: "DELETE",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: token,
-            },
-            body: JSON.stringify({ ids: selecionados }),
-          });
-          const result = await response.json();
-          if (result.success) {
-            alert(result.message);
-            await carregarAgendamentos();
-          } else {
-            alert(result.message || "Erro ao excluir agendamentos!");
-          }
-        } catch (error) {
-          console.error('Erro ao excluir agendamentos:', error);
-          alert('Erro ao conectar ao servidor. Tente novamente.');
-        }
-      }
-    }
-
-    function selecionarTodosClientes() {
-      const checkboxes = document.querySelectorAll(".select-cliente");
-      checkboxes.forEach((cb) => (cb.checked = true));
-    }
-
-    async function excluirSelecionadosClientes() {
-      const selecionados = Array.from(
-        document.querySelectorAll(".select-cliente:checked")
-      ).map((cb) => cb.value);
-      if (selecionados.length === 0) {
-        alert("Nenhum cliente selecionado!");
-        return;
-      }
-      if (
-        confirm(
-          `Tem certeza que deseja excluir ${selecionados.length} cliente(s)?`
-        )
-      ) {
-        try {
-          const response = await fetch(`${API_URL}/clientes/muitos`, {
-            method: "DELETE",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: token,
-            },
-            body: JSON.stringify({ ids: selecionados }),
-          });
-          const result = await response.json();
-          if (result.success) {
-            alert(result.message);
-            await carregarClientes();
-          } else {
-            alert(result.message || "Erro ao excluir clientes!");
-          }
-        } catch (error) {
-          console.error('Erro ao excluir clientes:', error);
-          alert('Erro ao conectar ao servidor. Tente novamente.');
-        }
-      }
-    }
-
-    async function carregarRelatorios() {
-      try {
-        const response = await fetch(`${API_URL}/relatorios/agendamentos-por-dia`, {
-          headers: { Authorization: token }
-        });
-        const relatorios = await response.json();
-        const conteudo = document.getElementById('relatoriosConteudo');
-        conteudo.innerHTML = '<h4>Agendamentos por Dia:</h4><ul>' +
-          relatorios.map(r => `<li>Data: ${r._id}, Total: ${r.total}</li>`).join('') +
-          '</ul>';
-      } catch (error) {
-        console.error('Erro ao carregar relatórios:', error);
-        alert('Erro ao carregar relatórios. Tente novamente.');
-      }
-    }
+      await carregarDadosUsuario();
+    });
   </script>
 </body>
 </html>
