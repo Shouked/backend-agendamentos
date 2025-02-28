@@ -100,7 +100,6 @@
     </div>
   </div>
 
-  <div class="overlay" id="overlay"></div> <!-- Overlay para bloquear a página ao abrir a sidebar -->
   <div class="modal" id="editModal">
     <h3>Editar Agendamento</h3>
     <input type="hidden" id="editId">
@@ -128,21 +127,8 @@
       e.preventDefault(); // Impede propagação desnecessária
       const sidebar = document.getElementById('sidebar');
       const body = document.body;
-      const overlay = document.getElementById('overlay');
       sidebar.classList.toggle('active');
       body.classList.toggle('sidebar-open');
-      overlay.style.display = sidebar.classList.contains('active') ? 'block' : 'none';
-    });
-
-    // Ocultar sidebar ao clicar fora, mas permitir cliques na sidebar
-    document.getElementById('overlay').addEventListener('click', (e) => {
-      if (e.target === document.getElementById('overlay')) { // Só fecha se clicar no overlay, não na sidebar
-        const sidebar = document.getElementById('sidebar');
-        const body = document.body;
-        sidebar.classList.remove('active');
-        body.classList.remove('sidebar-open');
-        document.getElementById('overlay').style.display = 'none';
-      }
     });
 
     // Esconder botão ☰ ao rolar em mobile, mas mantê-lo fixo no topo
@@ -236,7 +222,6 @@
       }
       document.getElementById('sidebar').classList.remove('active');
       document.body.classList.remove('sidebar-open');
-      document.getElementById('overlay').style.display = 'none'; // Fecha overlay ao trocar seção
     }
 
     function inicializarFlatpickr() {
@@ -475,188 +460,12 @@
           headers: { Authorization: token },
         });
         const clientes = await response.json();
-        console.log('Clientes carregados:', clientes);
+        console.log('Clientes recebidos:', clientes);
+
         const lista = document.getElementById('listaClientes');
         lista.innerHTML = '';
-        if (!clientes || clientes.length === 0) {
+
+        if (!clientes || (Array.isArray(clientes) && clientes.length === 0)) {
           lista.innerHTML = '<tr><td colspan="5">Nenhum cliente encontrado.</td></tr>';
           return;
-        }
-        clientes.forEach(cliente => {
-          const dataRegistro = cliente.dataCriacao ? new Date(cliente.dataCriacao).toLocaleDateString('pt-BR') : 'Data não disponível';
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td data-label="Selecionar"><input type="checkbox" class="select-cliente" value="${cliente._id}"></td>
-            <td data-label="Nome">${cliente.nome}</td>
-            <td data-label="E-mail">${cliente.email}</td>
-            <td data-label="Telefone">${cliente.telefone}</td>
-            <td data-label="Data Registro">${dataRegistro}</td>
-          `;
-          lista.appendChild(tr);
-        });
-      } catch (error) {
-        console.error('Erro ao carregar clientes:', error);
-        alert('Erro ao carregar clientes. Tente novamente. Detalhes: ' + error.message);
-      }
-    }
-
-    function abrirModalEditar(id) {
-      document.getElementById('editId').value = id;
-      document.getElementById('overlay').style.display = 'block';
-      document.getElementById('editModal').style.display = 'block';
-    }
-
-    async function salvarEdicao() {
-      const id = document.getElementById('editId').value;
-      const procedimento = document.getElementById('editProcedimento').value;
-      const dataBr = document.getElementById('editData').value;
-      const horario = document.getElementById('editHorario').value;
-
-      const [day, month, year] = dataBr.split('/');
-      const dataISO = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-      const body = { procedimento, data: dataISO, horario };
-
-      try {
-        const response = await fetch(`${API_URL}/agendamentos/${id}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': token
-          },
-          body: JSON.stringify(body)
-        });
-        const result = await response.json();
-        if (result.success) {
-          alert('Agendamento atualizado com sucesso!');
-          fecharModal();
-          await carregarAgendamentos();
-        } else {
-          alert(result.message || 'Erro ao atualizar!');
-        }
-      } catch (error) {
-        console.error('Erro ao salvar edição:', error);
-        alert('Erro ao conectar ao servidor. Tente novamente.');
-      }
-    }
-
-    function fecharModal() {
-      document.getElementById('overlay').style.display = 'none';
-      document.getElementById('editModal').style.display = 'none';
-    }
-
-    function selecionarTodosAgendamentos() {
-      const checkboxes = document.querySelectorAll(".select-agendamento");
-      checkboxes.forEach((cb) => (cb.checked = true));
-    }
-
-    async function excluirSelecionadosAgendamentos() {
-      const selecionados = Array.from(
-        document.querySelectorAll(".select-agendamento:checked")
-      ).map((cb) => cb.value);
-      if (selecionados.length === 0) {
-        alert("Nenhum agendamento selecionado!");
-        return;
-      }
-      if (
-        confirm(
-          `Tem certeza que deseja excluir ${selecionados.length} agendamento(s)?`
-        )
-      ) {
-        try {
-          const response = await fetch(`${API_URL}/agendamentos/muitos`, {
-            method: "DELETE",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: token,
-            },
-            body: JSON.stringify({ ids: selecionados }),
-          });
-          const result = await response.json();
-          if (result.success) {
-            alert(result.message);
-            await carregarAgendamentos();
-          } else {
-            alert(result.message || "Erro ao excluir agendamentos!");
-          }
-        } catch (error) {
-          console.error('Erro ao excluir agendamentos:', error);
-          alert('Erro ao conectar ao servidor. Tente novamente.');
-        }
-      }
-    }
-
-    function selecionarTodosClientes() {
-      const checkboxes = document.querySelectorAll(".select-cliente");
-      checkboxes.forEach((cb) => (cb.checked = true));
-    }
-
-    async function excluirSelecionadosClientes() {
-      const selecionados = Array.from(
-        document.querySelectorAll(".select-cliente:checked")
-      ).map((cb) => cb.value);
-      if (selecionados.length === 0) {
-        alert("Nenhum cliente selecionado!");
-        return;
-      }
-      if (
-        confirm(
-          `Tem certeza que deseja excluir ${selecionados.length} cliente(s)?`
-        )
-      ) {
-        try {
-          const response = await fetch(`${API_URL}/clientes/muitos`, {
-            method: "DELETE",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: token,
-            },
-            body: JSON.stringify({ ids: selecionados }),
-          });
-          const result = await response.json();
-          if (result.success) {
-            alert(result.message);
-            await carregarClientes();
-          } else {
-            alert(result.message || "Erro ao excluir clientes!");
-          }
-        } catch (error) {
-          console.error('Erro ao excluir clientes:', error);
-          alert('Erro ao conectar ao servidor. Tente novamente.');
-        }
-      }
-    }
-
-    async function carregarRelatorios() {
-      try {
-        const response = await fetch(`${API_URL}/relatorios/agendamentos-por-dia`, {
-          headers: { Authorization: token },
-        });
-        const relatorios = await response.json();
-        const conteudo = document.getElementById('relatoriosConteudo');
-        conteudo.innerHTML = '<h4>Agendamentos por Dia</h4>';
-        if (relatorios.length === 0) {
-          conteudo.innerHTML += '<p>Nenhum dado disponível.</p>';
-          return;
-        }
-        relatorios.forEach(rel => {
-          const dataBr = new Date(rel._id).toLocaleDateString('pt-BR');
-          conteudo.innerHTML += `<p>Data: ${dataBr} - Total: ${rel.total}</p>`;
-        });
-      } catch (error) {
-        console.error('Erro ao carregar relatórios:', error);
-        document.getElementById('relatoriosConteudo').innerHTML = '<p>Erro ao carregar relatórios.</p>';
-      }
-    }
-
-    if (token) {
-      document.getElementById('login').style.display = 'none';
-      document.getElementById('painel').style.display = 'block';
-      document.body.classList.remove('logged-out');
-      document.body.classList.add('logged-in');
-      inicializarFlatpickr();
-      toggleSection('agendamentoSection');
-      carregarClientes();
-    }
-  </script>
-</body>
-</html>
+    
