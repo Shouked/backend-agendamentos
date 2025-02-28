@@ -42,11 +42,11 @@
         <option value="">Selecione o horário</option>
       </select>
       <span id="erroHorario" class="erro"></span>
-      <input type="text" id="cliente" placeholder="Nome do cliente" required oninput="formatarNome(this);">
+      <input type="text" id="cliente" placeholder="Nome do cliente" required oninput="formatarNome(this);" autocomplete="off">
       <span id="erroCliente" class="erro"></span>
-      <input type="tel" id="telefone" placeholder="Telefone (ex.: (11) 98765-4321)" required oninput="mascararTelefone(this);">
+      <input type="tel" id="telefone" placeholder="Telefone (ex.: (11) 98765-4321)" required oninput="mascararTelefone(this);" autocomplete="off">
       <span id="erroTelefone" class="erro"></span>
-      <input type="email" id="emailAgendamento" placeholder="E-mail do cliente" oninput="this.value = this.value.toLowerCase();">
+      <input type="email" id="emailAgendamento" placeholder="E-mail do cliente" oninput="this.value = this.value.toLowerCase();" autocomplete="off">
       <span id="erroEmail" class="erro"></span>
       <button onclick="criarAgendamento()">Criar Agendamento</button>
     </div>
@@ -165,7 +165,7 @@
           document.body.classList.remove('logged-out');
           document.body.classList.add('logged-in');
           inicializarFlatpickr();
-          toggleSection('agendamentoSection'); // Abre a seção "Início" automaticamente após login
+          toggleSection('agendamentoSection');
           await carregarClientes();
         } else {
           alert("E-mail ou senha inválidos! Mensagem do servidor: " + (result.message || ""));
@@ -292,7 +292,7 @@
           return;
         }
 
-        const validAgendamentos = agendamentos.filter(ag => ag._id); // Filtra agendamentos sem _id
+        const validAgendamentos = agendamentos.filter(ag => ag._id);
         console.log('Agendamentos válidos após filtro:', validAgendamentos);
 
         const groupedByDate = validAgendamentos.reduce((acc, ag) => {
@@ -355,7 +355,8 @@
       const horario = document.getElementById('horario').value;
       const cliente = document.getElementById('cliente').value;
       const telefone = document.getElementById('telefone').value.replace(/\D/g, '');
-      let email = document.getElementById('emailAgendamento').value;
+      const emailInput = document.getElementById('emailAgendamento');
+      let email = emailInput.value;
 
       if (!procedimento) {
         document.getElementById('erroProcedimento').textContent = "Escolha um procedimento!";
@@ -404,7 +405,7 @@
           document.getElementById('horario').innerHTML = '<option value="">Selecione o horário</option>';
           document.getElementById('cliente').value = '';
           document.getElementById('telefone').value = '';
-          document.getElementById('emailAgendamento').value = '';
+          emailInput.value = ''; // Limpa o campo explicitamente
           toggleSection('agendamentosSection');
           await carregarAgendamentos();
         } else {
