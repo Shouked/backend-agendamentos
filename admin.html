@@ -131,6 +131,16 @@
       body.classList.toggle('sidebar-open');
     });
 
+    // Fechar sidebar ao clicar fora dela (no main-content ou body)
+    document.querySelector('.main-content').addEventListener('click', (e) => {
+      const sidebar = document.getElementById('sidebar');
+      const body = document.body;
+      if (sidebar.classList.contains('active') && !sidebar.contains(e.target)) {
+        sidebar.classList.remove('active');
+        body.classList.remove('sidebar-open');
+      }
+    });
+
     // Esconder botão ☰ ao rolar em mobile, mas mantê-lo fixo no topo
     window.addEventListener('scroll', () => {
       const menuToggle = document.getElementById('menu-toggle');
@@ -148,6 +158,11 @@
 
     async function login() {
       const loginBtn = document.getElementById('loginBtn');
+      if (!loginBtn) {
+        console.error('Botão de login não encontrado!');
+        alert('Erro: Botão de login não encontrado. Por favor, recarregue a página.');
+        return;
+      }
       loginBtn.disabled = true;
       loginBtn.textContent = 'Carregando...';
 
@@ -468,4 +483,163 @@
         if (!clientes || (Array.isArray(clientes) && clientes.length === 0)) {
           lista.innerHTML = '<tr><td colspan="5">Nenhum cliente encontrado.</td></tr>';
           return;
-    
+        }
+
+        // Verifica se clientes é um array ou um objeto
+        let clientesArray = [];
+        if (Array.isArray(clientes)) {
+          clientesArray = clientes;
+        } else if (clientes.data && Array.isArray(clientes.data)) { // Caso o backend retorne { data: [...] }
+          clientesArray = clientes.data;
+        } else if (clientes.results && Array.isArray(clientes.results)) { // Caso o backend retorne { results: [...] }
+          clientesArray = clientes.results;
+        } else {
+          console.error('Formato de clientes inesperado:', clientes);
+          lista.innerHTML = '<tr><td colspan="5">Erro ao carregar clientes. Formato inesperado.</td></tr>';
+          return;
+        }
+
+        clientesArray.forEach(cliente => {
+          const dataRegistro = cliente.dataCriacao ? new Date(cliente.dataCriacao).toLocaleDateString('pt-BR') : 'Data não disponível';
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td data-label="Selecionar"><input type="checkbox" class="select-cliente" value="${cliente._id}"></td>
+            <td data-label="Nome">${cliente.nome}</td>
+            <td data-label="E-mail">${cliente.email}</td>
+            <td data-label="Telefone">${cliente.telefone}</td>
+            <td data-label="Data Registro">${dataRegistro}</td>
+          `;
+          lista.appendChild(tr);
+        });
+      } catch (error) {
+        console.error('Erro ao carregar clientes:', error);
+        const lista = document.getElementById('listaClientes');
+        lista.innerHTML = '<tr><td colspan="5">Erro ao carregar clientes. Tente novamente.</td></tr>';
+      }
+    }
+
+    function abrirModalEditar(id) {
+      document.getElementById('editId').value = id;
+      document.getElementById('editModal').style.display = 'block';
+    }
+
+    async function salvarEdicao() {
+      const id = document.getElementById('editId').value;
+      const procedimento = document.getElementById('editProcedimento').value;
+      const dataBr = document.getElementById('editData').value;
+      const horario = document.getElementById('editHorario').value;
+
+      const [day, month, year] = dataBr.split('/');
+      const dataISO = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+      const body = { procedimento, data: dataISO, horario };
+
+      try {
+        const response = await fetch(`${API_URL}/agendamentos/${id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': token
+          },
+          body: JSON.stringify(body)
+        });
+        const result = await response.json();
+        if (result.success) {
+          alert('Agendamento atualizado com sucesso!');
+          fecharModal();
+          await carregarAgendamentos();
+        } else {
+          alert(result.message || 'Erro ao atualizar!');
+        }
+      } catch (error) {
+        console.error('Erro ao salvar edição:', error);
+        alert('Erro ao conectar ao servidor. Tente novamente.');
+      }
+    }
+
+    function fecharModal() {
+      document.getElementById('editModal').style.display = 'none';
+    }
+
+    function selecionarTodosAgendamentos() {
+      const checkboxes = document.querySelectorAll(".select-agendamento");
+      checkboxes.forEach((cb) => (cb.checked = true));
+    }
+
+    async function excluirSelecionadosAgendamentos() {
+      const selecionados = Array.from(
+        document.querySelectorAll(".select-agendamento:checked")
+      ).map((cb) => cb.value);
+      if (selecionados.length === 0) {
+        alert("Nenhum agendamento selecionado!");
+        return;
+      }
+      if (
+        confirm(
+          `Tem certeza que deseja excluir ${selecionados.length} agendamento(s)?`
+        )
+      ) {
+        try {
+          const response = await fetch(`${API_URL}/agendamentos/muitos`, {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: token,
+            },
+            body: JSON.stringify({ ids: selecionados }),
+          });
+          const result = await response.json();
+          if (result.success) {
+            alert(result.message);
+            await carregarAgendamentos();
+          } else {
+            alert(result.message || "Erro ao excluir agendamentos!");
+          }
+        } catch (error) {
+          console.error('Erro ao excluir agendamentos:', error);
+          alert('Erro ao conectar ao servidor. Tente novamente.');
+        }
+      }
+    }
+
+    function selecionarTodosClientes() {
+      const checkboxes = document.querySelectorAll(".select-cliente");
+      checkboxes.forEach((cb) => (cb.checked = true));
+    }
+
+    async function excluirSelecionadosClientes() {
+      const selecionados = Array.from(
+        document.querySelectorAll(".select-cliente:checked")
+      ).map((cb) => cb.value);
+      if (selecionados.length === 0) {
+        alert("Nenhum cliente selecionado!");
+        return;
+      }
+      if (
+        confirm(
+          `Tem certeza que deseja excluir ${selecionados.length} cliente(s)?`
+        )
+      ) {
+        try {
+          const response = await fetch(`${API_URL}/clientes/muitos`, {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: token,
+            },
+            body: JSON.stringify({ ids: selecionados }),
+          });
+          const result = await response.json();
+          if (result.success) {
+            alert(result.message);
+            await carregarClientes();
+          } else {
+            alert(result.message || "Erro ao excluir clientes!");
+          }
+        } catch (error) {
+          console.error('Erro ao excluir clientes:', error);
+          alert('Erro ao conectar ao servidor. Tente novamente.');
+        }
+      }
+    }
+
+    async function carregar
