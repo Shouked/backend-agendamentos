@@ -43,6 +43,12 @@ select:focus, input:focus, button:focus {
   outline-offset: 2px;
 }
 
+input[readonly] {
+  opacity: 0.6; /* Deixa os campos "apagados" */
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+}
+
 button {
   background-color: #e91e63;
   color: white;
@@ -133,7 +139,7 @@ button:hover:not(:disabled) {
 }
 
 .meus-agendamentos-link {
-  text-decoration: none; /* Remove sublinhado do link */
+  text-decoration: none;
   display: block;
   margin: 20px auto 0;
   width: clamp(200px, 50%, 300px);
