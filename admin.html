@@ -199,20 +199,22 @@
       sidebar.classList.toggle('active');
       body.classList.toggle('sidebar-open');
       sidebarOverlay.style.display = sidebar.classList.contains('active') ? 'block' : 'none';
-      // Move o botão para dentro da sidebar quando aberta
-      if (sidebar.classList.contains('active')) {
+      // Move o botão para dentro da sidebar quando aberta (apenas mobile)
+      if (sidebar.classList.contains('active') && window.matchMedia("(max-width: 600px)").matches) {
         sidebar.insertBefore(menuToggle, sidebar.firstChild);
       } else {
         document.querySelector('header').prepend(menuToggle);
       }
     });
 
-    // Fecha a sidebar ao clicar no overlay
+    // Fecha a sidebar ao clicar no overlay (apenas mobile)
     sidebarOverlay.addEventListener('click', () => {
-      sidebar.classList.remove('active');
-      body.classList.remove('sidebar-open');
-      sidebarOverlay.style.display = 'none';
-      document.querySelector('header').prepend(menuToggle); // Volta o botão para o header
+      if (window.matchMedia("(max-width: 600px)").matches) {
+        sidebar.classList.remove('active');
+        body.classList.remove('sidebar-open');
+        sidebarOverlay.style.display = 'none';
+        document.querySelector('header').prepend(menuToggle);
+      }
     });
 
     window.addEventListener('scroll', () => {
@@ -286,10 +288,12 @@
           carregarRelatorios();
         }
       }
-      sidebar.classList.remove('active');
-      body.classList.remove('sidebar-open');
-      sidebarOverlay.style.display = 'none';
-      document.querySelector('header').prepend(menuToggle); // Volta o botão para o header
+      if (window.matchMedia("(max-width: 600px)").matches) {
+        sidebar.classList.remove('active');
+        body.classList.remove('sidebar-open');
+        sidebarOverlay.style.display = 'none';
+        document.querySelector('header').prepend(menuToggle);
+      }
     }
 
     function inicializarFlatpickr() {
@@ -400,7 +404,7 @@
         console.log('Agendamentos válidos após filtro:', validAgendamentos);
 
         const groupedByDate = validAgendamentos.reduce((acc, ag) => {
-          const dateKey = ag.data;
+          const dateKey = ag.data.split('T')[0]; // Usa a data pura do backend (YYYY-MM-DD)
           if (!acc[dateKey]) acc[dateKey] = [];
           acc[dateKey].push(ag);
           return acc;
@@ -408,9 +412,10 @@
 
         for (const date in groupedByDate) {
           const agendamentosDoDia = groupedByDate[date];
-          const dateObj = new Date(date);
-          const diaSemana = dateObj.toLocaleDateString('pt-BR', { weekday: 'long' });
-          const dataBr = dateObj.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+          const [year, month, day] = date.split('-');
+          const dateObj = new Date(Date.UTC(year, month - 1, day)); // Cria data em UTC
+          const diaSemana = dateObj.toLocaleDateString('pt-BR', { weekday: 'long', timeZone: 'UTC' });
+          const dataBr = `${day}/${month}/${year}`; // Formato manual para evitar conversão local
 
           const dateDiv = document.createElement('div');
           dateDiv.className = 'agendamento-date';
