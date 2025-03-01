@@ -176,9 +176,9 @@ th {
   width: 15.625rem; /* 250px */
   position: fixed;
   top: 0;
-  left: -15.625rem;
+  left: -15.625rem; /* Retrátil por padrão no mobile */
   background-color: #f9e6f0;
-  padding: 1rem 0; /* Ajustado para menos espaço no topo */
+  padding: 1rem 0; /* Espaço ajustado */
   transition: left 0.3s;
   z-index: 1000; /* Acima do overlay */
   box-shadow: 0.125rem 0 0.3125rem rgba(0, 0, 0, 0.2);
@@ -228,8 +228,11 @@ th {
 }
 
 .sidebar.active #menu-toggle {
-  position: static; /* Remove o posicionamento absoluto dentro da sidebar */
-  margin: 0 auto 1rem; /* Centraliza e adiciona espaço abaixo */
+  position: static; /* Remove posicionamento absoluto dentro da sidebar */
+  padding: 0.9375rem 1.25rem; /* Alinha com os outros itens */
+  margin: 0; /* Remove margens extras */
+  width: auto; /* Ajusta largura para o conteúdo */
+  height: auto; /* Ajusta altura para o conteúdo */
 }
 
 #menu-toggle.hidden {
@@ -311,24 +314,26 @@ body.sidebar-open {
 @media (min-width: 601px) {
   .container {
     max-width: 50rem; /* 800px - largura máxima ajustada para centralizar */
-    margin: 2rem auto; /* Centraliza com margens superior e inferior */
+    margin: 2rem auto 2rem calc(15.625rem + 2rem); /* Centraliza com espaço para sidebar fixa */
     padding: 2rem; /* Mais espaço interno no desktop */
   }
 
   header {
+    margin-left: 15.625rem; /* Alinha com a sidebar fixa */
     padding: 1rem 0; /* Ajusta o padding para melhor espaçamento */
   }
 
   .sidebar {
-    left: -15.625rem; /* Sidebar recolhida por padrão no desktop */
-  }
-
-  .sidebar.active {
-    left: 0;
+    left: 0; /* Sidebar fixa no desktop */
+    transition: none; /* Remove transição no desktop */
   }
 
   #menu-toggle {
-    display: block; /* Mantém o toggle visível */
+    display: none; /* Esconde o toggle no desktop */
+  }
+
+  #sidebar-overlay {
+    display: none; /* Overlay não é necessário no desktop */
   }
 
   .agendamento-item {
