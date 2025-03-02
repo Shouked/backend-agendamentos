@@ -81,6 +81,16 @@ const autenticarTokenCliente = (req, res, next) => {
   });
 };
 
+// Função para gerar senha aleatória
+function gerarSenhaAleatoria(length = 8) {
+  const caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let senha = '';
+  for (let i = 0; i < length; i++) {
+    senha += caracteres.charAt(Math.floor(Math.random() * caracteres.length));
+  }
+  return senha;
+}
+
 app.post('/login', async (req, res) => {
   const { email, senha } = req.body;
   try {
@@ -102,25 +112,31 @@ app.post('/clientes/registro', async (req, res) => {
   nome = nome.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
 
   try {
-    const emailExistente = await Cliente.findOne({ email });
-    const telefoneExistente = await Cliente.findOne({ telefone });
-
-    if (emailExistente && emailExistente.senha) {
-      return res.status(400).json({ success: false, message: 'E-mail já registrado com senha!' });
+    const clienteExistente = await Cliente.findOne({ email });
+    if (clienteExistente) {
+      if (clienteExistente.senha) {
+        return res.status(400).json({ success: false, message: 'E-mail já registrado com senha!' });
+      } else {
+        // Cliente cadastrado pelo proprietário, enviar senha aleatória por e-mail
+        const mensagem = {
+          to: email,
+          from: 'iagofonseca1992@hotmail.com',
+          subject: 'Bem-vindo! Aqui está sua senha',
+          text: `Olá ${clienteExistente.nome},\n\nVocê já foi cadastrado pelo profissional. Sua senha inicial é: ${clienteExistente.senhaOriginal}\n\nUse-a para fazer login. Recomendamos que altere sua senha após o primeiro acesso.\n\nAtenciosamente,\nEquipe de Agendamento`
+        };
+        await sgMail.send(mensagem);
+        return res.status(200).json({ success: false, message: 'Você já foi cadastrado pelo profissional. Uma senha foi enviada para o seu e-mail.' });
+      }
     }
+
+    const telefoneExistente = await Cliente.findOne({ telefone });
     if (telefoneExistente && telefoneExistente.senha) {
       return res.status(400).json({ success: false, message: 'Telefone já registrado com senha!' });
     }
 
     const senhaCriptografada = senha ? await bcrypt.hash(senha, 10) : null;
     let cliente;
-    if (emailExistente) {
-      cliente = emailExistente;
-      cliente.nome = nome;
-      cliente.senha = senhaCriptografada;
-      cliente.senhaOriginal = senha;
-      await cliente.save();
-    } else if (telefoneExistente) {
+    if (telefoneExistente) {
       cliente = telefoneExistente;
       cliente.nome = nome;
       cliente.email = email;
@@ -156,7 +172,7 @@ app.post('/clientes/login', async (req, res) => {
       return res.status(404).json({ success: false, message: 'E-mail não cadastrado' });
     }
     if (!cliente.senha) {
-      return res.status(400).json({ success: false, message: 'Este e-mail foi cadastrado pelo proprietário. Registre uma senha primeiro.' });
+      return res.status(400).json({ success: false, message: 'Este e-mail foi cadastrado pelo proprietário. Verifique seu e-mail para a senha inicial.' });
     }
     if (!(await bcrypt.compare(senha, cliente.senha))) {
       return res.status(401).json({ success: false, message: 'Senha inválida' });
@@ -428,13 +444,26 @@ app.post('/clientes/novo', autenticarTokenProprietario, async (req, res) => {
       return res.status(400).json({ success: false, message: 'Telefone já registrado!' });
     }
 
+    const senhaAleatoria = gerarSenhaAleatoria();
+    const senhaCriptografada = await bcrypt.hash(senhaAleatoria, 10);
+
     const novoCliente = new Cliente({
       nome,
       email,
       telefone,
+      senha: senhaCriptografada,
+      senhaOriginal: senhaAleatoria,
       dataCriacao: new Date()
     });
     await novoCliente.save();
+
+    const mensagem = {
+      to: email,
+      from: 'iagofonseca1992@hotmail.com',
+      subject: 'Bem-vindo! Aqui está sua senha',
+      text: `Olá ${nome},\n\nVocê foi cadastrado pelo profissional. Sua senha inicial é: ${senhaAleatoria}\n\nUse-a para fazer login em https://biancadomingues.netlify.app/. Recomendamos que altere sua senha após o primeiro acesso.\n\nAtenciosamente,\nEquipe de Agendamento`
+    };
+    await sgMail.send(mensagem);
 
     res.status(201).json({ success: true, message: 'Cliente cadastrado com sucesso!', cliente: novoCliente });
   } catch (error) {
