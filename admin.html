@@ -108,24 +108,12 @@
       <!-- Clientes -->
       <section id="clientesSection" class="section">
         <h3>Clientes Registrados</h3>
-        <div class="action-buttons">
-          <button onclick="selecionarTodosClientes()">Selecionar Todos</button>
-          <button class="bulk-delete-btn" onclick="excluirSelecionadosClientes()">Excluir Selecionados</button>
+        <div class="form-group">
+          <select id="clienteSelect" onchange="mostrarDetalhesCliente()">
+            <option value="">Selecione um cliente</option>
+          </select>
         </div>
-        <div class="table-wrapper">
-          <table id="clientesTable">
-            <thead>
-              <tr>
-                <th>Selecionar</th>
-                <th>Nome</th>
-                <th>E-mail</th>
-                <th>Telefone</th>
-                <th>Data Registro</th>
-              </tr>
-            </thead>
-            <tbody id="listaClientes"></tbody>
-          </table>
-        </div>
+        <div id="clienteDetalhes" class="cliente-detalhes"></div>
       </section>
 
       <!-- Cobranças -->
@@ -183,6 +171,9 @@
   <!-- Toast para notificações -->
   <div id="toast" class="toast"></div>
 
+  <!-- Botão Voltar ao Topo -->
+  <button id="back-to-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">↑</button>
+
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script src="https://npmcdn.com/flatpickr/dist/l10n/pt.js"></script>
   <script>
@@ -225,6 +216,8 @@
       if (isMobile && !sidebar.classList.contains('active')) {
         menuToggle.classList.toggle('hidden', window.scrollY > 50);
       }
+      const backToTop = document.getElementById('back-to-top');
+      backToTop.style.display = window.scrollY > 200 ? 'block' : 'none';
     });
 
     async function login() {
@@ -273,7 +266,7 @@
       sections.forEach(id => {
         const section = document.getElementById(id);
         section.style.display = 'none';
-        const lista = section.querySelector('tbody') || section.querySelector('#listaAgendamentos');
+        const lista = section.querySelector('#listaAgendamentos') || section.querySelector('#clienteDetalhes');
         if (lista) lista.innerHTML = '';
       });
       
@@ -496,231 +489,4 @@
       const agendamentoDados = { procedimento, data, horario, cliente, telefone, email };
 
       try {
-        console.log('Criando agendamento com dados:', agendamentoDados, 'Token:', token);
-        const response = await fetch(`${API_URL}/agendamentos`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': token
-          },
-          body: JSON.stringify(agendamentoDados)
-        });
-        if (!response.ok) {
-          throw new Error(`Erro HTTP: ${response.status} - ${response.statusText}`);
-        }
-        const result = await response.json();
-        console.log('Resposta do servidor:', result);
-        if (result.success) {
-          showToast("Agendamento criado com sucesso!");
-          document.getElementById('procedimento').value = '';
-          document.getElementById('data').value = '';
-          document.getElementById('horario').innerHTML = '<option value="">Selecione o horário</option>';
-          document.getElementById('cliente').value = '';
-          document.getElementById('telefone').value = '';
-          emailInput.value = '';
-          toggleSection('agendamentosSection');
-          await carregarAgendamentos();
-        } else {
-          showToast(result.message || "Erro ao criar agendamento!");
-        }
-      } catch (error) {
-        console.error('Erro ao criar agendamento:', error);
-        showToast('Erro ao conectar ao servidor. Tente novamente.');
-      }
-    }
-
-    async function carregarClientes() {
-      try {
-        const response = await fetch(`${API_URL}/clientes`, {
-          headers: { Authorization: token },
-        });
-        const clientes = await response.json();
-        console.log('Clientes carregados:', clientes);
-        const lista = document.getElementById('listaClientes');
-        lista.innerHTML = '';
-        if (!clientes || clientes.length === 0) {
-          lista.innerHTML = '<tr><td colspan="5">Nenhum cliente encontrado.</td></tr>';
-          return;
-        }
-        clientes.forEach(cliente => {
-          const dataRegistro = cliente.dataCriacao ? new Date(cliente.dataCriacao).toLocaleDateString('pt-BR') : 'Data não disponível';
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td data-label="Selecionar"><input type="checkbox" class="select-cliente" value="${cliente._id}"></td>
-            <td data-label="Nome">${cliente.nome}</td>
-            <td data-label="E-mail">${cliente.email}</td>
-            <td data-label="Telefone">${cliente.telefone}</td>
-            <td data-label="Data Registro">${dataRegistro}</td>
-          `;
-          lista.appendChild(tr);
-        });
-      } catch (error) {
-        console.error('Erro ao carregar clientes:', error);
-        showToast('Erro ao carregar clientes. Tente novamente.');
-      }
-    }
-
-    function abrirModalEditar(id) {
-      document.getElementById('editId').value = id;
-      document.getElementById('overlay').style.display = 'block';
-      document.getElementById('editModal').style.display = 'block';
-    }
-
-    async function salvarEdicao() {
-      const id = document.getElementById('editId').value;
-      const procedimento = document.getElementById('editProcedimento').value;
-      const dataBr = document.getElementById('editData').value;
-      const horario = document.getElementById('editHorario').value;
-
-      const body = { procedimento };
-      if (dataBr && horario) {
-        const [day, month, year] = dataBr.split('/');
-        const data = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-        body.data = data;
-        body.horario = horario;
-      }
-
-      try {
-        const response = await fetch(`${API_URL}/agendamentos/${id}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': token
-          },
-          body: JSON.stringify(body)
-        });
-        const result = await response.json();
-        if (result.success) {
-          showToast('Agendamento atualizado com sucesso!');
-          fecharModal();
-          await carregarAgendamentos();
-        } else {
-          showToast(result.message || 'Erro ao atualizar!');
-        }
-      } catch (error) {
-        console.error('Erro ao salvar edição:', error);
-        showToast('Erro ao conectar ao servidor. Tente novamente.');
-      }
-    }
-
-    function fecharModal() {
-      document.getElementById('overlay').style.display = 'none';
-      document.getElementById('editModal').style.display = 'none';
-    }
-
-    function selecionarTodosAgendamentos() {
-      const checkboxes = document.querySelectorAll(".select-agendamento");
-      checkboxes.forEach((cb) => (cb.checked = true));
-    }
-
-    async function excluirSelecionadosAgendamentos() {
-      const selecionados = Array.from(
-        document.querySelectorAll(".select-agendamento:checked")
-      ).map((cb) => cb.value);
-      if (selecionados.length === 0) {
-        showToast("Nenhum agendamento selecionado!");
-        return;
-      }
-      if (
-        confirm(
-          `Tem certeza que deseja excluir ${selecionados.length} agendamento(s)?`
-        )
-      ) {
-        try {
-          const response = await fetch(`${API_URL}/agendamentos/muitos`, {
-            method: "DELETE",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: token,
-            },
-            body: JSON.stringify({ ids: selecionados }),
-          });
-          const result = await response.json();
-          if (result.success) {
-            showToast(result.message);
-            await carregarAgendamentos();
-          } else {
-            showToast(result.message || "Erro ao excluir agendamentos!");
-          }
-        } catch (error) {
-          console.error('Erro ao excluir agendamentos:', error);
-          showToast('Erro ao conectar ao servidor. Tente novamente.');
-        }
-      }
-    }
-
-    function selecionarTodosClientes() {
-      const checkboxes = document.querySelectorAll(".select-cliente");
-      checkboxes.forEach((cb) => (cb.checked = true));
-    }
-
-    async function excluirSelecionadosClientes() {
-      const selecionados = Array.from(
-        document.querySelectorAll(".select-cliente:checked")
-      ).map((cb) => cb.value);
-      if (selecionados.length === 0) {
-        showToast("Nenhum cliente selecionado!");
-        return;
-      }
-      if (
-        confirm(
-          `Tem certeza que deseja excluir ${selecionados.length} cliente(s)?`
-        )
-      ) {
-        try {
-          const response = await fetch(`${API_URL}/clientes/muitos`, {
-            method: "DELETE",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: token,
-            },
-            body: JSON.stringify({ ids: selecionados }),
-          });
-          const result = await response.json();
-          if (result.success) {
-            showToast(result.message);
-            await carregarClientes();
-          } else {
-            showToast(result.message || "Erro ao excluir clientes!");
-          }
-        } catch (error) {
-          console.error('Erro ao excluir clientes:', error);
-          showToast('Erro ao conectar ao servidor. Tente novamente.');
-        }
-      }
-    }
-
-    async function carregarRelatorios() {
-      try {
-        const response = await fetch(`${API_URL}/relatorios/agendamentos-por-dia`, {
-          headers: { Authorization: token }
-        });
-        const relatorios = await response.json();
-        const conteudo = document.getElementById('relatoriosConteudo');
-        conteudo.innerHTML = '<h4>Agendamentos por Dia:</h4><ul>' +
-          relatorios.map(r => `<li>Data: ${r._id}, Total: ${r.total}</li>`).join('') +
-          '</ul>';
-      } catch (error) {
-        console.error('Erro ao carregar relatórios:', error);
-        showToast('Erro ao carregar relatórios. Tente novamente.');
-      }
-    }
-
-    function logout() {
-      token = null;
-      document.getElementById("painel").style.display = "none";
-      document.getElementById("login").style.display = "block";
-      document.body.classList.remove('logged-in');
-      document.body.classList.add('logged-out');
-      showToast("Você saiu com sucesso!");
-    }
-
-    function showToast(message) {
-      const toast = document.getElementById('toast');
-      toast.textContent = message;
-      toast.style.display = 'block';
-      setTimeout(() => toast.style.display = 'none', 3000);
-    }
-  </script>
-</body>
-</html>
+        console.log('Criando agendamento com dado
