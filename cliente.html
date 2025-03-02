@@ -23,7 +23,8 @@
     <input type="email" id="emailRegistro" placeholder="E-mail" required oninput="this.value = this.value.toLowerCase();" autocomplete="off"><br>
     <input type="password" id="senhaRegistro" placeholder="Senha" required autocomplete="new-password"><br>
     <input type="tel" id="telefoneRegistro" placeholder="Telefone (ex.: (11) 98765-4321)" required oninput="mascararTelefone(this, event);" onkeydown="verificarApagamento(this, event);" autocomplete="new-telephone"><br>
-    <button onclick="registrar()">Registrar</button>
+    <button id="registroBtn" onclick="registrar()">Registrar</button>
+    <p id="mensagemRegistro" style="color: red;"></p>
     <p>Já tem conta? <span class="link" onclick="mostrarLogin()">Faça login</span></p>
   </div>
   <div class="container" id="esqueciSenha" style="display: none;">
@@ -72,8 +73,17 @@
   <script src="https://npmcdn.com/flatpickr/dist/l10n/pt.js"></script>
   <script>
     const API_URL = 'https://agendamentos-backend.onrender.com';
-    let tokenCliente = localStorage.getItem('tokenCliente');
-    let isApagando = false; // Flag pra rastrear se o usuário está apagando
+    let tokenCliente = localStorage.getItem('clienteToken');
+    let isApagando = false;
+    let agendamentoPendente = null;
+
+    window.addEventListener('load', () => {
+      if (tokenCliente) {
+        verificarAgendamentoPendente();
+      } else {
+        preencherEmailLogin();
+      }
+    });
 
     function mostrarLogin() {
       document.getElementById('registro').style.display = 'none';
@@ -83,7 +93,6 @@
       document.getElementById('mensagemErro').innerHTML = '';
       fecharModal();
       preencherEmailLogin();
-      // Limpa os campos ao mostrar a tela de login
       document.getElementById('emailLogin').value = '';
       document.getElementById('senhaLogin').value = '';
     }
@@ -93,14 +102,15 @@
       document.getElementById('esqueciSenha').style.display = 'none';
       document.getElementById('registro').style.display = 'block';
       document.getElementById('painelCliente').style.display = 'none';
+      document.getElementById('mensagemRegistro').innerHTML = '';
       fecharModal();
       const emailPendente = localStorage.getItem('emailPendente');
       if (emailPendente) {
         document.getElementById('emailRegistro').value = emailPendente;
       }
-      // Limpa os campos ao mostrar a tela de registro
       document.getElementById('nomeRegistro').value = '';
       document.getElementById('telefoneRegistro').value = '';
+      document.getElementById('senhaRegistro').value = '';
     }
 
     function mostrarEsqueciSenha() {
@@ -109,7 +119,7 @@
       document.getElementById('esqueciSenha').style.display = 'block';
       document.getElementById('painelCliente').style.display = 'none';
       fecharModal();
-      document.getElementById('emailEsqueci').value = ''; // Limpa o campo
+      document.getElementById('emailEsqueci').value = '';
     }
 
     function mostrarModal(id) {
@@ -129,7 +139,6 @@
     }
 
     function verificarApagamento(input, event) {
-      // Detecta se o usuário está apagando com Backspace ou Delete
       if (event.key === 'Backspace' || event.key === 'Delete') {
         isApagando = true;
       } else {
@@ -138,17 +147,15 @@
     }
 
     function mascararTelefone(input, event) {
-      let value = input.value.replace(/\D/g, ''); // Remove caracteres não numéricos
+      let value = input.value.replace(/\D/g, '');
       if (value.length === 0) {
-        input.value = ''; // Permite apagar tudo
+        input.value = '';
         return;
       }
-      // Se estiver apagando, não aplica a máscara imediatamente
       if (isApagando) {
-        input.value = value; // Mantém apenas os dígitos enquanto apaga
+        input.value = value;
         return;
       }
-      // Aplica a máscara apenas quando não está apagando
       if (value.length > 11) value = value.slice(0, 11);
       if (value.length <= 10) {
         if (value.length > 2) input.value = `(${value.slice(0, 2)}) ${value.slice(2, 6)}-${value.slice(6)}`;
@@ -168,18 +175,33 @@
     }
 
     async function registrar() {
+      const registroBtn = document.getElementById('registroBtn');
+      registroBtn.disabled = true;
+      registroBtn.textContent = 'Carregando...';
+
       const nome = document.getElementById('nomeRegistro').value;
       const email = document.getElementById('emailRegistro').value;
       const senha = document.getElementById('senhaRegistro').value;
       const telefone = document.getElementById('telefoneRegistro').value.replace(/\D/g, '');
 
       if (!nome || !email || !senha || !telefone) {
-        alert('Todos os campos são obrigatórios!');
+        document.getElementById('mensagemRegistro').textContent = 'Todos os campos são obrigatórios!';
+        registroBtn.disabled = false;
+        registroBtn.textContent = 'Registrar';
         return;
       }
 
       if (!email.includes('@')) {
-        alert('Por favor, insira um e-mail válido com "@"!');
+        document.getElementById('mensagemRegistro').textContent = 'Insira um e-mail válido com "@"!';
+        registroBtn.disabled = false;
+        registroBtn.textContent = 'Registrar';
+        return;
+      }
+
+      if (telefone.length < 10) {
+        document.getElementById('mensagemRegistro').textContent = 'Telefone deve ter pelo menos 10 dígitos!';
+        registroBtn.disabled = false;
+        registroBtn.textContent = 'Registrar';
         return;
       }
 
@@ -189,21 +211,25 @@
           headers: { 'Content-Type': 'application/json; charset=utf-8' },
           body: JSON.stringify({ nome, email, senha, telefone })
         });
-        if (!response.ok) {
-          throw new Error(`Erro HTTP: ${response.status} - ${response.statusText}`);
-        }
         const result = await response.json();
         if (result.success) {
           tokenCliente = result.token;
-          localStorage.setItem('tokenCliente', tokenCliente);
+          localStorage.setItem('clienteToken', tokenCliente);
           console.log('Registro bem-sucedido, token:', tokenCliente);
           await verificarAgendamentoPendente();
         } else {
-          alert(result.message || 'Erro ao registrar!');
+          document.getElementById('mensagemRegistro').textContent = result.message || 'Erro ao registrar!';
+          if (result.message.includes('já foi cadastrado pelo profissional')) {
+            localStorage.setItem('emailPendente', email);
+            mostrarLogin();
+          }
         }
       } catch (error) {
         console.error('Erro ao registrar:', error);
-        alert('Erro ao conectar ao servidor. Tente novamente.');
+        document.getElementById('mensagemRegistro').textContent = 'Erro ao conectar ao servidor. Tente novamente.';
+      } finally {
+        registroBtn.disabled = false;
+        registroBtn.textContent = 'Registrar';
       }
     }
 
@@ -216,7 +242,7 @@
       const senha = document.getElementById('senhaLogin').value;
 
       if (!email || !senha) {
-        alert('E-mail e senha são obrigatórios!');
+        document.getElementById('mensagemErro').textContent = 'E-mail e senha são obrigatórios!';
         loginBtn.disabled = false;
         loginBtn.textContent = 'Entrar';
         return;
@@ -228,25 +254,21 @@
           headers: { 'Content-Type': 'application/json; charset=utf-8' },
           body: JSON.stringify({ email, senha })
         });
-        if (!response.ok) {
-          throw new Error(`Erro HTTP: ${response.status} - ${response.statusText}`);
-        }
         const result = await response.json();
         if (result.success) {
           tokenCliente = result.token;
-          localStorage.setItem('tokenCliente', tokenCliente);
+          localStorage.setItem('clienteToken', tokenCliente);
           console.log('Login bem-sucedido, token:', tokenCliente);
           await verificarAgendamentoPendente();
         } else {
-          const mensagemErro = document.getElementById('mensagemErro');
-          mensagemErro.textContent = result.message;
+          document.getElementById('mensagemErro').textContent = result.message || 'Erro ao fazer login!';
           if (result.message === 'E-mail não cadastrado') {
-            mensagemErro.innerHTML += ' <button id="registrarBtn" onclick="mostrarRegistro()">Registrar-se agora</button>';
+            document.getElementById('mensagemErro').innerHTML += ' <button id="registrarBtn" onclick="mostrarRegistro()">Registrar-se agora</button>';
           }
         }
       } catch (error) {
         console.error('Erro ao fazer login:', error);
-        alert('Erro ao conectar ao servidor. Tente novamente.');
+        document.getElementById('mensagemErro').textContent = 'Erro ao conectar ao servidor. Tente novamente.';
       } finally {
         loginBtn.disabled = false;
         loginBtn.textContent = 'Entrar';
@@ -254,21 +276,21 @@
     }
 
     async function verificarAgendamentoPendente() {
-      const agendamentoPendente = localStorage.getItem('agendamentoPendente');
-      if (agendamentoPendente) {
-        const dados = JSON.parse(agendamentoPendente);
-        const [year, month, day] = dados.data.split('-');
+      const agendamentoPendenteStr = localStorage.getItem('agendamentoPendente');
+      if (agendamentoPendenteStr) {
+        agendamentoPendente = JSON.parse(agendamentoPendenteStr);
+        const [year, month, day] = agendamentoPendente.data.split('-');
         const dataDisplay = `${day}/${month}/${year}`;
         document.getElementById('mensagemConfirmacao').innerHTML = `
           <p>Por favor, confirme os dados do seu agendamento:</p>
-          <p><strong>Procedimento:</strong> ${dados.procedimento}</p>
+          <p><strong>Procedimento:</strong> ${agendamentoPendente.procedimento}</p>
           <p><strong>Data:</strong> ${dataDisplay}</p>
-          <p><strong>Horário:</strong> ${dados.horario}</p>
-          <p><strong>Cliente:</strong> ${dados.cliente}</p>
-          <p><strong>Telefone:</strong> ${dados.telefone}</p>
-          <p><strong>E-mail:</strong> ${dados.email}</p>
+          <p><strong>Horário:</strong> ${agendamentoPendente.horario}</p>
+          <p><strong>Cliente:</strong> ${agendamentoPendente.cliente}</p>
+          <p><strong>Telefone:</strong> ${agendamentoPendente.telefone}</p>
+          <p><strong>E-mail:</strong> ${agendamentoPendente.email}</p>
         `;
-        console.log('Mostrando modal de confirmação com dados:', dados);
+        console.log('Mostrando modal de confirmação com dados:', agendamentoPendente);
         mostrarModal('modalConfirmar');
       } else if (tokenCliente) {
         console.log('Nenhum agendamento pendente, indo pra área do cliente');
@@ -281,15 +303,13 @@
     }
 
     async function confirmarAgendamento() {
-      const agendamentoPendente = localStorage.getItem('agendamentoPendente');
       if (!agendamentoPendente) {
         console.log('Nenhum agendamento pendente encontrado');
         fecharModal();
         return;
       }
 
-      const dados = JSON.parse(agendamentoPendente);
-      console.log('Tentando confirmar agendamento com dados:', dados, 'Token:', tokenCliente);
+      console.log('Tentando confirmar agendamento com dados:', agendamentoPendente, 'Token:', tokenCliente);
 
       try {
         const response = await fetch(`${API_URL}/agendamentos`, {
@@ -298,13 +318,9 @@
             'Content-Type': 'application/json; charset=utf-8',
             'Authorization': tokenCliente
           },
-          body: JSON.stringify(dados)
+          body: JSON.stringify(agendamentoPendente)
         });
-        if (!response.ok) {
-          throw new Error(`Erro HTTP: ${response.status} - ${response.statusText}`);
-        }
         const result = await response.json();
-        console.log('Resposta do servidor:', result);
         if (result.success) {
           alert('Agendamento confirmado com sucesso!');
           localStorage.removeItem('agendamentoPendente');
@@ -337,9 +353,6 @@
           headers: { 'Content-Type': 'application/json; charset=utf-8' },
           body: JSON.stringify({ email })
         });
-        if (!response.ok) {
-          throw new Error(`Erro HTTP: ${response.status} - ${response.statusText}`);
-        }
         const result = await response.json();
         if (result.success) {
           alert('E-mail de recuperação enviado! Verifique sua caixa de entrada ou spam.');
@@ -404,9 +417,6 @@
       const modal = document.getElementById('modalEditar');
       const overlay = document.getElementById('overlay');
       document.getElementById('editId').value = id;
-      document.getElementById('procedimentoModal').style.display = 'block';
-      document.getElementById('dataModal').style.display = 'block';
-      document.getElementById('horarioModal').style.display = 'block';
       flatpickr('#dataModal', {
         minDate: "today",
         dateFormat: "d/m/Y",
@@ -429,7 +439,7 @@
       const dataISO = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
       try {
         const response = await fetch(`${API_URL}/horarios-disponiveis?data=${dataISO}`, {
-          headers: { Authorization: tokenCliente }
+          headers: { 'Authorization': tokenCliente }
         });
         const horarios = await response.json();
         const horarioModal = document.getElementById('horarioModal');
@@ -468,9 +478,6 @@
           },
           body: JSON.stringify(body)
         });
-        if (!response.ok) {
-          throw new Error(`Erro HTTP: ${response.status} - ${response.statusText}`);
-        }
         const result = await response.json();
         if (result.success) {
           alert('Agendamento atualizado com sucesso!');
@@ -487,19 +494,21 @@
 
     async function cancelarAgendamento(id) {
       if (confirm('Tem certeza que deseja cancelar este agendamento?')) {
-        const response = await fetch(`${API_URL}/agendamentos/${id}`, {
-          method: 'DELETE',
-          headers: { 'Authorization': tokenCliente }
-        });
-        if (!response.ok) {
-          throw new Error(`Erro HTTP: ${response.status} - ${response.statusText}`);
-        }
-        const result = await response.json();
-        if (result.success) {
-          alert('Agendamento cancelado com sucesso!');
-          await carregarAgendamentosCliente();
-        } else {
-          alert(result.message || 'Erro ao cancelar!');
+        try {
+          const response = await fetch(`${API_URL}/agendamentos/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': tokenCliente }
+          });
+          const result = await response.json();
+          if (result.success) {
+            alert('Agendamento cancelado com sucesso!');
+            await carregarAgendamentosCliente();
+          } else {
+            alert(result.message || 'Erro ao cancelar!');
+          }
+        } catch (error) {
+          console.error('Erro ao cancelar agendamento:', error);
+          alert('Erro ao conectar ao servidor. Tente novamente.');
         }
       }
     }
@@ -509,15 +518,9 @@
     }
 
     function logoutCliente() {
-      localStorage.removeItem('tokenCliente');
+      localStorage.removeItem('clienteToken');
       tokenCliente = null;
       mostrarLogin();
-    }
-
-    if (tokenCliente) {
-      verificarAgendamentoPendente();
-    } else {
-      preencherEmailLogin();
     }
   </script>
 </body>
