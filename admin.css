@@ -6,7 +6,7 @@
 }
 
 body {
-  font-family: Arial, sans-serif;
+  font-family: 'Roboto', sans-serif;
   background: linear-gradient(135deg, #f9e6f0, #fce4ec);
   color: #333;
   font-size: 16px; /* Base para unidades relativas */
@@ -85,11 +85,12 @@ button {
   border: none;
   cursor: pointer;
   font-weight: bold;
-  transition: background-color 0.2s;
+  transition: all 0.2s; /* Animação suave */
 }
 
 button:hover:not(:disabled) {
   background-color: #c2185b;
+  transform: scale(1.05); /* Leve aumento ao passar o mouse */
 }
 
 .action-buttons {
@@ -221,7 +222,7 @@ th {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: opacity 0.3s;
+  transition: opacity 0.2s;
   position: absolute;
   top: 0.625rem;
   left: 0.625rem;
@@ -310,6 +311,21 @@ body.sidebar-open {
   cursor: pointer;
 }
 
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #4caf50;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  display: none;
+  z-index: 1001;
+  font-size: 0.875rem;
+}
+
 /* Desktop */
 @media (min-width: 601px) {
   .container {
@@ -342,5 +358,31 @@ body.sidebar-open {
 
   .agendamento-item input[type="checkbox"] {
     right: 2.5rem;
+  }
+}
+
+/* Tabela como cartões no mobile */
+@media (max-width: 600px) {
+  #clientesTable, #clientesTable thead, #clientesTable tbody, #clientesTable th, #clientesTable td, #clientesTable tr {
+    display: block;
+  }
+  #clientesTable tr {
+    margin-bottom: 1rem;
+    border: 1px solid #ddd;
+    padding: 0.5rem;
+    background: #fff;
+    border-radius: 0.5rem;
+  }
+  #clientesTable td {
+    border: none;
+    position: relative;
+    padding-left: 50%;
+  }
+  #clientesTable td:before {
+    content: attr(data-label);
+    position: absolute;
+    left: 0.5rem;
+    font-weight: bold;
+    color: #d81b60;
   }
 }
