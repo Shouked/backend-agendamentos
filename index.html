@@ -25,12 +25,6 @@
         <option value="">Selecione o horário</option>
       </select>
       <span id="erroHorario" class="erro" aria-live="polite"></span>
-      <input type="text" id="cliente" placeholder="Seu nome" oninput="formatarNome(this);" aria-label="Digite seu nome" autocomplete="nope">
-      <span id="erroCliente" class="erro" aria-live="polite"></span>
-      <input type="tel" id="telefone" placeholder="Seu telefone (ex.: (11) 98765-4321)" oninput="mascararTelefone(this, event);" onkeydown="verificarApagamento(this, event);" aria-label="Digite seu telefone" autocomplete="new-telephone">
-      <span id="erroTelefone" class="erro" aria-live="polite"></span>
-      <input type="email" id="email" placeholder="Seu e-mail" oninput="this.value = this.value.toLowerCase();" aria-label="Digite seu e-mail" autocomplete="off">
-      <span id="erroEmail" class="erro" aria-live="polite"></span>
       <button type="submit" id="submitBtn">Agendar</button>
       <span id="mensagemSucesso" class="sucesso" aria-live="polite"></span>
     </form>
@@ -54,30 +48,42 @@
   <script src="https://npmcdn.com/flatpickr/dist/l10n/pt.js"></script>
   <script>
     const API_URL = 'https://agendamentos-backend.onrender.com';
-    let tokenCliente = localStorage.getItem('tokenCliente');
+    let tokenCliente = localStorage.getItem('clienteToken');
     let agendamentoPendente = null;
-    let isApagando = false;
     let dadosUsuario = null;
 
-    flatpickr("#data", {
-      minDate: "today",
-      dateFormat: "d/m/Y",
-      disable: [
-        function(date) {
-          return date.getDay() === 0; // Bloqueia domingos
-        }
-      ],
-      locale: "pt",
-      onChange: async function(selectedDates, dateStr) {
-        await carregarHorariosDisponiveis(dateStr);
+    window.addEventListener('load', async () => {
+      if (!tokenCliente) {
+        window.location.href = '/cliente.html';
+      } else {
+        await carregarDadosUsuario();
+        inicializarFlatpickr();
       }
     });
+
+    function inicializarFlatpickr() {
+      flatpickr("#data", {
+        minDate: "today",
+        dateFormat: "d/m/Y",
+        disable: [
+          function(date) {
+            return date.getDay() === 0; // Bloqueia domingos
+          }
+        ],
+        locale: "pt",
+        onChange: async function(selectedDates, dateStr) {
+          await carregarHorariosDisponiveis(dateStr);
+        }
+      });
+    }
 
     async function carregarHorariosDisponiveis(data) {
       const [day, month, year] = data.split('/');
       const dataISO = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
       try {
-        const response = await fetch(`${API_URL}/horarios-disponiveis?data=${dataISO}`);
+        const response = await fetch(`${API_URL}/horarios-disponiveis?data=${dataISO}`, {
+          headers: { 'Authorization': tokenCliente }
+        });
         const horarios = await response.json();
         console.log('Horários disponíveis recebidos:', horarios);
         const horarioSelect = document.getElementById('horario');
@@ -90,84 +96,29 @@
         });
       } catch (error) {
         console.error('Erro ao carregar horários:', error);
-        alert('Erro ao carregar horários disponíveis.');
+        document.getElementById('erroHorario').textContent = 'Erro ao carregar horários disponíveis.';
       }
-    }
-
-    function formatarNome(input) {
-      let value = input.value.toLowerCase();
-      input.value = value.replace(/\b\w/g, char => char.toUpperCase());
-    }
-
-    function verificarApagamento(input, event) {
-      if (event.key === 'Backspace' || event.key === 'Delete') {
-        isApagando = true;
-      } else {
-        isApagando = false;
-      }
-    }
-
-    function mascararTelefone(input, event) {
-      let value = input.value.replace(/\D/g, '');
-      if (value.length === 0) {
-        input.value = '';
-        return;
-      }
-      if (isApagando) {
-        input.value = value;
-        return;
-      }
-      if (value.length > 11) value = value.slice(0, 11);
-      if (value.length <= 10) {
-        if (value.length > 2) input.value = `(${value.slice(0, 2)}) ${value.slice(2, 6)}-${value.slice(6)}`;
-        else if (value.length > 0) input.value = `(${value}`;
-      } else {
-        if (value.length > 2) input.value = `(${value.slice(0, 2)}) ${value.slice(2, 7)}-${value.slice(7)}`;
-        else if (value.length > 0) input.value = `(${value}`;
-      }
-    }
-
-    function mostrarModalSucesso(mensagem) {
-      document.getElementById('mensagemSucessoModal').textContent = mensagem;
-      document.getElementById('overlay').style.display = 'block';
-      document.getElementById('modalSucesso').style.display = 'block';
-      setTimeout(() => {
-        document.getElementById('overlay').style.display = 'none';
-        document.getElementById('modalSucesso').style.display = 'none';
-        window.location.href = '/cliente.html';
-      }, 3000);
     }
 
     async function carregarDadosUsuario() {
-      if (tokenCliente) {
-        try {
-          const response = await fetch(`${API_URL}/clientes/perfil`, {
-            headers: { 'Authorization': tokenCliente }
-          });
-          const result = await response.json();
-          if (result.success) {
-            dadosUsuario = result.cliente;
-            document.getElementById('cliente').value = dadosUsuario.nome;
-            document.getElementById('cliente').setAttribute('readonly', 'true');
-            document.getElementById('cliente').removeAttribute('required');
-            document.getElementById('telefone').value = dadosUsuario.telefone;
-            document.getElementById('telefone').setAttribute('readonly', 'true');
-            document.getElementById('telefone').removeAttribute('required');
-            document.getElementById('email').value = dadosUsuario.email;
-            document.getElementById('email').setAttribute('readonly', 'true');
-            document.getElementById('email').removeAttribute('required');
-          } else {
-            console.error('Erro ao carregar dados do usuário:', result.message);
-            localStorage.removeItem('tokenCliente');
-            tokenCliente = null;
-            dadosUsuario = null;
-          }
-        } catch (error) {
-          console.error('Erro ao buscar perfil:', error);
-          localStorage.removeItem('tokenCliente');
+      try {
+        const response = await fetch(`${API_URL}/clientes/perfil`, {
+          headers: { 'Authorization': tokenCliente }
+        });
+        const result = await response.json();
+        if (result.success) {
+          dadosUsuario = result.cliente;
+        } else {
+          console.error('Erro ao carregar dados do usuário:', result.message);
+          localStorage.removeItem('clienteToken');
           tokenCliente = null;
-          dadosUsuario = null;
+          window.location.href = '/cliente.html';
         }
+      } catch (error) {
+        console.error('Erro ao buscar perfil:', error);
+        localStorage.removeItem('clienteToken');
+        tokenCliente = null;
+        window.location.href = '/cliente.html';
       }
     }
 
@@ -176,18 +127,17 @@
       submitBtn.disabled = true;
       submitBtn.textContent = 'Carregando...';
       try {
-        if (tokenCliente && dadosUsuario) {
-          dados.cliente = dadosUsuario.nome;
-          dados.telefone = dadosUsuario.telefone;
-          dados.email = dadosUsuario.email;
-        }
-        console.log('Salvando agendamento com token:', tokenCliente?.substring(0, 20) + '...', 'Dados:', dados);
-        const headers = { 'Content-Type': 'application/json' };
-        if (tokenCliente) headers['Authorization'] = tokenCliente;
+        dados.cliente = dadosUsuario.nome;
+        dados.telefone = dadosUsuario.telefone;
+        dados.email = dadosUsuario.email;
 
+        console.log('Salvando agendamento com token:', tokenCliente?.substring(0, 20) + '...', 'Dados:', dados);
         const response = await fetch(`${API_URL}/agendamentos`, {
           method: 'POST',
-          headers: headers,
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': tokenCliente
+          },
           body: JSON.stringify(dados)
         });
         const result = await response.json();
@@ -197,11 +147,7 @@
         }
         if (result.success) {
           document.getElementById('agendamentoForm').reset();
-          if (!tokenCliente) {
-            document.getElementById('mensagemSucesso').textContent = "Agendamento criado com sucesso! Você receberá uma confirmação por e-mail.";
-          } else {
-            mostrarModalSucesso("Agendamento criado com sucesso!");
-          }
+          mostrarModalSucesso("Agendamento criado com sucesso!");
         } else {
           document.getElementById('erroHorario').textContent = result.message || "Erro ao criar agendamento!";
         }
@@ -214,6 +160,16 @@
       }
     }
 
+    function mostrarModalSucesso(mensagem) {
+      document.getElementById('mensagemSucessoModal').textContent = mensagem;
+      document.getElementById('overlay').style.display = 'block';
+      document.getElementById('modalSucesso').style.display = 'block';
+      setTimeout(() => {
+        document.getElementById('overlay').style.display = 'none';
+        document.getElementById('modalSucesso').style.display = 'none';
+      }, 3000);
+    }
+
     function mostrarModalConfirmacao(dados) {
       const [day, month, year] = dados.data.split('-');
       const dataDisplay = `${day}/${month}/${year}`;
@@ -222,9 +178,9 @@
         <p><strong>Procedimento:</strong> ${dados.procedimento}</p>
         <p><strong>Data:</strong> ${dataDisplay}</p>
         <p><strong>Horário:</strong> ${dados.horario}</p>
-        <p><strong>Cliente:</strong> ${dados.cliente || 'Não informado'}</p>
-        <p><strong>Telefone:</strong> ${dados.telefone || 'Não informado'}</p>
-        <p><strong>E-mail:</strong> ${dados.email || 'Não informado'}</p>
+        <p><strong>Cliente:</strong> ${dados.cliente}</p>
+        <p><strong>Telefone:</strong> ${dados.telefone}</p>
+        <p><strong>E-mail:</strong> ${dados.email}</p>
       `;
       document.getElementById('overlay').style.display = 'block';
       document.getElementById('modalConfirmar').style.display = 'block';
@@ -248,17 +204,10 @@
       document.getElementById('erroProcedimento').textContent = '';
       document.getElementById('erroData').textContent = '';
       document.getElementById('erroHorario').textContent = '';
-      document.getElementById('erroCliente').textContent = '';
-      document.getElementById('erroTelefone').textContent = '';
-      document.getElementById('erroEmail').textContent = '';
 
       const procedimento = document.getElementById('procedimento').value;
       const dataBr = document.getElementById('data').value;
       const horario = document.getElementById('horario').value;
-      let cliente = document.getElementById('cliente').value;
-      let telefone = document.getElementById('telefone').value.replace(/\D/g, '');
-      let email = document.getElementById('email').value;
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
       if (!procedimento) {
         document.getElementById('erroProcedimento').textContent = "Escolha um procedimento!";
@@ -272,57 +221,17 @@
         document.getElementById('erroHorario').textContent = "Selecione um horário!";
         return;
       }
-      if (!tokenCliente) {
-        if (!cliente) {
-          document.getElementById('erroCliente').textContent = "Digite seu nome!";
-          return;
-        }
-        if (!telefone || telefone.length < 10) {
-          document.getElementById('erroTelefone').textContent = "Digite um telefone válido (10 ou 11 dígitos)!";
-          return;
-        }
-        if (!email) {
-          document.getElementById('erroEmail').textContent = "Digite seu e-mail!";
-          return;
-        }
-        if (!emailRegex.test(email)) {
-          document.getElementById('erroEmail').textContent = "Digite um e-mail válido (ex.: nome@dominio.com)!";
-          return;
-        }
-      }
 
       const [day, month, year] = dataBr.split('/');
       const dataISO = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
       const agendamentoDados = { 
         procedimento, 
         data: dataISO, 
-        horario, 
-        cliente: tokenCliente ? dadosUsuario?.nome : cliente,
-        telefone: tokenCliente ? dadosUsuario?.telefone : telefone,
-        email: tokenCliente ? dadosUsuario?.email : email 
+        horario
       };
 
-      if (!tokenCliente) {
-        localStorage.setItem('agendamentoPendente', JSON.stringify(agendamentoDados));
-        localStorage.setItem('emailPendente', email);
-        console.log('Agendamento pendente salvo:', agendamentoDados);
-        window.location.href = `/cliente.html?email=${encodeURIComponent(email)}`;
-      } else {
-        agendamentoPendente = agendamentoDados;
-        mostrarModalConfirmacao(agendamentoDados);
-      }
-    });
-
-    window.addEventListener('load', async () => {
-      if (!tokenCliente) {
-        document.getElementById('cliente').value = '';
-        document.getElementById('telefone').value = '';
-        document.getElementById('email').value = '';
-        document.getElementById('cliente').setAttribute('required', 'true');
-        document.getElementById('telefone').setAttribute('required', 'true');
-        document.getElementById('email').setAttribute('required', 'true');
-      }
-      await carregarDadosUsuario();
+      agendamentoPendente = agendamentoDados;
+      mostrarModalConfirmacao(agendamentoDados);
     });
   </script>
 </body>
