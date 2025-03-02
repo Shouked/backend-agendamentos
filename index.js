@@ -412,6 +412,37 @@ app.get('/clientes/detalhes', autenticarTokenProprietario, async (req, res) => {
   }
 });
 
+app.post('/clientes/novo', autenticarTokenProprietario, async (req, res) => {
+  let { nome, email, telefone } = req.body;
+  email = email.toLowerCase();
+  nome = nome.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
+
+  try {
+    const emailExistente = await Cliente.findOne({ email });
+    const telefoneExistente = await Cliente.findOne({ telefone });
+
+    if (emailExistente) {
+      return res.status(400).json({ success: false, message: 'E-mail já registrado!' });
+    }
+    if (telefoneExistente) {
+      return res.status(400).json({ success: false, message: 'Telefone já registrado!' });
+    }
+
+    const novoCliente = new Cliente({
+      nome,
+      email,
+      telefone,
+      dataCriacao: new Date()
+    });
+    await novoCliente.save();
+
+    res.status(201).json({ success: true, message: 'Cliente cadastrado com sucesso!', cliente: novoCliente });
+  } catch (error) {
+    console.error('Erro ao cadastrar cliente:', error);
+    res.status(500).json({ success: false, message: 'Erro interno ao cadastrar cliente' });
+  }
+});
+
 app.delete('/clientes/muitos', autenticarTokenProprietario, async (req, res) => {
   const { ids } = req.body;
   if (!ids || !Array.isArray(ids) || ids.length === 0) {
