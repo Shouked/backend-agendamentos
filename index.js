@@ -383,6 +383,35 @@ app.get('/clientes', autenticarTokenProprietario, async (req, res) => {
   }
 });
 
+app.get('/clientes/detalhes', autenticarTokenProprietario, async (req, res) => {
+  try {
+    const clientes = await Cliente.find({}, 'nome email telefone dataCriacao');
+
+    const clientesComDetalhes = await Promise.all(clientes.map(async (cliente) => {
+      const agendamentos = await Agendamento.find({ clienteId: cliente._id });
+      const procedimentosCount = agendamentos.length;
+      const ultimoAgendamento = agendamentos.length > 0 
+        ? agendamentos.sort((a, b) => new Date(b.dataCriacao) - new Date(a.dataCriacao))[0].data 
+        : null;
+
+      return {
+        _id: cliente._id,
+        nome: cliente.nome,
+        email: cliente.email,
+        telefone: cliente.telefone,
+        dataCriacao: cliente.dataCriacao,
+        procedimentosCount,
+        ultimoAgendamento
+      };
+    }));
+
+    res.json(clientesComDetalhes);
+  } catch (error) {
+    console.error('Erro ao buscar detalhes dos clientes:', error);
+    res.status(500).json({ success: false, message: 'Erro interno ao buscar detalhes dos clientes' });
+  }
+});
+
 app.delete('/clientes/muitos', autenticarTokenProprietario, async (req, res) => {
   const { ids } = req.body;
   if (!ids || !Array.isArray(ids) || ids.length === 0) {
@@ -489,26 +518,45 @@ app.delete('/agendamentos/muitos', autenticarTokenProprietario, async (req, res)
 app.delete('/agendamentos/:id', async (req, res) => {
   const { id } = req.params;
   const token = req.headers['authorization'];
-  if (!token) return res.status(401).json({ success: false, message: 'Token não fornecido' });
-
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    const agendamento = await Agendamento.findById(id);
-    if (!agendamento) {
-      return res.status(404).json({ success: false, message: 'Agendamento não encontrado' });
+  if (!token) {
+    try {
+      const result = await Agendamento.findByIdAndDelete(id);
+      if (result) {
+        res.json({ success: true, message: 'Agendamento excluído com sucesso!' });
+      } else {
+        res.status(404).json({ success: false, message: 'Agendamento não encontrado' });
+      }
+    } catch (error) {
+      console.error('Erro ao excluir agendamento:', error);
+      res.status(500).json({ success: false, message: 'Erro interno ao excluir agendamento' });
     }
-
-    if (decoded.tipo === 'proprietario' || (decoded.tipo === 'cliente' && agendamento.email === decoded.email)) {
-      await Agendamento.findByIdAndDelete(id);
-      res.json({ success: true, message: 'Agendamento excluído com sucesso!' });
-    } else {
-      res.status(403).json({ success: false, message: 'Você não tem permissão para excluir este agendamento!' });
+  } else {
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET);
+      if (decoded.tipo === 'proprietario') {
+        const result = await Agendamento.findByIdAndDelete(id);
+        if (result) {
+          res.json({ success: true, message: 'Agendamento excluído com sucesso!' });
+        } else {
+          res.status(404).json({ success: false, message: 'Agendamento não encontrado' });
+        }
+      } else if (decoded.tipo === 'cliente') {
+        const agendamento = await Agendamento.findById(id);
+        if (!agendamento || agendamento.email !== decoded.email) {
+          return res.status(403).json({ success: false, message: 'Você não tem permissão para excluir este agendamento!' });
+        }
+        const result = await Agendamento.findByIdAndDelete(id);
+        if (result) {
+          res.json({ success: true, message: 'Agendamento excluído com sucesso!' });
+        } else {
+          res.status(404).json({ success: false, message: 'Agendamento não encontrado' });
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao excluir agendamento:', error);
+      res.status(500).json({ success: false, message: 'Erro interno ao excluir agendamento' });
     }
-  } catch (error) {
-    console.error('Erro ao excluir agendamento:', error);
-    res.status(500).json({ success: false, message: 'Erro interno ao excluir agendamento' });
   }
 });
 
-const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
+module.exports = app;
