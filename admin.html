@@ -80,16 +80,11 @@
             <span id="erroHorario" class="erro"></span>
           </div>
           <div class="form-group">
-            <input type="text" id="cliente" placeholder="Nome do cliente" required oninput="formatarNome(this);" autocomplete="off" />
+            <select id="clienteSelectAgendamento" required>
+              <option value="">Selecione um cliente</option>
+            </select>
+            <button type="button" onclick="abrirModalNovoCliente()">Cadastrar Novo Cliente</button>
             <span id="erroCliente" class="erro"></span>
-          </div>
-          <div class="form-group">
-            <input type="tel" id="telefone" placeholder="Telefone (ex.: (11) 98765-4321)" required oninput="mascararTelefone(this, event);" onkeydown="verificarApagamento(this, event);" autocomplete="off" />
-            <span id="erroTelefone" class="erro"></span>
-          </div>
-          <div class="form-group">
-            <input type="email" id="emailAgendamento" placeholder="E-mail do cliente" oninput="this.value = this.value.toLowerCase();" autocomplete="off" />
-            <span id="erroEmail" class="erro"></span>
           </div>
           <button type="submit">Criar Agendamento</button>
         </form>
@@ -140,7 +135,7 @@
   <!-- Overlay para fechar sidebar -->
   <div class="overlay" id="sidebar-overlay"></div>
 
-  <!-- Modal -->
+  <!-- Modal de Edição de Agendamento -->
   <div class="overlay" id="overlay"></div>
   <div class="modal" id="editModal" role="dialog" aria-labelledby="editModalTitle">
     <h3 id="editModalTitle">Editar Agendamento</h3>
@@ -164,6 +159,30 @@
       <div class="action-buttons">
         <button type="submit">Salvar</button>
         <button type="button" onclick="fecharModal()">Cancelar</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Modal de Cadastro de Novo Cliente -->
+  <div class="overlay" id="novoClienteOverlay"></div>
+  <div class="modal" id="novoClienteModal" role="dialog" aria-labelledby="novoClienteModalTitle">
+    <h3 id="novoClienteModalTitle">Cadastrar Novo Cliente</h3>
+    <form id="novoClienteForm" onsubmit="event.preventDefault(); cadastrarNovoCliente();">
+      <div class="form-group">
+        <input type="text" id="novoClienteNome" placeholder="Nome do cliente" required oninput="formatarNome(this);" autocomplete="off" />
+        <span id="erroNovoClienteNome" class="erro"></span>
+      </div>
+      <div class="form-group">
+        <input type="email" id="novoClienteEmail" placeholder="E-mail do cliente" required oninput="this.value = this.value.toLowerCase();" autocomplete="off" />
+        <span id="erroNovoClienteEmail" class="erro"></span>
+      </div>
+      <div class="form-group">
+        <input type="tel" id="novoClienteTelefone" placeholder="Telefone (ex.: (11) 98765-4321)" required oninput="mascararTelefone(this, event);" onkeydown="verificarApagamento(this, event);" autocomplete="off" />
+        <span id="erroNovoClienteTelefone" class="erro"></span>
+      </div>
+      <div class="action-buttons">
+        <button type="submit">Cadastrar</button>
+        <button type="button" onclick="fecharModalNovoCliente()">Cancelar</button>
       </div>
     </form>
   </div>
@@ -276,9 +295,7 @@
       if (section) {
         section.style.display = 'block';
         if (sectionId === 'agendamentoSection') {
-          document.getElementById('cliente').value = '';
-          document.getElementById('telefone').value = '';
-          document.getElementById('emailAgendamento').value = '';
+          carregarClientesParaAgendamento();
         } else if (sectionId === 'agendamentosSection') {
           carregarAgendamentos();
         } else if (sectionId === 'clientesSection') {
@@ -454,16 +471,12 @@
       document.getElementById('erroData').textContent = '';
       document.getElementById('erroHorario').textContent = '';
       document.getElementById('erroCliente').textContent = '';
-      document.getElementById('erroTelefone').textContent = '';
-      document.getElementById('erroEmail').textContent = '';
 
       const procedimento = document.getElementById('procedimento').value;
       const dataBr = document.getElementById('data').value;
       const horario = document.getElementById('horario').value;
-      const cliente = document.getElementById('cliente').value;
-      const telefone = document.getElementById('telefone').value.replace(/\D/g, '');
-      const emailInput = document.getElementById('emailAgendamento');
-      let email = emailInput.value;
+      const clienteSelect = document.getElementById('clienteSelectAgendamento');
+      const clienteId = clienteSelect.value;
 
       if (!procedimento) {
         document.getElementById('erroProcedimento').textContent = "Escolha um procedimento!";
@@ -477,14 +490,16 @@
         document.getElementById('erroHorario').textContent = "Selecione um horário!";
         return;
       }
-      if (!cliente) {
-        document.getElementById('erroCliente').textContent = "Digite o nome do cliente!";
+      if (!clienteId) {
+        document.getElementById('erroCliente').textContent = "Selecione um cliente!";
         return;
       }
-      if (!telefone || telefone.length < 10) {
-        document.getElementById('erroTelefone').textContent = "Digite um telefone válido (10 ou 11 dígitos)!";
-        return;
-      }
+
+      const selectedOption = clienteSelect.options[clienteSelect.selectedIndex];
+      const clienteData = JSON.parse(selectedOption.dataset.cliente);
+      const cliente = clienteData.nome;
+      const telefone = clienteData.telefone;
+      const email = clienteData.email;
 
       const [day, month, year] = dataBr.split('/');
       const data = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
@@ -510,9 +525,7 @@
           document.getElementById('procedimento').value = '';
           document.getElementById('data').value = '';
           document.getElementById('horario').innerHTML = '<option value="">Selecione o horário</option>';
-          document.getElementById('cliente').value = '';
-          document.getElementById('telefone').value = '';
-          emailInput.value = '';
+          clienteSelect.value = '';
           toggleSection('agendamentosSection');
           await carregarAgendamentos();
         } else {
@@ -550,6 +563,34 @@
         });
       } catch (error) {
         console.error('Erro ao carregar clientes:', error);
+        showToast('Erro ao carregar clientes. Tente novamente.');
+      }
+    }
+
+    async function carregarClientesParaAgendamento() {
+      try {
+        const response = await fetch(`${API_URL}/clientes/detalhes`, {
+          headers: { Authorization: token },
+        });
+        const clientes = await response.json();
+        console.log('Clientes carregados para agendamento:', clientes);
+        const select = document.getElementById('clienteSelectAgendamento');
+        select.innerHTML = '<option value="">Selecione um cliente</option>';
+
+        if (!clientes || clientes.length === 0) {
+          select.innerHTML += '<option value="">Nenhum cliente encontrado</option>';
+          return;
+        }
+
+        clientes.forEach(cliente => {
+          const option = document.createElement('option');
+          option.value = cliente._id;
+          option.textContent = cliente.nome;
+          option.dataset.cliente = JSON.stringify(cliente);
+          select.appendChild(option);
+        });
+      } catch (error) {
+        console.error('Erro ao carregar clientes para agendamento:', error);
         showToast('Erro ao carregar clientes. Tente novamente.');
       }
     }
@@ -631,6 +672,70 @@
     function fecharModal() {
       document.getElementById('overlay').style.display = 'none';
       document.getElementById('editModal').style.display = 'none';
+    }
+
+    function abrirModalNovoCliente() {
+      document.getElementById('novoClienteOverlay').style.display = 'block';
+      document.getElementById('novoClienteModal').style.display = 'block';
+      document.getElementById('novoClienteNome').value = '';
+      document.getElementById('novoClienteEmail').value = '';
+      document.getElementById('novoClienteTelefone').value = '';
+      document.getElementById('erroNovoClienteNome').textContent = '';
+      document.getElementById('erroNovoClienteEmail').textContent = '';
+      document.getElementById('erroNovoClienteTelefone').textContent = '';
+    }
+
+    function fecharModalNovoCliente() {
+      document.getElementById('novoClienteOverlay').style.display = 'none';
+      document.getElementById('novoClienteModal').style.display = 'none';
+    }
+
+    async function cadastrarNovoCliente() {
+      document.getElementById('erroNovoClienteNome').textContent = '';
+      document.getElementById('erroNovoClienteEmail').textContent = '';
+      document.getElementById('erroNovoClienteTelefone').textContent = '';
+
+      const nome = document.getElementById('novoClienteNome').value;
+      const email = document.getElementById('novoClienteEmail').value;
+      const telefone = document.getElementById('novoClienteTelefone').value.replace(/\D/g, '');
+
+      if (!nome) {
+        document.getElementById('erroNovoClienteNome').textContent = 'Digite o nome do cliente!';
+        return;
+      }
+      if (!email || !email.includes('@')) {
+        document.getElementById('erroNovoClienteEmail').textContent = 'Digite um e-mail válido!';
+        return;
+      }
+      if (!telefone || telefone.length < 10) {
+        document.getElementById('erroNovoClienteTelefone').textContent = 'Digite um telefone válido (10 ou 11 dígitos)!';
+        return;
+      }
+
+      const clienteDados = { nome, email, telefone };
+
+      try {
+        const response = await fetch(`${API_URL}/clientes/novo`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': token
+          },
+          body: JSON.stringify(clienteDados)
+        });
+        const result = await response.json();
+        if (result.success) {
+          showToast('Cliente cadastrado com sucesso!');
+          fecharModalNovoCliente();
+          await carregarClientesParaAgendamento();
+          document.getElementById('clienteSelectAgendamento').value = result.cliente._id;
+        } else {
+          showToast(result.message || 'Erro ao cadastrar cliente!');
+        }
+      } catch (error) {
+        console.error('Erro ao cadastrar cliente:', error);
+        showToast('Erro ao conectar ao servidor. Tente novamente.');
+      }
     }
 
     function selecionarTodosAgendamentos() {
