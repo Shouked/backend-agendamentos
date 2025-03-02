@@ -326,6 +326,56 @@ body.sidebar-open {
   font-size: 0.875rem;
 }
 
+/* Cliente Detalhes */
+.cliente-detalhes {
+  margin-top: 1rem;
+}
+
+.cliente-card {
+  background: #fff;
+  border-radius: 0.625rem;
+  padding: 1rem;
+  box-shadow: 0 0.125rem 0.625rem rgba(0, 0, 0, 0.05);
+  border: 1px solid #ddd;
+}
+
+.cliente-card h4 {
+  color: #d81b60;
+  margin-bottom: 0.75rem;
+  font-size: 1.25rem;
+}
+
+.cliente-card p {
+  margin: 0.5rem 0;
+  font-size: 0.875rem;
+}
+
+.cliente-card p strong {
+  color: #333;
+}
+
+/* Botão Voltar ao Topo */
+#back-to-top {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  background: #e91e63;
+  color: white;
+  border: none;
+  padding: 0.5rem 0.75rem;
+  border-radius: 50%;
+  font-size: 1.25rem;
+  cursor: pointer;
+  display: none;
+  z-index: 1001;
+  transition: all 0.2s;
+}
+
+#back-to-top:hover {
+  background: #c2185b;
+  transform: scale(1.1);
+}
+
 /* Desktop */
 @media (min-width: 601px) {
   .container {
@@ -359,30 +409,16 @@ body.sidebar-open {
   .agendamento-item input[type="checkbox"] {
     right: 2.5rem;
   }
+
+  .cliente-card {
+    max-width: 30rem;
+    margin: 0 auto;
+  }
 }
 
-/* Tabela como cartões no mobile */
+/* Mobile */
 @media (max-width: 600px) {
-  #clientesTable, #clientesTable thead, #clientesTable tbody, #clientesTable th, #clientesTable td, #clientesTable tr {
-    display: block;
-  }
-  #clientesTable tr {
-    margin-bottom: 1rem;
-    border: 1px solid #ddd;
-    padding: 0.5rem;
-    background: #fff;
-    border-radius: 0.5rem;
-  }
-  #clientesTable td {
-    border: none;
-    position: relative;
-    padding-left: 50%;
-  }
-  #clientesTable td:before {
-    content: attr(data-label);
-    position: absolute;
-    left: 0.5rem;
-    font-weight: bold;
-    color: #d81b60;
+  .cliente-card {
+    width: 100%;
   }
 }
