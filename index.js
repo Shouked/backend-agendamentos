@@ -559,4 +559,10 @@ app.delete('/agendamentos/:id', async (req, res) => {
   }
 });
 
+// Definindo a porta para o Render
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Servidor rodando na porta ${PORT}`);
+});
+
 module.exports = app;
