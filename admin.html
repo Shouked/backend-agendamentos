@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <link rel="stylesheet" href="admin.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body class="logged-out">
   <!-- Login -->
@@ -48,6 +49,9 @@
       </a>
       <a href="#" class="sidebar-item" onclick="toggleSection('mensagensSection')" aria-label="Mensagens">
         <i class="fas fa-envelope sidebar-icon"></i><span>Mensagens Predefinidas</span>
+      </a>
+      <a href="#" class="sidebar-item" onclick="logout()" aria-label="Sair">
+        <i class="fas fa-sign-out-alt sidebar-icon"></i><span>Sair</span>
       </a>
     </nav>
 
@@ -176,6 +180,9 @@
     </form>
   </div>
 
+  <!-- Toast para notificações -->
+  <div id="toast" class="toast"></div>
+
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script src="https://npmcdn.com/flatpickr/dist/l10n/pt.js"></script>
   <script>
@@ -183,13 +190,11 @@
     let token = null;
     let isApagando = false;
 
-    // Listener para o formulário de login
     document.getElementById('loginForm').addEventListener('submit', (event) => {
       event.preventDefault();
       login();
     });
 
-    // Toggle da sidebar
     const menuToggle = document.getElementById('menu-toggle');
     const sidebar = document.getElementById('sidebar');
     const sidebarOverlay = document.getElementById('sidebar-overlay');
@@ -199,7 +204,6 @@
       sidebar.classList.toggle('active');
       body.classList.toggle('sidebar-open');
       sidebarOverlay.style.display = sidebar.classList.contains('active') ? 'block' : 'none';
-      // Move o botão para dentro da sidebar quando aberta (apenas mobile)
       if (sidebar.classList.contains('active') && window.matchMedia("(max-width: 600px)").matches) {
         sidebar.insertBefore(menuToggle, sidebar.firstChild);
       } else {
@@ -207,7 +211,6 @@
       }
     });
 
-    // Fecha a sidebar ao clicar no overlay (apenas mobile)
     sidebarOverlay.addEventListener('click', () => {
       if (window.matchMedia("(max-width: 600px)").matches) {
         sidebar.classList.remove('active');
@@ -252,12 +255,13 @@
           await carregarClientes();
           document.getElementById('email').value = '';
           document.getElementById('senha').value = '';
+          showToast("Login realizado com sucesso!");
         } else {
-          alert("E-mail ou senha inválidos! Mensagem do servidor: " + (result.message || ""));
+          showToast("E-mail ou senha inválidos!");
         }
       } catch (error) {
         console.error('Erro ao fazer login:', error);
-        alert('Erro ao conectar ao servidor. Tente novamente. Detalhes: ' + error.message);
+        showToast('Erro ao conectar ao servidor. Tente novamente.');
       } finally {
         loginBtn.disabled = false;
         loginBtn.textContent = 'Entrar';
@@ -343,7 +347,7 @@
         });
       } catch (error) {
         console.error('Erro ao carregar horários:', error);
-        alert('Erro ao carregar horários. Tente novamente.');
+        showToast('Erro ao carregar horários. Tente novamente.');
       }
     }
 
@@ -404,7 +408,7 @@
         console.log('Agendamentos válidos após filtro:', validAgendamentos);
 
         const groupedByDate = validAgendamentos.reduce((acc, ag) => {
-          const dateKey = ag.data.split('T')[0]; // Usa a data pura do backend (YYYY-MM-DD)
+          const dateKey = ag.data.split('T')[0];
           if (!acc[dateKey]) acc[dateKey] = [];
           acc[dateKey].push(ag);
           return acc;
@@ -413,9 +417,9 @@
         for (const date in groupedByDate) {
           const agendamentosDoDia = groupedByDate[date];
           const [year, month, day] = date.split('-');
-          const dateObj = new Date(Date.UTC(year, month - 1, day)); // Cria data em UTC
+          const dateObj = new Date(Date.UTC(year, month - 1, day));
           const diaSemana = dateObj.toLocaleDateString('pt-BR', { weekday: 'long', timeZone: 'UTC' });
-          const dataBr = `${day}/${month}/${year}`; // Formato manual para evitar conversão local
+          const dataBr = `${day}/${month}/${year}`;
 
           const dateDiv = document.createElement('div');
           dateDiv.className = 'agendamento-date';
@@ -446,8 +450,7 @@
         }
       } catch (error) {
         console.error('Erro ao carregar agendamentos:', error);
-        const lista = document.getElementById('listaAgendamentos');
-        lista.innerHTML = '<p>Erro ao carregar agendamentos. Tente novamente.</p>';
+        showToast('Erro ao carregar agendamentos. Tente novamente.');
       }
     }
 
@@ -508,7 +511,7 @@
         const result = await response.json();
         console.log('Resposta do servidor:', result);
         if (result.success) {
-          alert("Agendamento criado com sucesso! O cliente receberá uma confirmação por e-mail.");
+          showToast("Agendamento criado com sucesso!");
           document.getElementById('procedimento').value = '';
           document.getElementById('data').value = '';
           document.getElementById('horario').innerHTML = '<option value="">Selecione o horário</option>';
@@ -518,11 +521,11 @@
           toggleSection('agendamentosSection');
           await carregarAgendamentos();
         } else {
-          alert(result.message || "Erro ao criar agendamento!");
+          showToast(result.message || "Erro ao criar agendamento!");
         }
       } catch (error) {
         console.error('Erro ao criar agendamento:', error);
-        alert('Erro ao conectar ao servidor. Tente novamente.');
+        showToast('Erro ao conectar ao servidor. Tente novamente.');
       }
     }
 
@@ -553,7 +556,7 @@
         });
       } catch (error) {
         console.error('Erro ao carregar clientes:', error);
-        alert('Erro ao carregar clientes. Tente novamente. Detalhes: ' + error.message);
+        showToast('Erro ao carregar clientes. Tente novamente.');
       }
     }
 
@@ -588,15 +591,15 @@
         });
         const result = await response.json();
         if (result.success) {
-          alert('Agendamento atualizado com sucesso!');
+          showToast('Agendamento atualizado com sucesso!');
           fecharModal();
           await carregarAgendamentos();
         } else {
-          alert(result.message || 'Erro ao atualizar!');
+          showToast(result.message || 'Erro ao atualizar!');
         }
       } catch (error) {
         console.error('Erro ao salvar edição:', error);
-        alert('Erro ao conectar ao servidor. Tente novamente.');
+        showToast('Erro ao conectar ao servidor. Tente novamente.');
       }
     }
 
@@ -615,7 +618,7 @@
         document.querySelectorAll(".select-agendamento:checked")
       ).map((cb) => cb.value);
       if (selecionados.length === 0) {
-        alert("Nenhum agendamento selecionado!");
+        showToast("Nenhum agendamento selecionado!");
         return;
       }
       if (
@@ -634,14 +637,14 @@
           });
           const result = await response.json();
           if (result.success) {
-            alert(result.message);
+            showToast(result.message);
             await carregarAgendamentos();
           } else {
-            alert(result.message || "Erro ao excluir agendamentos!");
+            showToast(result.message || "Erro ao excluir agendamentos!");
           }
         } catch (error) {
           console.error('Erro ao excluir agendamentos:', error);
-          alert('Erro ao conectar ao servidor. Tente novamente.');
+          showToast('Erro ao conectar ao servidor. Tente novamente.');
         }
       }
     }
@@ -656,7 +659,7 @@
         document.querySelectorAll(".select-cliente:checked")
       ).map((cb) => cb.value);
       if (selecionados.length === 0) {
-        alert("Nenhum cliente selecionado!");
+        showToast("Nenhum cliente selecionado!");
         return;
       }
       if (
@@ -675,14 +678,14 @@
           });
           const result = await response.json();
           if (result.success) {
-            alert(result.message);
+            showToast(result.message);
             await carregarClientes();
           } else {
-            alert(result.message || "Erro ao excluir clientes!");
+            showToast(result.message || "Erro ao excluir clientes!");
           }
         } catch (error) {
           console.error('Erro ao excluir clientes:', error);
-          alert('Erro ao conectar ao servidor. Tente novamente.');
+          showToast('Erro ao conectar ao servidor. Tente novamente.');
         }
       }
     }
@@ -699,8 +702,24 @@
           '</ul>';
       } catch (error) {
         console.error('Erro ao carregar relatórios:', error);
-        alert('Erro ao carregar relatórios. Tente novamente.');
+        showToast('Erro ao carregar relatórios. Tente novamente.');
       }
+    }
+
+    function logout() {
+      token = null;
+      document.getElementById("painel").style.display = "none";
+      document.getElementById("login").style.display = "block";
+      document.body.classList.remove('logged-in');
+      document.body.classList.add('logged-out');
+      showToast("Você saiu com sucesso!");
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.style.display = 'block';
+      setTimeout(() => toast.style.display = 'none', 3000);
     }
   </script>
 </body>
