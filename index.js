@@ -430,6 +430,7 @@ app.get('/clientes/detalhes', autenticarTokenProprietario, async (req, res) => {
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0); // Zerar horário para comparar apenas a data
     const hojeISO = hoje.toISOString().split('T')[0];
+    console.log('Data atual (hoje) no servidor:', hojeISO); // Log para verificar a data atual
 
     const clientesComDetalhes = await Promise.all(clientes.map(async (cliente) => {
       const agendamentos = await Agendamento.find({ clienteId: cliente._id });
@@ -449,8 +450,14 @@ app.get('/clientes/detalhes', autenticarTokenProprietario, async (req, res) => {
         dataAgendamento.setHours(0, 0, 0, 0);
         return dataAgendamento >= hoje;
       });
+      console.log(`Cliente: ${cliente.nome}, Agendamentos Futuros:`, agendamentosFuturos.map(ag => ({ data: ag.data, horario: ag.horario }))); // Log detalhado
+
       const proximoAgendamento = agendamentosFuturos.length > 0
-        ? agendamentosFuturos.sort((a, b) => new Date(a.data) - new Date(b.data))[0].data
+        ? agendamentosFuturos.sort((a, b) => {
+            const dateA = new Date(a.data + 'T' + a.horario);
+            const dateB = new Date(b.data + 'T' + b.horario);
+            return dateA - dateB; // Ordenar por data e horário
+          })[0].data
         : null;
 
       return {
