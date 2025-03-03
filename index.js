@@ -81,7 +81,6 @@ const autenticarTokenCliente = (req, res, next) => {
   });
 };
 
-// Função para gerar senha aleatória
 function gerarSenhaAleatoria(length = 8) {
   const caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   let senha = '';
@@ -117,12 +116,11 @@ app.post('/clientes/registro', async (req, res) => {
       if (clienteExistente.senha) {
         return res.status(400).json({ success: false, message: 'E-mail já registrado com senha!' });
       } else {
-        // Cliente cadastrado pelo proprietário, enviar senha aleatória por e-mail
         const mensagem = {
           to: email,
           from: 'iagofonseca1992@hotmail.com',
           subject: 'Bem-vindo! Aqui está sua senha',
-          text: `Olá ${clienteExistente.nome},\n\nVocê já foi cadastrado pelo profissional. Sua senha inicial é: ${clienteExistente.senhaOriginal}\n\nUse-a para fazer login. Recomendamos que altere sua senha após o primeiro acesso.\n\nAtenciosamente,\nEquipe de Agendamento`
+          text: `Olá ${clienteExistente.nome},\n\nVocê já foi cadastrado pelo profissional. Sua senha inicial é: ${clienteExistente.senhaOriginal}\n\nUse-a para fazer login em https://biancadomingues.netlify.app/. Recomendamos que altere sua senha após o primeiro acesso.\n\nAtenciosamente,\nEquipe de Agendamento`
         };
         await sgMail.send(mensagem);
         return res.status(200).json({ success: false, message: 'Você já foi cadastrado pelo profissional. Uma senha foi enviada para o seu e-mail.' });
@@ -198,13 +196,39 @@ app.post('/clientes/esqueci-senha', async (req, res) => {
       to: email,
       from: 'iagofonseca1992@hotmail.com',
       subject: 'Recuperação de Senha',
-      text: `Olá ${cliente.nome},\n\nVocê solicitou a recuperação da sua senha. Aqui está a senha que você criou ao se registrar:\n\nSenha: ${cliente.senhaOriginal}\n\nUse-a para fazer login. Recomendamos que altere sua senha após acessar o sistema.\n\nAtenciosamente,\nEquipe de Agendamento`
+      text: `Olá ${cliente.nome},\n\nVocê solicitou a recuperação da sua senha. Aqui está a senha atual:\n\nSenha: ${cliente.senhaOriginal}\n\nUse-a para fazer login. Recomendamos que altere sua senha após acessar o sistema.\n\nAtenciosamente,\nEquipe de Agendamento`
     };
     await sgMail.send(mensagem);
     res.json({ success: true, message: 'E-mail de recuperação enviado com sua senha!' });
   } catch (error) {
     console.error('Erro ao enviar e-mail de recuperação:', error);
     res.status(500).json({ success: false, message: 'Erro ao enviar e-mail de recuperação' });
+  }
+});
+
+app.post('/clientes/alterar-senha', autenticarTokenCliente, async (req, res) => {
+  const { novaSenha } = req.body;
+  const email = req.cliente.email;
+
+  if (!novaSenha || novaSenha.length < 6) {
+    return res.status(400).json({ success: false, message: 'A nova senha deve ter pelo menos 6 caracteres!' });
+  }
+
+  try {
+    const cliente = await Cliente.findOne({ email });
+    if (!cliente) {
+      return res.status(404).json({ success: false, message: 'Cliente não encontrado!' });
+    }
+
+    const senhaCriptografada = await bcrypt.hash(novaSenha, 10);
+    cliente.senha = senhaCriptografada;
+    cliente.senhaOriginal = novaSenha;
+    await cliente.save();
+
+    res.json({ success: true, message: 'Senha alterada com sucesso!' });
+  } catch (error) {
+    console.error('Erro ao alterar senha:', error);
+    res.status(500).json({ success: false, message: 'Erro interno ao alterar senha' });
   }
 });
 
@@ -255,7 +279,7 @@ app.post('/agendamentos', async (req, res) => {
       return res.status(404).json({ success: false, message: 'Cliente autenticado não encontrado!' });
     }
   } else if (!email) {
-    email = ''; // Email é opcional para proprietário
+    email = '';
   } else {
     cliente = cliente.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
     email = email.toLowerCase();
@@ -619,7 +643,6 @@ app.delete('/agendamentos/:id', async (req, res) => {
   }
 });
 
-// Definindo a porta para o Render
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
