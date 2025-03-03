@@ -360,7 +360,8 @@ app.post('/agendamentos', async (req, res) => {
 
 app.get('/agendamentos', autenticarTokenProprietario, async (req, res) => {
   try {
-    const agendamentos = await Agendamento.find();
+    const hoje = new Date().toISOString().split('T')[0];
+    const agendamentos = await Agendamento.find({ data: { $gte: hoje } });
     res.json(agendamentos);
   } catch (error) {
     console.error('Erro ao buscar agendamentos:', error);
@@ -426,12 +427,20 @@ app.get('/clientes', autenticarTokenProprietario, async (req, res) => {
 app.get('/clientes/detalhes', autenticarTokenProprietario, async (req, res) => {
   try {
     const clientes = await Cliente.find({}, 'nome email telefone dataCriacao');
+    const hoje = new Date().toISOString().split('T')[0];
 
     const clientesComDetalhes = await Promise.all(clientes.map(async (cliente) => {
       const agendamentos = await Agendamento.find({ clienteId: cliente._id });
       const procedimentosCount = agendamentos.length;
-      const ultimoAgendamento = agendamentos.length > 0 
-        ? agendamentos.sort((a, b) => new Date(b.dataCriacao) - new Date(a.dataCriacao))[0].data 
+
+      const agendamentosPassados = agendamentos.filter(ag => ag.data < hoje);
+      const ultimaVisita = agendamentosPassados.length > 0
+        ? agendamentosPassados.sort((a, b) => new Date(b.data) - new Date(a.data))[0].data
+        : null;
+
+      const agendamentosFuturos = agendamentos.filter(ag => ag.data >= hoje);
+      const proximoAgendamento = agendamentosFuturos.length > 0
+        ? agendamentosFuturos.sort((a, b) => new Date(a.data) - new Date(b.data))[0].data
         : null;
 
       return {
@@ -441,7 +450,8 @@ app.get('/clientes/detalhes', autenticarTokenProprietario, async (req, res) => {
         telefone: cliente.telefone,
         dataCriacao: cliente.dataCriacao,
         procedimentosCount,
-        ultimoAgendamento
+        ultimaVisita,
+        proximoAgendamento
       };
     }));
 
