@@ -427,18 +427,28 @@ app.get('/clientes', autenticarTokenProprietario, async (req, res) => {
 app.get('/clientes/detalhes', autenticarTokenProprietario, async (req, res) => {
   try {
     const clientes = await Cliente.find({}, 'nome email telefone dataCriacao');
-    const hoje = new Date().toISOString().split('T')[0];
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0); // Zerar horário para comparar apenas a data
+    const hojeISO = hoje.toISOString().split('T')[0];
 
     const clientesComDetalhes = await Promise.all(clientes.map(async (cliente) => {
       const agendamentos = await Agendamento.find({ clienteId: cliente._id });
       const procedimentosCount = agendamentos.length;
 
-      const agendamentosPassados = agendamentos.filter(ag => ag.data < hoje);
+      const agendamentosPassados = agendamentos.filter(ag => {
+        const dataAgendamento = new Date(ag.data);
+        dataAgendamento.setHours(0, 0, 0, 0);
+        return dataAgendamento < hoje;
+      });
       const ultimaVisita = agendamentosPassados.length > 0
         ? agendamentosPassados.sort((a, b) => new Date(b.data) - new Date(a.data))[0].data
         : null;
 
-      const agendamentosFuturos = agendamentos.filter(ag => ag.data >= hoje);
+      const agendamentosFuturos = agendamentos.filter(ag => {
+        const dataAgendamento = new Date(ag.data);
+        dataAgendamento.setHours(0, 0, 0, 0);
+        return dataAgendamento >= hoje;
+      });
       const proximoAgendamento = agendamentosFuturos.length > 0
         ? agendamentosFuturos.sort((a, b) => new Date(a.data) - new Date(b.data))[0].data
         : null;
