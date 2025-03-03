@@ -412,7 +412,7 @@
         lista.innerHTML = '';
 
         if (!Array.isArray(agendamentos) || agendamentos.length === 0) {
-          lista.innerHTML = '<p>Nenhum agendamento encontrado.</p>';
+          lista.innerHTML = '<p>Nenhum agendamento futuro encontrado.</p>';
           return;
         }
 
@@ -617,7 +617,8 @@
       if (cliente) {
         const dataRegistro = cliente.dataCriacao ? new Date(cliente.dataCriacao).toLocaleDateString('pt-BR') : 'Data não disponível';
         const procedimentosCount = cliente.procedimentosCount !== undefined ? cliente.procedimentosCount : 'Não disponível';
-        const ultimoAgendamento = cliente.ultimoAgendamento ? new Date(cliente.ultimoAgendamento).toLocaleDateString('pt-BR') : 'Não disponível';
+        const ultimaVisita = cliente.ultimaVisita ? new Date(cliente.ultimaVisita).toLocaleDateString('pt-BR') : 'Não disponível';
+        const proximoAgendamento = cliente.proximoAgendamento ? new Date(cliente.proximoAgendamento).toLocaleDateString('pt-BR') : 'Não disponível';
 
         detalhes.innerHTML = `
           <div class="cliente-card">
@@ -626,7 +627,8 @@
             <p><strong>E-mail:</strong> ${cliente.email}</p>
             <p><strong>Data de Registro:</strong> ${dataRegistro}</p>
             <p><strong>Quantidade de Procedimentos:</strong> ${procedimentosCount}</p>
-            <p><strong>Último Agendamento:</strong> ${ultimoAgendamento}</p>
+            <p><strong>Última Visita:</strong> ${ultimaVisita}</p>
+            <p><strong>Próximo Agendamento:</strong> ${proximoAgendamento}</p>
             <button class="delete-btn" onclick="excluirCliente('${cliente._id}')">Excluir Cliente</button>
           </div>
         `;
