@@ -67,7 +67,7 @@
         dateFormat: "d/m/Y",
         disable: [
           function(date) {
-            return date.getDay() === 0; // Bloqueia domingos
+            return date.getDay() === 0;
           }
         ],
         locale: "pt",
@@ -108,6 +108,7 @@
         const result = await response.json();
         if (result.success) {
           dadosUsuario = result.cliente;
+          console.log('Dados do usuário carregados:', dadosUsuario);
         } else {
           console.error('Erro ao carregar dados do usuário:', result.message);
           localStorage.removeItem('clienteToken');
@@ -127,6 +128,9 @@
       submitBtn.disabled = true;
       submitBtn.textContent = 'Carregando...';
       try {
+        if (!dadosUsuario) {
+          throw new Error('Dados do usuário não carregados!');
+        }
         dados.cliente = dadosUsuario.nome;
         dados.telefone = dadosUsuario.telefone;
         dados.email = dadosUsuario.email;
@@ -227,7 +231,10 @@
       const agendamentoDados = { 
         procedimento, 
         data: dataISO, 
-        horario
+        horario,
+        cliente: dadosUsuario.nome,
+        telefone: dadosUsuario.telefone,
+        email: dadosUsuario.email
       };
 
       agendamentoPendente = agendamentoDados;
