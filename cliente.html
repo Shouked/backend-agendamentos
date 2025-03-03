@@ -36,7 +36,15 @@
   <div class="container" id="painelCliente" style="display: none;">
     <h2>Meus Agendamentos</h2>
     <button onclick="voltarAgendamento()">Novo Agendamento</button>
+    <button onclick="mostrarAlterarSenha()">Alterar Senha</button>
     <button onclick="logoutCliente()">Sair</button>
+    <div id="alterarSenhaForm" style="display: none; margin-top: 20px;">
+      <h3>Alterar Senha</h3>
+      <input type="password" id="novaSenha" placeholder="Nova senha (mínimo 6 caracteres)" required><br>
+      <button id="alterarSenhaBtn" onclick="alterarSenha()">Salvar</button>
+      <button onclick="esconderAlterarSenha()">Cancelar</button>
+      <p id="mensagemAlterarSenha" style="color: green;"></p>
+    </div>
     <table>
       <thead>
         <tr><th>Procedimento</th><th>Data</th><th>Horário</th><th>Telefone</th><th>E-mail</th><th>Ações</th></tr>
@@ -388,7 +396,12 @@
           return;
         }
 
-        agendamentos.sort((a, b) => new Date(a.data + ' ' + a.horario) - new Date(b.data + ' ' + b.horario));
+        agendamentos.sort((a, b) => {
+          const dateA = new Date(a.data + 'T' + a.horario);
+          const dateB = new Date(b.data + 'T' + b.horario);
+          return dateA - dateB;
+        });
+
         agendamentos.forEach(ag => {
           const [year, month, day] = ag.data.split('-');
           const dataBr = `${day}/${month}/${year}`;
@@ -409,6 +422,61 @@
       } catch (error) {
         console.error('Erro ao carregar agendamentos:', error);
         lista.innerHTML = '<tr><td colspan="6">Erro ao carregar agendamentos. Tente novamente.</td></tr>';
+      }
+    }
+
+    function mostrarAlterarSenha() {
+      document.getElementById('alterarSenhaForm').style.display = 'block';
+      document.getElementById('novaSenha').value = '';
+      document.getElementById('mensagemAlterarSenha').textContent = '';
+    }
+
+    function esconderAlterarSenha() {
+      document.getElementById('alterarSenhaForm').style.display = 'none';
+    }
+
+    async function alterarSenha() {
+      const novaSenha = document.getElementById('novaSenha').value;
+      const alterarSenhaBtn = document.getElementById('alterarSenhaBtn');
+      alterarSenhaBtn.disabled = true;
+      alterarSenhaBtn.textContent = 'Carregando...';
+
+      if (!novaSenha || novaSenha.length < 6) {
+        document.getElementById('mensagemAlterarSenha').style.color = 'red';
+        document.getElementById('mensagemAlterarSenha').textContent = 'A nova senha deve ter pelo menos 6 caracteres!';
+        alterarSenhaBtn.disabled = false;
+        alterarSenhaBtn.textContent = 'Salvar';
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_URL}/clientes/alterar-senha`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json; charset=utf-8',
+            'Authorization': tokenCliente
+          },
+          body: JSON.stringify({ novaSenha })
+        });
+        const result = await response.json();
+        if (result.success) {
+          document.getElementById('mensagemAlterarSenha').style.color = 'green';
+          document.getElementById('mensagemAlterarSenha').textContent = 'Senha alterada com sucesso!';
+          setTimeout(() => {
+            esconderAlterarSenha();
+            carregarAgendamentosCliente();
+          }, 2000);
+        } else {
+          document.getElementById('mensagemAlterarSenha').style.color = 'red';
+          document.getElementById('mensagemAlterarSenha').textContent = result.message || 'Erro ao alterar senha!';
+        }
+      } catch (error) {
+        console.error('Erro ao alterar senha:', error);
+        document.getElementById('mensagemAlterarSenha').style.color = 'red';
+        document.getElementById('mensagemAlterarSenha').textContent = 'Erro ao conectar ao servidor. Tente novamente.';
+      } finally {
+        alterarSenhaBtn.disabled = false;
+        alterarSenhaBtn.textContent = 'Salvar';
       }
     }
 
