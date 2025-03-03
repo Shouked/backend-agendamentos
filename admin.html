@@ -419,6 +419,12 @@
         const validAgendamentos = agendamentos.filter(ag => ag._id);
         console.log('Agendamentos válidos após filtro:', validAgendamentos);
 
+        validAgendamentos.sort((a, b) => {
+          const dateA = new Date(a.data + 'T' + a.horario);
+          const dateB = new Date(b.data + 'T' + b.horario);
+          return dateA - dateB;
+        });
+
         const groupedByDate = validAgendamentos.reduce((acc, ag) => {
           const dateKey = ag.data.split('T')[0];
           if (!acc[dateKey]) acc[dateKey] = [];
@@ -621,6 +627,7 @@
             <p><strong>Data de Registro:</strong> ${dataRegistro}</p>
             <p><strong>Quantidade de Procedimentos:</strong> ${procedimentosCount}</p>
             <p><strong>Último Agendamento:</strong> ${ultimoAgendamento}</p>
+            <button class="delete-btn" onclick="excluirCliente('${cliente._id}')">Excluir Cliente</button>
           </div>
         `;
       }
@@ -725,7 +732,7 @@
         });
         const result = await response.json();
         if (result.success) {
-          showToast('Cliente cadastrado com sucesso!');
+          showToast('Cliente cadastrado com sucesso! Uma senha foi enviada ao e-mail do cliente.');
           fecharModalNovoCliente();
           await carregarClientesParaAgendamento();
           document.getElementById('clienteSelectAgendamento').value = result.cliente._id;
@@ -774,6 +781,33 @@
           }
         } catch (error) {
           console.error('Erro ao excluir agendamentos:', error);
+          showToast('Erro ao conectar ao servidor. Tente novamente.');
+        }
+      }
+    }
+
+    async function excluirCliente(clienteId) {
+      if (confirm('Tem certeza que deseja excluir este cliente?')) {
+        try {
+          const response = await fetch(`${API_URL}/clientes/muitos`, {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': token
+            },
+            body: JSON.stringify({ ids: [clienteId] })
+          });
+          const result = await response.json();
+          if (result.success) {
+            showToast('Cliente excluído com sucesso!');
+            await carregarClientes();
+            document.getElementById('clienteSelect').value = '';
+            document.getElementById('clienteDetalhes').innerHTML = '';
+          } else {
+            showToast(result.message || 'Erro ao excluir cliente!');
+          }
+        } catch (error) {
+          console.error('Erro ao excluir cliente:', error);
           showToast('Erro ao conectar ao servidor. Tente novamente.');
         }
       }
