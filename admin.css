@@ -529,7 +529,7 @@ body.sidebar-open {
 
   .edit-btn {
     position: static;
-    padding: 2rem 3rem; /* Reduzido ainda mais para desktop */
+    padding: 0.55rem 0.375rem; /* Reduzido ainda mais para desktop */
     font-size: 0.625rem;
     margin-left: 0.5rem;
   }
