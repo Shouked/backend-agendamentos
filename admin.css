@@ -248,11 +248,15 @@ th {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.3s ease-in-out, opacity 0.2s; /* Animação adicionada */
+  transition: opacity 0.2s; /* Transição apenas para opacity */
   position: absolute;
   top: 0.625rem;
   left: 0.625rem;
   z-index: 1001;
+}
+
+#menu-toggle i {
+  transition: opacity 0.3s ease-in-out; /* Transição suave para o ícone */
 }
 
 .sidebar.active #menu-toggle {
@@ -261,7 +265,6 @@ th {
   margin: 0;
   width: auto;
   height: auto;
-  transform: rotate(90deg); /* Transforma em "X" */
 }
 
 #menu-toggle.hidden {
