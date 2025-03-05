@@ -841,4 +841,25 @@
           '</ul>';
       } catch (error) {
         console.error('Erro ao carregar relatórios:', error);
-        showToast('Erro ao car
+        showToast('Erro ao carregar relatórios. Tente novamente.');
+      }
+    }
+
+    function logout() {
+      token = null;
+      document.getElementById("painel").style.display = "none";
+      document.getElementById("login").style.display = "block";
+      document.body.classList.remove('logged-in');
+      document.body.classList.add('logged-out');
+      showToast("Você saiu com sucesso!");
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.style.display = 'block';
+      setTimeout(() => toast.style.display = 'none', 3000);
+    }
+  </script>
+</body>
+</html>
