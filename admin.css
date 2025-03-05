@@ -286,9 +286,11 @@ body.sidebar-open {
 
 .agendamento-item {
   position: relative;
-  padding: 0.5rem 3rem 0.5rem 0.625rem;
+  padding: 0.5rem 0.625rem; /* Ajustado para não sobrepor */
   border-bottom: 1px solid #eee;
   min-height: 3.125rem;
+  display: flex;
+  flex-direction: column; /* Empilha os spans no mobile */
 }
 
 .agendamento-item:last-child {
@@ -298,7 +300,7 @@ body.sidebar-open {
 .agendamento-item input[type="checkbox"] {
   position: absolute;
   top: 0.625rem;
-  right: 2rem;
+  right: 0.625rem; /* Ajustado para canto direito */
   width: 1rem;
   height: 1rem;
   cursor: pointer;
@@ -310,16 +312,15 @@ body.sidebar-open {
 }
 
 .edit-btn {
-  position: absolute;
-  bottom: 0.3125rem;
-  right: 0.3125rem;
   background-color: #2196f3;
-  padding: 0.25rem 0.5rem; /* Aumentado para melhor clique no mobile */
+  padding: 0.375rem 0.75rem; /* Tamanho ajustado, maior que a palavra "Editar" */
   font-size: 0.75rem;
   color: white;
   border: none;
   border-radius: 0.125rem;
   cursor: pointer;
+  align-self: flex-start; /* Move para o canto esquerdo */
+  margin-top: 0.25rem; /* Espaço acima do botão */
 }
 
 .edit-btn:hover:not(:disabled) {
@@ -411,6 +412,9 @@ body.sidebar-open {
 
   header {
     padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid #ddd;
+    width: 80%; /* Reduzido para não invadir o botão da sidebar */
+    margin: 0 auto; /* Centralizado */
   }
 
   h2 {
@@ -445,15 +449,15 @@ body.sidebar-open {
   }
 
   .agendamento-item {
-    padding: 0.5rem 2.5rem 0.5rem 0.5rem; /* Menos espaço no mobile */
+    padding: 0.5rem 0.5rem; /* Ajustado para mobile */
   }
 
   .agendamento-item input[type="checkbox"] {
-    right: 1.5rem;
+    right: 0.5rem;
   }
 
   .edit-btn {
-    padding: 0.375rem 0.625rem; /* Ajustado para mobile */
+    padding: 0.375rem 0.75rem; /* Mantido ajustado para mobile */
   }
 
   .cliente-card {
@@ -489,11 +493,26 @@ body.sidebar-open {
   }
 
   .agendamento-item {
-    padding: 0.625rem 3.75rem 0.625rem 1rem;
+    padding: 0.625rem 1rem; /* Ajustado para desktop */
+    flex-direction: row; /* Volta a alinhar horizontalmente no desktop */
+    justify-content: space-between; /* Distribui os elementos */
+    align-items: center;
   }
 
   .agendamento-item input[type="checkbox"] {
     right: 2.5rem;
+    position: static; /* Remove posicionamento absoluto no desktop */
+    margin-left: 0.5rem;
+  }
+
+  .agendamento-item span {
+    flex: 1; /* Distribui espaço entre os spans */
+    margin-right: 0.5rem;
+  }
+
+  .edit-btn {
+    position: static; /* Remove posicionamento absoluto no desktop */
+    margin-left: 0.5rem;
   }
 
   .cliente-card {
