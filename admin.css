@@ -325,7 +325,7 @@ body.sidebar-open {
 
 .edit-btn {
   background-color: #2196f3;
-  padding: 0.125rem 0.2rem; /* Significativamente reduzido */
+  padding: 0.125rem 0.375rem; /* Significativamente reduzido */
   font-size: 0.625rem; /* Fonte menor para caber melhor */
   color: white;
   border: none;
@@ -471,7 +471,7 @@ body.sidebar-open {
   }
 
   .edit-btn {
-    padding: 0.125rem 0.2rem; /* Reduzido ainda mais para mobile */
+    padding: 0.125rem 0.375rem; /* Reduzido ainda mais para mobile */
     font-size: 0.625rem;
   }
 
@@ -530,7 +530,7 @@ body.sidebar-open {
 
   .edit-btn {
     position: static; /* Remove posicionamento absoluto no desktop */
-    padding: 0.1rem 0.2; /* Reduzido ainda mais para desktop */
+    padding: 0.1rem 0.375; /* Reduzido ainda mais para desktop */
     font-size: 0.625rem;
     margin-left: 0.5rem;
   }
