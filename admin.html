@@ -206,6 +206,7 @@
     });
 
     const menuToggle = document.getElementById('menu-toggle');
+    const menuIcon = menuToggle.querySelector('i'); // Selecionar o ícone dentro do botão
     const sidebar = document.getElementById('sidebar');
     const sidebarOverlay = document.getElementById('sidebar-overlay');
     const body = document.body;
@@ -214,6 +215,14 @@
       sidebar.classList.toggle('active');
       body.classList.toggle('sidebar-open');
       sidebarOverlay.style.display = sidebar.classList.contains('active') ? 'block' : 'none';
+      // Alternar entre fa-bars e fa-times
+      if (sidebar.classList.contains('active')) {
+        menuIcon.classList.remove('fa-bars');
+        menuIcon.classList.add('fa-times');
+      } else {
+        menuIcon.classList.remove('fa-times');
+        menuIcon.classList.add('fa-bars');
+      }
       if (sidebar.classList.contains('active') && window.matchMedia("(max-width: 600px)").matches) {
         sidebar.insertBefore(menuToggle, sidebar.firstChild);
       } else {
@@ -226,6 +235,8 @@
         sidebar.classList.remove('active');
         body.classList.remove('sidebar-open');
         sidebarOverlay.style.display = 'none';
+        menuIcon.classList.remove('fa-times'); // Voltar ao ícone de barras
+        menuIcon.classList.add('fa-bars');
         document.querySelector('header').prepend(menuToggle);
       }
     });
@@ -308,6 +319,8 @@
         sidebar.classList.remove('active');
         body.classList.remove('sidebar-open');
         sidebarOverlay.style.display = 'none';
+        menuIcon.classList.remove('fa-times'); // Voltar ao ícone de barras
+        menuIcon.classList.add('fa-bars');
         document.querySelector('header').prepend(menuToggle);
       }
     }
@@ -828,25 +841,4 @@
           '</ul>';
       } catch (error) {
         console.error('Erro ao carregar relatórios:', error);
-        showToast('Erro ao carregar relatórios. Tente novamente.');
-      }
-    }
-
-    function logout() {
-      token = null;
-      document.getElementById("painel").style.display = "none";
-      document.getElementById("login").style.display = "block";
-      document.body.classList.remove('logged-in');
-      document.body.classList.add('logged-out');
-      showToast("Você saiu com sucesso!");
-    }
-
-    function showToast(message) {
-      const toast = document.getElementById('toast');
-      toast.textContent = message;
-      toast.style.display = 'block';
-      setTimeout(() => toast.style.display = 'none', 3000);
-    }
-  </script>
-</body>
-</html>
+        showToast('Erro ao car
