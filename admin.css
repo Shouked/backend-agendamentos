@@ -242,9 +242,9 @@ th {
   font-size: 1.5rem;
   color: #d81b60;
   cursor: pointer;
-  padding: 0.3125rem;
-  width: 2rem;
-  height: 2rem;
+  padding: 0.5rem; /* Aumentado para expandir a área de toque */
+  width: 2.5rem; /* Aumentado para facilitar o clique */
+  height: 2.5rem; /* Aumentado para facilitar o clique */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -252,6 +252,7 @@ th {
   position: absolute;
   top: 0.625rem;
   left: 0.625rem;
+  z-index: 1001; /* Garante que fique acima de outros elementos */
 }
 
 .sidebar.active #menu-toggle {
@@ -523,8 +524,8 @@ body.sidebar-open {
 
   .agendamento-item input[type="checkbox"] {
     position: static;
-    margin-left: 2.5rem; /* Aumentado para ficar mais à esquerda */
-    margin-right: 1rem; /* Espaço extra à direita do checkbox */
+    margin-left: 2.5rem;
+    margin-right: 1rem;
   }
 
   .agendamento-item span {
