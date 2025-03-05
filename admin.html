@@ -613,13 +613,13 @@
 
       const selectedOption = select.options[select.selectedIndex];
       const cliente = JSON.parse(selectedOption.dataset.cliente);
-      console.log('Cliente selecionado para detalhes:', cliente); // Log para debug
+      console.log('Cliente selecionado para detalhes:', cliente);
 
       if (cliente) {
-        const dataRegistro = cliente.dataCriacao ? new Date(cliente.dataCriacao).toLocaleDateString('pt-BR') : 'Não disponível';
+        const dataRegistro = cliente.dataCriacao ? new Date(cliente.dataCriacao).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : 'Não disponível';
         const procedimentosCount = cliente.procedimentosCount !== undefined ? cliente.procedimentosCount : 'Não disponível';
-        const ultimaVisita = cliente.ultimaVisita ? new Date(cliente.ultimaVisita).toLocaleDateString('pt-BR') : 'Não disponível';
-        const proximoAgendamento = cliente.proximoAgendamento ? new Date(cliente.proximoAgendamento).toLocaleDateString('pt-BR') : 'Não disponível';
+        const ultimaVisita = cliente.ultimaVisita ? new Date(cliente.ultimaVisita).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : 'Não disponível';
+        const proximoAgendamento = cliente.proximoAgendamento ? new Date(cliente.proximoAgendamento).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : 'Não disponível';
 
         detalhes.innerHTML = `
           <div class="cliente-card">
