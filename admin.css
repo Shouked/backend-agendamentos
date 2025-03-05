@@ -251,7 +251,7 @@ th {
   transition: opacity 0.2s;
   position: absolute;
   top: 0.625rem;
-  left: 0rem;
+  left: 0.1rem;
   z-index: 1001; /* Garante que fique acima de outros elementos */
 }
 
