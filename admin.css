@@ -324,7 +324,7 @@ body.sidebar-open {
 
 .edit-btn {
   background-color: #2196f3;
-  padding: 0.05rem 0.2rem; /* Reduzido ainda mais: altura 0.05rem, largura 0.2rem */
+  padding: 0.05rem 0.2rem;
   font-size: 0.625rem;
   color: white;
   border: none;
@@ -332,8 +332,8 @@ body.sidebar-open {
   cursor: pointer;
   align-self: flex-start;
   margin-top: 0.25rem;
-  width: auto; /* Garante que a largura siga o conteúdo */
-  min-width: 0; /* Evita largura mínima excessiva */
+  width: auto;
+  min-width: 0;
 }
 
 .edit-btn:hover:not(:disabled) {
@@ -472,7 +472,7 @@ body.sidebar-open {
   }
 
   .edit-btn {
-    padding: 0.05rem 0.2rem; /* Reduzido ainda mais para mobile */
+    padding: 0.05rem 0.2rem;
     font-size: 0.625rem;
     width: auto;
     min-width: 0;
@@ -523,7 +523,8 @@ body.sidebar-open {
 
   .agendamento-item input[type="checkbox"] {
     position: static;
-    margin-left: 1.5rem;
+    margin-left: 2.5rem; /* Aumentado para ficar mais à esquerda */
+    margin-right: 1rem; /* Espaço extra à direita do checkbox */
   }
 
   .agendamento-item span {
@@ -533,8 +534,8 @@ body.sidebar-open {
 
   .edit-btn {
     position: static;
-    padding: 0.035rem 0.3rem; /* Reduzido ainda mais para desktop */
-    font-size: 0.825rem;
+    padding: 0.05rem 0.2rem;
+    font-size: 0.625rem;
     margin-left: 0.5rem;
     width: auto;
     min-width: 0;
