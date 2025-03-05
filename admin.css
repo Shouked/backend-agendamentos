@@ -242,17 +242,17 @@ th {
   font-size: 1.5rem;
   color: #d81b60;
   cursor: pointer;
-  padding: 0.5rem; /* Aumentado para expandir a área de toque */
-  width: 2.5rem; /* Aumentado para facilitar o clique */
-  height: 2.5rem; /* Aumentado para facilitar o clique */
+  padding: 0.5rem;
+  width: 2.5rem;
+  height: 2.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: opacity 0.2s;
+  transition: transform 0.3s ease-in-out, opacity 0.2s; /* Animação adicionada */
   position: absolute;
   top: 0.625rem;
   left: 0.625rem;
-  z-index: 1001; /* Garante que fique acima de outros elementos */
+  z-index: 1001;
 }
 
 .sidebar.active #menu-toggle {
@@ -261,6 +261,7 @@ th {
   margin: 0;
   width: auto;
   height: auto;
+  transform: rotate(90deg); /* Transforma em "X" */
 }
 
 #menu-toggle.hidden {
@@ -461,7 +462,21 @@ body.sidebar-open {
   }
 
   .action-buttons button {
-    padding: 0.625rem;
+    padding: 0.75rem 1rem; /* Aumentado para facilitar toque */
+    font-size: 1rem; /* Texto maior */
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.2); /* Sombra para destaque */
+  }
+
+  button[type="submit"] {
+    padding: 0.75rem 1rem; /* Aumentado para facilitar toque */
+    font-size: 1rem; /* Texto maior */
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.2); /* Sombra para destaque */
+  }
+
+  .bulk-delete-btn {
+    padding: 0.75rem 1rem; /* Aumentado para facilitar toque */
+    font-size: 1rem; /* Texto maior */
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.2); /* Sombra para destaque */
   }
 
   .agendamento-item {
