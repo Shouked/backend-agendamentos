@@ -324,7 +324,7 @@ body.sidebar-open {
 
 .edit-btn {
   background-color: #2196f3;
-  padding: 0.05rem 0.25rem; /* Reduzido ainda mais */
+  padding: 0.05rem 0.2rem; /* Reduzido ainda mais: altura 0.05rem, largura 0.2rem */
   font-size: 0.625rem;
   color: white;
   border: none;
@@ -332,6 +332,8 @@ body.sidebar-open {
   cursor: pointer;
   align-self: flex-start;
   margin-top: 0.25rem;
+  width: auto; /* Garante que a largura siga o conteúdo */
+  min-width: 0; /* Evita largura mínima excessiva */
 }
 
 .edit-btn:hover:not(:disabled) {
@@ -470,8 +472,10 @@ body.sidebar-open {
   }
 
   .edit-btn {
-    padding: 0.05rem 0.25rem; /* Reduzido ainda mais para mobile */
+    padding: 0.05rem 0.2rem; /* Reduzido ainda mais para mobile */
     font-size: 0.625rem;
+    width: auto;
+    min-width: 0;
   }
 
   .cliente-card {
@@ -529,9 +533,11 @@ body.sidebar-open {
 
   .edit-btn {
     position: static;
-    padding: 0.55rem 0.375rem; /* Reduzido ainda mais para desktop */
+    padding: 0.05rem 0.2rem; /* Reduzido ainda mais para desktop */
     font-size: 0.625rem;
     margin-left: 0.5rem;
+    width: auto;
+    min-width: 0;
   }
 
   .cliente-card {
