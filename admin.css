@@ -313,7 +313,7 @@ body.sidebar-open {
 
 .edit-btn {
   background-color: #2196f3;
-  padding: 0.375rem 0.75rem; /* Tamanho ajustado, maior que a palavra "Editar" */
+  padding: 0.25rem 0.5rem; /* Reduzido ainda mais, apenas um pouco maior que "Editar" */
   font-size: 0.75rem;
   color: white;
   border: none;
@@ -413,8 +413,8 @@ body.sidebar-open {
   header {
     padding: 0.5rem 0.75rem;
     border-bottom: 1px solid #ddd;
-    width: 80%; /* Reduzido para não invadir o botão da sidebar */
-    margin: 0 auto; /* Centralizado */
+    width: 100%; /* Volta ao tamanho original para alinhar o menu-toggle */
+    position: relative;
   }
 
   h2 {
@@ -457,7 +457,7 @@ body.sidebar-open {
   }
 
   .edit-btn {
-    padding: 0.375rem 0.75rem; /* Mantido ajustado para mobile */
+    padding: 0.25rem 0.5rem; /* Reduzido ainda mais para mobile */
   }
 
   .cliente-card {
@@ -500,9 +500,8 @@ body.sidebar-open {
   }
 
   .agendamento-item input[type="checkbox"] {
-    right: 2.5rem;
     position: static; /* Remove posicionamento absoluto no desktop */
-    margin-left: 0.5rem;
+    margin-left: 1rem; /* Aumentado para dar espaço ao nome do cliente */
   }
 
   .agendamento-item span {
@@ -512,6 +511,7 @@ body.sidebar-open {
 
   .edit-btn {
     position: static; /* Remove posicionamento absoluto no desktop */
+    padding: 0.25rem 0.5rem; /* Reduzido ainda mais para desktop */
     margin-left: 0.5rem;
   }
 
